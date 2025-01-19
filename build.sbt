@@ -20,7 +20,7 @@ lazy val root = (project in file("."))
             "org.playframework" %% "play-json" % "3.0.4"
         ),
         coverageExcludedPackages := "<empty>;.*aView.*",
-
+        //mainClass := Some("Chess")
     )
 
-mainClass := Some("Chess")
+Compile / run / mainClass := Some("Chess")
