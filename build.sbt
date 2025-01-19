@@ -22,3 +22,5 @@ lazy val root = (project in file("."))
         coverageExcludedPackages := "<empty>;.*aView.*",
 
     )
+
+mainClass := Some("Chess")
