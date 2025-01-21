@@ -2,9 +2,11 @@ package ModelTests.ChessComponentTests
 
 import Model.ChessComponent.BasicChessComponent.StandartChess.{Color, Piece, PieceType}
 import Model.ChessComponent.DevourChess.{DevourChessFacade, Remis}
+import Model.ChessComponent.RealChess.RealChessFacade
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
+import Model.ChessComponent.BasicChessComponent.StandartChess.BasicChessFacade
 
 class DevourChessFacadeSpec extends AnyWordSpec {
     val testInstance = DevourChessFacade()
@@ -37,7 +39,7 @@ class DevourChessFacadeSpec extends AnyWordSpec {
             testInstance.getDefaultBoard() should equal(board);
         }
         "return the correct board string" in {
-            testInstance.getBoardString(getDefaultBoard()) should be((
+            testInstance.getBoardString(testInstance.getDefaultBoard()) should be((
                 "    +-----+-----+-----+-----+-----+-----+-----+-----+\n" +
                     "8   |  r  |  n  |  b  |  q  |  k  |  b  |  n  |  r  |\n" +
                     "    +-----+-----+-----+-----+-----+-----+-----+-----+\n" +
@@ -138,57 +140,12 @@ class DevourChessFacadeSpec extends AnyWordSpec {
             testInstance.promote("B", "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5", 1) should be ("rBbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5")
             testInstance.promote("b", "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5", 1) should be ("rBbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5")
         }
-    }
-    def getBoardString(board: Vector[Piece]): String = {
-        testInstance.getBoardString(board)
-    }
-
-    def fenToBoard(fen: String): Vector[Piece] = {
-        testInstance.fenToBoard(fen)
-    }
-
-    def getAllLegalMoves(fen: String): List[(Int, Int)] = {
-        testInstance.getAllLegalMoves(fen)
-    }
-
-    def makeMove(fen: String, move: (Int, Int)): String = {
-        testInstance.makeMove(fen, move)
-    }
-
-    def canPromote(fen: String): Int = {
-        testInstance.canPromote(fen)
-    }
-
-    def promote(pieceName: String, fen: String, position: Int): String = {
-        testInstance.promote(pieceName, fen, position)
-    }
-
-    def isColorPiece(fen: String, position: Int): Boolean = {
-        testInstance.isColorPiece(fen, position)
-    }
-
-    def translateCastle(board: Vector[Piece], move: (Int, Int)): (Int, Int) = {
-        testInstance.translateCastle(board, move)
-    }
-
-    def isRemis(fen: String, legalMoves: List[(Int, Int)]): Boolean = {
-        Remis.isRemis(fen)
-    }
-
-    def getBestMove(fen: String, depth: Int): String = {
-        ""
-    }
-
-    def translateMoveStringToInt(fen: String, move: String): (Int, Int) = {
-        testInstance.translateMoveStringToInt(fen, move)
-    }
-
-    def getDefaultFen(): String = {
-        testInstance.getDefaultFen()
-    }
-
-    def getDefaultBoard(): Vector[Piece] = {
-        testInstance.getDefaultBoard()
+        "realchess should outsource correctly" in {
+            val instance = new RealChessFacade
+            instance.getDefaultBoard() should be (BasicChessFacade.getDefaultBoard())
+            instance.getDefaultFen() should be (BasicChessFacade.getDefaultFen())
+            instance.translateMoveStringToInt("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "e2e4") should be (BasicChessFacade.translateMoveStringToInt("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "e2e4"))
+        }
     }
     
 
