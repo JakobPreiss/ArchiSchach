@@ -115,9 +115,23 @@ trait BasicChessTrait {
      */
     def isDifferentColorPiece(fen: String, position: Int): Boolean
 
+    /**
+     * getDefaultFen returns the starting fen position without the extra info at the end
+     * @return starting fen
+     */
     def getDefaultFen() : String
 
+    /**
+     * translateMoveStringToInt translates a move in the format of e2e4 to a Int-Tupel move
+     * @param fen  current board state as fen-String
+     * @param move as one String
+     * @return move as Int-Tupel
+     * */
     def translateMoveStringToInt(fen: String, move: String): (Int, Int)
 
+    /**
+     * getDefaultBoard returns the starting board in the Vector[Piece] format
+     * @return starting board in the Vector[Piece] format
+     * */
     def getDefaultBoard(): Vector[Piece]
 }

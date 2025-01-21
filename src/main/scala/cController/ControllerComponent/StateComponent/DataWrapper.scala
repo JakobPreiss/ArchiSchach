@@ -9,7 +9,7 @@ case class DataWrapper(node : Option[scala.xml.Node], json : Option[JsValue]) {
         node match {
             case Some(value) => value
             case None => new Node:
-                override def label: String = ???
+                override def label: String = "fail"
 
                 override def child: collection.Seq[Node] = ???
         }
