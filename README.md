@@ -111,7 +111,7 @@ Now:
 
 ### Start Playing
 
-If you are unfamiliar withe the ways of Chess one must ask the question of what deficiencies you must suffer from
+If you are unfamiliar with the the ways of Chess one must ask the question of what deficiencies you must suffer from
 and what exactly your father has done to deserve an offspring like you.
 
 ### Our Journey
