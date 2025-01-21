@@ -58,7 +58,7 @@ object ChessModule {
 
     def provideEngineChessXML(): ControllerTrait = {
         given ApiFileTrait = XMLApi()
-        given ChessTrait = DevourChessFacade()
+        given ChessTrait = RealChessFacade()
 
         val fileApi = XMLApi()
         val xmlContent: scala.xml.Node = XML.loadFile("src/main/resources/GameState.xml")
@@ -66,13 +66,13 @@ object ChessModule {
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
         val arg3 = ""
-        new EngineController(arg1, arg2, arg3, 15)
+        new EngineController(arg1, arg2, arg3, 10)
     }
 
     def provideEngineChessJSON(): ControllerTrait = {
         given ApiFileTrait = JSONApi()
 
-        given ChessTrait = DevourChessFacade()
+        given ChessTrait = RealChessFacade()
 
         val fileApi = JSONApi()
         val filePath = "src/main/resources/GameState.json"

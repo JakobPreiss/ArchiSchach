@@ -19,7 +19,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
         this.notifyObservers
     }
     
-    def createOutput() : String = {output}
+    def createOutput() : String = output
 
     def play(move : (Int, Int)) : Unit = {
         val legalMoves = gameMode.getAllLegalMoves(fen);
@@ -38,8 +38,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
         if(state) {return}
 
         val engineMoveString = gameMode.getBestMove(fen, depth)
-        print("test")
-        print(engineMoveString)
+
         val engineMoveInt = gameMode.translateMoveStringToInt(fen, engineMoveString)
 
         UndoInvoker.doStep(new SetCommand(gameMode.makeMove(fen, engineMoveInt), fen, this))

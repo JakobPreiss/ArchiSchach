@@ -3,24 +3,33 @@ package Model.ChessComponent.RealChess
 import requests.Response
 
 object ChessApiClient {
-    val host = "https://d948-141-37-128-1.ngrok-free.app"
+    var host = "https://stockfish.online/api/s/v2.php"
 
     def getBestMove(fen: String, depth: Int): String = {
-        val payload = ujson.Obj(
+        if (depth >= 16) {
+            throw new IllegalArgumentException("Depth must be less than 16")
+        }
+
+        val params = Map(
             "fen" -> fen,
-            "depth" -> depth
+            "depth" -> depth.toString
         )
 
-        val response: Response = requests.post(
-            url = s"$host/bestmove/",
-            data = payload.render(),
-            headers = Map("Content-Type" -> "application/json")
+        val response: Response = requests.get(
+            url = host,
+            params = params
         )
 
         if (response.statusCode == 200) {
             val json = ujson.read(response.text())
-            json("best_move").str
+            if (json("success").bool) {
+                json("bestmove").str.split(" ")(1)
+            } else {
+                println("a")
+                throw new Exception(s"API request failed: ${json("data").str}")
+            }
         } else {
+            println("b")
             throw new Exception(s"Error: ${response.statusCode}, ${response.text()}")
         }
     }
