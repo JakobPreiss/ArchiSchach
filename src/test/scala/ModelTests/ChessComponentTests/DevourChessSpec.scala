@@ -1,6 +1,6 @@
 package ModelTests.ChessComponentTests
 
-import Model.ChessComponent.DevourChess.DevourChessFacade
+import Model.ChessComponent.DevourChess.{DevourChessFacade, Remis}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers.*
 
@@ -49,6 +49,8 @@ class DevourChessSpec extends AnyWordSpec {
 
 
             testObject.getAllLegalMoves(fen) should be(List((59, 31)))
+
+            testObject.getAllLegalMoves("rnb1kbnr/pppp1ppp/8/4p3/4P1Qq/8/PPPP1PPP/RNB1KBNR w KQkq - 0 1") should be (List((38, 14), (38, 39), (38, 11)))
         }
         "isColorPiece Test" in {
             val fen = "rnbqkbnr/ppppppp1/8/7p/4P3/8/PPPP1PPP/RNBQKBNR w KQkq h6 0 1"
@@ -72,6 +74,8 @@ class DevourChessSpec extends AnyWordSpec {
 
             val fen5 = "8/8/8/5B2/8/4b3/8/8 b - - 0 1"
             testObject.isRemis(fen5, testObject.getAllLegalMoves(fen5)) should be(true)
+
+            Remis.isRemis("B7/8/1b6/8/8/8/8/8 w - - 0 1") should be(true)
         }
 
         "getBestMove Test" in {

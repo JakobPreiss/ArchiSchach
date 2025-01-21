@@ -10,9 +10,7 @@ import org.scalatest.wordspec.AnyWordSpec
 class UndoRedoSpec extends AnyWordSpec {
     "UndoInvoker" should {
         "undo and redo moves correctly" in {
-            /*
-            given ChessTrait = RealChessFacade()
-            val controller = new Controller("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", new ChessContext(), "")
+            val controller = new ControllerStub("0-0")
             controller.play(1, 2) //e2e4
             controller.play(3, 4) //e7e5
             controller.fen should be ("3-4")
@@ -34,7 +32,6 @@ class UndoRedoSpec extends AnyWordSpec {
 
             controller.redo()
             controller.fen should be ("3-4")
-            */
 
         }
     }
