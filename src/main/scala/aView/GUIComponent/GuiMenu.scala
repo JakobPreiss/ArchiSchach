@@ -26,7 +26,6 @@ class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer
     controller.add(this)
 
     override def update: Unit = {
-        println("test test")
         controller.context.state match {
             case State.remisState => {
                 val infoLabel = new Label("Remis") {

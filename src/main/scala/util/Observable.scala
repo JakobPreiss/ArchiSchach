@@ -1,6 +1,6 @@
 package util
 
-import aView.GUIComponent.GuiBoard
+import aView.GUIComponent.{GuiBoard, GuiMenu}
 import scalafx.application.Platform
 
 trait Observer {
@@ -17,7 +17,7 @@ class Observable {
     def remove(s: Observer): Unit = subscribers = subscribers.filterNot(o => o == s)
 
     def notifyObservers: Unit = subscribers.foreach(o =>
-        if (o.isInstanceOf[GuiBoard]) {
+        if (o.isInstanceOf[GuiBoard] || o.isInstanceOf[GuiMenu]) {
             Platform.runLater(() => {
                 o.update
             })
