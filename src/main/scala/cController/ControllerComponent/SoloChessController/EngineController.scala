@@ -25,6 +25,8 @@ class EngineController (override var fen : String, var context : ChessContext, v
         val legalMoves = gameMode.getAllLegalMoves(fen);
         if (!legalMoves.contains(move)) {
             output = "Das kannste nicht machen Bro (kein legaler Zug)"
+            notifyObservers
+            return
         } else {
             UndoInvoker.doStep(new SetCommand(gameMode.makeMove(fen, move), fen, this))
             if (gameMode.canPromote(fen) != -1) {

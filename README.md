@@ -63,21 +63,43 @@ As a third step one should create a new folder to save our little chess game fil
 And as a fourth step: 
 open a terminal of your choosing and go to your created folder
 Now, behold the mighty words as you type them into your console: 
-git clone https://github.com/philippeZim/JP_Morgan_Chess
+```bash
+ git clone https://github.com/philippeZim/JP_Morgan_Chess
+  ```
 
 ### How to play
 
 Even the dumbest bafoon could perform the necessary steps.
 Simply type:
+```bash
 sbt run
+```
 into your console.
 
-Before you will rise a chessboard, forming as a Desktop-Application as well as a Accumulation of Letters.
+Should you be one of those fellas who prefer the ways of the docker. Behold:
+If you dare: Enter the Docker directory.
+Now type the magic words:
+```bash
+docker build -t chess .
+```
+You will have to prove your patience now young lad. For docker will not rest until it has downloaded all the necessary libraries.
+If you were successful: You are ready!
+Start the game by:
+```bash
+docker run -it `
+      --volume /tmp/.X11-unix:/tmp/.X11-unix `
+--device /dev/dri `
+      chess
+```
+However: Should you have forgotten to start your Xming in time and don't have it opened. Do so quickly!
+
+
+Before you will rise a chessboard, forming as a Desktop-Application as well as a Accumulation of Letters in your console.
 
 If you dare to use the Desktop-Application you simply have to use the powers of your mighty mouse by clicking
 your desired piece and then declaring your order by clicking on the desired square.
 
-If you retreat to the cowardly Option of using your Keyboard:
+If you retreat to the cowardly option of using your Keyboard:
 You will be asked to move. To make a move you simply have to type in the field from
 which you wish to move and the field that marks the new intended position of your chosen Piece.
 Choose your formatting carefully. It should always look like this: e2e4 
@@ -89,7 +111,7 @@ Now:
 
 ### Start Playing
 
-If you are unfamiliar withe the ways of Chess one must ask the question of what deficiencies you must suffer
+If you are unfamiliar with the the ways of Chess one must ask the question of what deficiencies you must suffer from
 and what exactly your father has done to deserve an offspring like you.
 
 ### Our Journey
@@ -103,4 +125,4 @@ The requirements for the result of our hardship were the following:
 - **Concurrency**: Running TUI and GUI simultaneously in influence of each other.
 - **Documentation**: Documented and maintained on GitHub.
 - **MVC Architecture**: Model-view-controller design pattern.
-- **Coverage**: 100% Code coverage.
+- **Coverage**: almost 100% Code coverage.
