@@ -4,9 +4,6 @@ import Model.ChessComponent.BasicChessComponent.StandartChess.{BasicChessFacade,
 import Model.ChessComponent.ChessTrait
 
 class RealChessFacade extends ChessTrait {
-    def getBoardString(board: Vector[Piece]): String = {
-        BasicChessFacade.getBoardString(board)
-    }
 
     def fenToBoard(fen: String): Vector[Piece] = {
         BasicChessFacade.fenToBoard(fen)
@@ -18,6 +15,10 @@ class RealChessFacade extends ChessTrait {
 
     def makeMove(fen: String, move: (Int, Int)): String = {
         BasicChessFacade.makeMove(fen, move)
+    }
+
+    def isRemis(fen: String, legalMoves: List[(Int, Int)]): Boolean = {
+        Remis.isRemis(fen, legalMoves)
     }
 
     def canPromote(fen: String): Int = {
@@ -36,10 +37,6 @@ class RealChessFacade extends ChessTrait {
         BasicChessFacade.translateCastle(board, move)
     }
 
-    def isRemis(fen: String, legalMoves: List[(Int, Int)]) : Boolean = {
-        Remis.isRemis(fen, legalMoves)
-    }
-
     def getBestMove(fen: String, depth : Int): String = {
         ChessApiClient.getBestMove(fen, depth)
     }
@@ -54,5 +51,9 @@ class RealChessFacade extends ChessTrait {
 
     def getDefaultBoard(): Vector[Piece] = {
         BasicChessFacade.getDefaultBoard()
+    }
+
+    def getBoardString(board: Vector[Piece]): String = {
+        BasicChessFacade.getBoardString(board)
     }
 }
