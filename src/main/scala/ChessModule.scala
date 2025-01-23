@@ -1,3 +1,4 @@
+import Model.ChessComponent.BasicChessComponent.StandartChess.ChessBoard
 import Model.ChessComponent.ChessTrait
 import Model.ChessComponent.DevourChess.DevourChessFacade
 import Model.ChessComponent.RealChess.RealChessFacade
@@ -38,7 +39,7 @@ object ChessModule {
         val wrapper: DataWrapper = DataWrapper(Some(xmlContent), None)
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ""
+        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
         new Controller(arg1, arg2, arg3)
     }
 
@@ -52,7 +53,7 @@ object ChessModule {
         val wrapper: DataWrapper = DataWrapper(None, Some(json))
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ""
+        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
         new Controller(arg1, arg2, arg3)
     }
 
@@ -65,7 +66,7 @@ object ChessModule {
         val wrapper: DataWrapper = DataWrapper(Some(xmlContent), None)
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ""
+        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
         new EngineController(arg1, arg2, arg3, 10)
     }
 
@@ -81,7 +82,7 @@ object ChessModule {
         val wrapper: DataWrapper = DataWrapper(None, Some(json))
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ""
+        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
         new EngineController(arg1, arg2, arg3, 15)
     }
 }

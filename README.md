@@ -1,6 +1,6 @@
 ## JP Morgan Chess
 ![Static Badge](https://img.shields.io/badge/Scala-sbt-red?style=for-the-badge&logo=Scala&logoColor=%23dc322f&color=%23dc322f)
-![Coverage Status](https://coveralls.io/repos/github/philippeZim/JP_Morgan_Chess/badge.svg?branch=feature/CI)
+[![Coverage Status](https://coveralls.io/repos/github/philippeZim/JP_Morgan_Chess/badge.svg?branch=main)](https://coveralls.io/github/philippeZim/JP_Morgan_Chess?branch=main)
 ![GitHub contributors](https://img.shields.io/github/contributors/philippeZim/JP_Morgan_Chess)
 ![GitHub Created At](https://img.shields.io/github/created-at/philippeZim/JP_Morgan_Chess)
 ![GitHub last commit](https://img.shields.io/github/last-commit/philippeZim/JP_Morgan_Chess)

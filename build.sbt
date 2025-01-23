@@ -1,3 +1,7 @@
+
+
+
+
 // Build and Scala version
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.6.1"
@@ -7,7 +11,7 @@ lazy val root = (project in file("."))
     .settings(
         name := "JP_Morgan_Chess",
 
-        // Dependencies fjhgdoa
+        // Dependencies
         libraryDependencies ++= Seq(
             "org.scalactic" %% "scalactic" % "3.2.14",
             "org.scalatest" %% "scalatest" % "3.2.14" % Test,
@@ -20,7 +24,6 @@ lazy val root = (project in file("."))
             "org.playframework" %% "play-json" % "3.0.4"
         ),
         coverageExcludedPackages := "<empty>;.*aView.*",
-        //mainClass := Some("Chess")
     )
 
 Compile / run / mainClass := Some("Chess")

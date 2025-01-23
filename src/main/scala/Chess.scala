@@ -13,7 +13,7 @@ import scala.concurrent.Future
 
 object Chess {
     given ChessTrait = RealChessFacade()
-    val controller = ChessModule.provideEngineChessXML()
+    val controller = ChessModule.provideDuoChessXML()
     val tui = new Tui(controller)
     controller.notifyObservers
 
