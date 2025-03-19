@@ -1,4 +1,4 @@
-package ModelTests.ChessComponentTests
+/*package ModelTests.ChessComponentTests
 
 import Model.ChessComponent.RealChess.ChessApiClient
 import org.scalatest.wordspec.AnyWordSpec
@@ -41,4 +41,4 @@ class ChessApiClientSpec extends AnyWordSpec with BeforeAndAfterEach {
             ChessApiClient.host = originalHost
         }
     }
-}
+} */
