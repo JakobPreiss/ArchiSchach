@@ -29,14 +29,5 @@ final case class Piece (pieceType: PieceType, color: Color) {
             case Some(value) => value
         }
     }
-
-    def moves(horizontalMove: Boolean): List[(Int, Int)] = {
-        match pieceType {
-            PieceType.KNIGHT -> List((-2, 1), (-2, -1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)),
-            PieceType.KING -> List((1, 1), (-1, 1), (-1, -1), (1, -1), (-1, 0), (1, 0), (0, 1), (0, -1)),
-            horizontalMove -> List((-1, 0), (1, 0), (0, 1), (0, -1))
-            _ -> List((-1, 1), (1, 1), (1, -1), (-1, -1))
-        }
-    }
 }
 
