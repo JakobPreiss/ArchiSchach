@@ -187,10 +187,20 @@ object PseudoMoves {
         }
 
     }
+
+    def pieceMoves(pieceTypes: List[PieceType]): List[(Int, Int)] = {
+        pieceTypes match {
+            case x: List[PieceType] if x.contains(PieceType.KNIGHT) => List((-2, 1), (-2, -1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2))
+            case x: List[PieceType] if x.contains(PieceType.KING) => List((1, 1), (-1, 1), (-1, -1), (1, -1), (-1, 0), (1, 0), (0, 1), (0, -1))
+            case x: List[PieceType] if x.contains(List(PieceType.ROOK, PieceType.QUEEN)) => List((-1, 0), (1, 0), (0, 1), (0, -1))
+            case x: List[PieceType] if x.contains(List(PieceType.BISHOP, PieceType.QUEEN)) => List((-1, 1), (1, 1), (1, -1), (-1, -1))
+            case _ => List()
+        }
+    }
     
     def pseudoKnightMoves(result: List[(Int, Int)], fen: String): List[(Int, Int)] = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(KNIGHT))
-        val moves = Piece(KNIGHT, WHITE).moves(false)
+        val moves = pieceMoves(List(KNIGHT))
         
         @tailrec def checkKnighMove(accumulator: List[(Int, Int)], piecePosition: List[Int]): List[(Int, Int)] = {
             piecePosition match {
@@ -205,7 +215,7 @@ object PseudoMoves {
     
     def pseudoKingMoves(result: List[(Int, Int)], fen: String): List[(Int, Int)] = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(KING))
-        val moves = Piece(KING, WHITE).moves(false)
+        val moves = pieceMoves(List(KING))
         
         @tailrec def checkKingMove(accumulator: List[(Int, Int)], piecePosistions: List[Int]): List[(Int, Int)] = {
             piecePosistions match {
@@ -288,7 +298,7 @@ object PseudoMoves {
 
     def pseudoHorizontalMoves(resultAccumulator: List[(Int, Int)], fen: String): List[(Int, Int)] = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(ROOK, QUEEN))
-        val directions: List[(Int, Int)] = Piece(ROOK, WHITE).moves(true)
+        val directions: List[(Int, Int)]=  pieceMoves(List(ROOK, QUEEN))
 
         @tailrec
         def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)] = checkMoveInDirection()
@@ -302,7 +312,7 @@ object PseudoMoves {
 
     def pseudoVerticalMoves(resultAccumulator: List[(Int, Int)], fen: String): List[(Int, Int)] = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(BISHOP, QUEEN))
-        val directions: List[(Int, Int)] = Piece(ROOK, WHITE).moves(false)
+        val directions: List[(Int, Int)] = pieceMoves(List(BISHOP, QUEEN))
 
         @tailrec
         def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)] = checkMoveInDirection()

@@ -70,4 +70,8 @@ object BasicChessFacade extends BasicChessTrait {
     def getDefaultBoard(): Vector[Piece] = {
         ChessBoard.getDefaultBoard()
     }
+
+    def pieceMoves(pieceTypes: List[PieceType]): List[(Int, Int)] = {
+        PseudoMoves.pieceMoves(pieceTypes)
+    }
 }

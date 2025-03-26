@@ -1,6 +1,6 @@
 package Model.ChessComponent.BasicChessComponent
 
-import Model.ChessComponent.BasicChessComponent.StandartChess.{Color, Piece}
+import Model.ChessComponent.BasicChessComponent.StandartChess.{Color, Piece, PieceType}
 
 trait BasicChessTrait {
     /**
@@ -134,4 +134,11 @@ trait BasicChessTrait {
      * @return starting board in the Vector[Piece] format
      * */
     def getDefaultBoard(): Vector[Piece]
+
+    /**
+     * pieceMoves retuns a List of Move-directions that the given pieces can move in
+     * @param pieceTypes the piece of which we want the directions
+     * @return the directions the piece can go
+     */
+    def pieceMoves(pieceTypes: List[PieceType]): List[(Int, Int)]
 }

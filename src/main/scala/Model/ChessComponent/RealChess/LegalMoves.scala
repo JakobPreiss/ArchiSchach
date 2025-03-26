@@ -2,6 +2,7 @@ package Model.ChessComponent.RealChess
 
 import Model.*
 import Model.ChessComponent.*
+import Model.ChessComponent.BasicChessComponent.StandartChess.PieceType.{BISHOP, KING, KNIGHT, QUEEN, ROOK}
 import Model.ChessComponent.BasicChessComponent.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
 
 import scala.annotation.tailrec
@@ -45,8 +46,8 @@ object LegalMoves {
 
     def knightAttack(fen: String, position: Int): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
-        
-        val attacks: List[(Int, Int)] = List((-2, 1), (-2, -1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2))
+
+        val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(KNIGHT))
 
         @tailrec
         def checkKnightAttack(moves: List[(Int, Int)]): Boolean = {
@@ -67,8 +68,8 @@ object LegalMoves {
 
     def horizontalAttack(fen: String, position: Int): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
-        
-        val attacks: List[(Int, Int)] = List((-1, 0), (1, 0), (0, 1), (0, -1))
+
+        val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(ROOK, QUEEN))
 
         @tailrec
         def checkSpaceInDirection(currentRow: Int, currentColum: Int, position: Int): Boolean = {
@@ -103,8 +104,8 @@ object LegalMoves {
 
     def verticalAttack(fen: String, position: Int): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
-        
-        val attacks: List[(Int, Int)] = List((1, 1), (-1, 1), (-1, -1), (1, -1))
+
+        val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(BISHOP, QUEEN))
 
         @tailrec
         def checkSpaceInDirection(lr: Int, lc: Int, pos: Int): Boolean = {
@@ -139,8 +140,8 @@ object LegalMoves {
 
     def kingAttack(fen: String, position: Int): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
-        
-        val attacks: List[(Int, Int)] = List((1, 1), (-1, 1), (-1, -1), (1, -1), (-1, 0), (1, 0), (0, 1), (0, -1))
+
+        val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(KING))
 
         @tailrec
         def checkKingAttack(moves: List[(Int, Int)]): Boolean = {
