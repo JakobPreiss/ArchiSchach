@@ -13,6 +13,27 @@ object LegalMoves {
         BasicChessFacade.onBoard(position, row, colum) && board(position + 8 * row + colum) == attacker
     }
 
+    def readyingPseudoMoves(fen: String, pieceTypes: List[PieceType]): (Vector[Piece], List[String], Int, Color, Color, List[Int]) = {
+        val board: Vector[Piece] = ChessBoard.fenToBoard(fen)
+        val fenSplit: List[String] = fen.split(" ").toList
+
+        val (attackColorNum, moveColor, attackColor): (Int, Color, Color) = extractColor(fenSplit(1))
+
+        @tailrec def createColoredList(pieceTypes: List[PieceType], color: Color, accumulator: List[Piece]): List[Piece] = {
+            pieceTypes match {
+                case Nil => accumulator
+                case h :: t => {
+                    createColoredList(t, color, Piece(h, color) :: accumulator)
+                }
+            }
+        }
+
+        val pieces: List[Piece] = createColoredList(pieceTypes, moveColor, List())
+        val piecePos = piecesPositions(board, pieces)
+
+        (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos)
+    }
+    
     def pawnAttack(fen: String, position: Int): Boolean = {
         val board: Vector[Piece] = BasicChessFacade.fenToBoard(fen)
         val fenSplit: List[String] = fen.split(" ").toList;

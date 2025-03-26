@@ -263,24 +263,22 @@ object ChessBoard {
         }
         ChessBoard.boardToFen(board.updated(position, pieceFactory(pieceName, colors._3))) + " " + fensplit(1) + " " + fensplit(2) + " " + fensplit (3) + " " + fensplit(4) + " " + fensplit(5);
     }
-
-    def isColorPiece(fen : String, position : Int) : Boolean = {
-        val board = ChessBoard.fenToBoard(fen)
-        val colourToMove = fen.split(" ")(1) match {
+    
+    def colorDetection(fen : String, position : Int) : Color = {
+        fen.split(" ")(1) match {
             case "w" => Color.WHITE
             case "b" => Color.BLACK
-            case _ => "error"
+            case _ => Color.EMPTY
         }
-        board(position).color == colourToMove
+    }
+    
+    def isColorPiece(fen : String, position : Int) : Boolean = {
+        val board = ChessBoard.fenToBoard(fen)
+        board(position).color == colorDetection(fen, position)
     }
 
     def isDifferentColorPiece(fen: String, position: Int): Boolean = {
         val board = ChessBoard.fenToBoard(fen)
-        val colourToMove = fen.split(" ")(1) match {
-            case "w" => Color.WHITE
-            case "b" => Color.BLACK
-            case _ => "error"
-        }
-        board(position).color != EMPTY && board(position).color != colourToMove
+        board(position).color != EMPTY && board(position).color != colorDetection(fen, position)
     }
 }

@@ -2,7 +2,7 @@ package Model.ChessComponent.BasicChessComponent.StandartChess
 
 import Model.*
 import Model.ChessComponent.BasicChessComponent.StandartChess.Color.WHITE
-import Model.ChessComponent.BasicChessComponent.StandartChess.PieceType.EMPTY
+import Model.ChessComponent.BasicChessComponent.StandartChess.PieceType.{BISHOP, EMPTY, KING, KNIGHT, PAWN, QUEEN, ROOK}
 import Model.ChessComponent.BasicChessComponent.StandartChess.{EmptySquareHandler, EnemySquareHandler, OnBoardHandler}
 import Model.ChessComponent.RealChess.*
 
@@ -124,18 +124,35 @@ object PseudoMoves {
         }
         checkTakingPossibility(toCheck, List());
     }
+    
+    def readyingPseudoMoveData(fen: String, pieceTypes: List[PieceType]) : (Vector[Piece], List[String],
+        Int, Color, Color, List[Int]) = {
+        val board: Vector[Piece] = ChessBoard.fenToBoard(fen)
+        val fenSplit: List[String] = fen.split(" ").toList
+
+        val (attackColorNum, moveColor, attackColor): (Int, Color, Color) = extractColor(fenSplit(1))
+        @tailrec
+        def createColoredList(pieceTypes: List[PieceType], color: Color, accumulator: List[Piece]) : List[Piece] = {
+            pieceTypes match {
+                case Nil => accumulator
+                case h :: t => {
+                    createColoredList(t, color, Piece(h, color) :: accumulator)
+                }
+            }
+        }
+        val pieces : List[Piece] = createColoredList(pieceTypes, moveColor, List())
+        val piecePos = piecesPositions(board, pieces)
+
+        (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos)
+    }
 
     def pseudoPawnMoves(fen: String): List[(Int, Int)] = {
-        val board: Vector[Piece] = ChessBoard.fenToBoard(fen)
-        val fenSplit: List[String] = fen.split(" ").toList;
 
-        val (attackColorNum, moveColor, attackColor): (Int, Color, Color) = extractColor(fenSplit(1));
+        val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(PAWN))
 
         val attackMoves = List((attackColorNum, attackColorNum), (attackColorNum, attackColorNum * -1));
         val straightMovesBase = List((attackColorNum, 0), (attackColorNum * 2, 0));
         val straightMoves = List((attackColorNum, 0));
-
-        val piecePos = piecePositions(board, Piece(PieceType.PAWN, moveColor));
 
         @tailrec def checkPawnMove(acc: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)] = {
             piecePos match {
@@ -173,16 +190,11 @@ object PseudoMoves {
     }
     
     def pseudoKnightMoves(result: List[(Int, Int)], fen: String): List[(Int, Int)] = {
-        val board: Vector[Piece] = ChessBoard.fenToBoard(fen)
-        val fenSplit: List[String] = fen.split(" ").toList;
 
-        val (attackColorNum, moveColor, attackColor): (Int, Color, Color) = extractColor(fenSplit(1));
+        val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(KNIGHT))
 
         val moves = List((-2, 1), (-2, -1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2));
-
-        val piecePos = piecePositions(board, Piece(PieceType.KNIGHT, moveColor));
-
-
+        
         @tailrec def checkKnighMove(accumulator: List[(Int, Int)], piecePosition: List[Int]): List[(Int, Int)] = {
             piecePosition match {
                 case Nil => accumulator
@@ -195,16 +207,10 @@ object PseudoMoves {
     }
     
     def pseudoKingMoves(result: List[(Int, Int)], fen: String): List[(Int, Int)] = {
-        val board: Vector[Piece] = ChessBoard.fenToBoard(fen)
-        val fenSplit: List[String] = fen.split(" ").toList;
-
-        val (attackColorNum, moveColor, attackColor): (Int, Color, Color) = extractColor(fenSplit(1));
+        val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(KING))
 
         val moves = List((1, 1), (-1, 1), (-1, -1), (1, -1), (-1, 0), (1, 0), (0, 1), (0, -1))
-
-        val currentPiecePositions = piecePositions(board, Piece(PieceType.KING, moveColor));
-
-
+        
         @tailrec def checkKingMove(accumulator: List[(Int, Int)], piecePosistions: List[Int]): List[(Int, Int)] = {
             piecePosistions match {
                 case Nil => accumulator
@@ -252,20 +258,16 @@ object PseudoMoves {
 
 
 
-        checkKingMove(checkCastleMove(result, fenSplit(2).toList), currentPiecePositions);
+        checkKingMove(checkCastleMove(result, fenSplit(2).toList), piecePos);
     }
 
 
 
     def pseudoHorizontalMoves(resultAccumulator: List[(Int, Int)], fen: String): List[(Int, Int)] = {
-        val board: Vector[Piece] = ChessBoard.fenToBoard(fen)
-        val fenSplit: List[String] = fen.split(" ").toList;
 
-        val (attackColorNum, moveColor, attackColor): (Int, Color, Color) = extractColor(fenSplit(1));
+        val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(ROOK, QUEEN))
 
         val directions: List[(Int, Int)] = List((-1, 0), (1, 0), (0, 1), (0, -1));
-
-        val piecePos = piecesPositions(board, List(Piece(PieceType.ROOK, moveColor), Piece(PieceType.QUEEN, moveColor)));
 
         @tailrec
         def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)] = {
@@ -300,14 +302,10 @@ object PseudoMoves {
     }
 
     def pseudoVerticalMoves(resultAccumulator: List[(Int, Int)], fen: String): List[(Int, Int)] = {
-        val board: Vector[Piece] = ChessBoard.fenToBoard(fen)
-        val fenSplit: List[String] = fen.split(" ").toList;
 
-        val (attackColorNum, moveColor, attackColor): (Int, Color, Color) = extractColor(fenSplit(1));
+        val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(BISHOP, QUEEN))
 
         val directions: List[(Int, Int)] = List((-1, 1), (1, 1), (1, -1), (-1, -1));
-
-        val piecePos = piecesPositions(board, List(Piece(PieceType.BISHOP, moveColor), Piece(PieceType.QUEEN, moveColor)));
 
         @tailrec
         def checkMoveInDirection(acc: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)] = {
