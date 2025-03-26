@@ -256,32 +256,32 @@ object PseudoMoves {
     }
 
     @tailrec
-    private def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)] = {
+    private def checkGeneralMoveInDirection(board: Vector[Piece], attackColor: Color, accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)] = {
         val (rowDirection, columDirection) = moveDir
         if (!PseudoMoves.onBoard(piecePos, rowDirection, columDirection)) {
             return accumulator
         }
         board(piecePos + 8 * rowDirection + columDirection) match {
             case Piece(_, `attackColor`) => (startingPosition, piecePos + 8* rowDirection + columDirection) :: accumulator
-            case Piece(PieceType.EMPTY, Color.EMPTY) => checkMoveInDirection((startingPosition, piecePos + 8* rowDirection + columDirection) :: accumulator, piecePos + 8* rowDirection + columDirection, startingPosition, moveDir);
+            case Piece(PieceType.EMPTY, Color.EMPTY) => checkGeneralMoveInDirection(board, attackColor, (startingPosition, piecePos + 8* rowDirection + columDirection) :: accumulator, piecePos + 8* rowDirection + columDirection, startingPosition, moveDir);
             case _ => accumulator;
         }
     }
 
     @tailrec
-    private def checkDirection(accumulator: List[(Int, Int)], piecePos: Int, moveDirections: List[(Int, Int)]): List[(Int, Int)] = {
+    private def checkGeneralDirection(board: Vector[Piece], attackColor: Color, accumulator: List[(Int, Int)], piecePos: Int, moveDirections: List[(Int, Int)]): List[(Int, Int)] = {
         moveDirections match {
             case Nil => accumulator;
-            case h :: t => checkDirection(checkMoveInDirection(accumulator, piecePos, piecePos, h), piecePos, t);
+            case h :: t => checkGeneralDirection(board, attackColor, checkGeneralMoveInDirection(board, attackColor, accumulator, piecePos, piecePos, h), piecePos, t);
         }
     }
 
     @tailrec
-    def moveRecursive(accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)] = {
+    def moveGeneralRecursive(board: Vector[Piece], attackColor: Color, accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)] = {
         piecePos match {
             case Nil => accumulator
             case h :: t => {
-                verticalMovesRecursive(checkDirection(accumulator, h, directions), t);
+                moveGeneralRecursive(board, attackColor, accumulator, t);
             }
         }
     }
@@ -291,11 +291,16 @@ object PseudoMoves {
         val directions: List[(Int, Int)] = Piece(ROOK, WHITE).moves(true)
 
         @tailrec
-        def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)] = checkMoveInDirection()
+        def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)]
+        = checkGeneralMoveInDirection(board, attackColor, accumulator, piecePos, startingPosition, moveDir)
+
         @tailrec
-        def checkDirection(accumulator: List[(Int, Int)], piecePos: Int, moveDirections: List[(Int, Int)]): List[(Int, Int)] = checkDirection()
+        def checkDirection(accumulator: List[(Int, Int)], piecePos: Int, moveDirections: List[(Int, Int)]): List[(Int, Int)]
+        = checkGeneralDirection(board, attackColor, accumulator, piecePos, moveDirections)
+
         @tailrec
-        def rookAndQueenMovesRecursive(accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)] = moveRecursive()
+        def rookAndQueenMovesRecursive(accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)]
+        = moveGeneralRecursive(board, attackColor, accumulator, piecePos)
 
         rookAndQueenMovesRecursive(resultAccumulator, piecePos);
     }
@@ -305,11 +310,16 @@ object PseudoMoves {
         val directions: List[(Int, Int)] = Piece(ROOK, WHITE).moves(false)
 
         @tailrec
-        def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)] = checkMoveInDirection()
+        def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)]
+        = checkGeneralMoveInDirection(board, attackColor, accumulator, piecePos, startingPosition, moveDir)
+
         @tailrec
-        def checkDirection(accumulator: List[(Int, Int)], piecePos: Int, moveDirections: List[(Int, Int)]): List[(Int, Int)] = checkDirection()
+        def checkDirection(accumulator: List[(Int, Int)], piecePos: Int, moveDirections: List[(Int, Int)]): List[(Int, Int)]
+        = checkGeneralDirection(board, attackColor, accumulator, piecePos, moveDirections)
+
         @tailrec
-        def verticalMovesRecursive(accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)] = moveRecursive()
+        def verticalMovesRecursive(accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)]
+        = moveGeneralRecursive(board, attackColor, accumulator, piecePos)
 
         verticalMovesRecursive(resultAccumulator, piecePos);
     }
