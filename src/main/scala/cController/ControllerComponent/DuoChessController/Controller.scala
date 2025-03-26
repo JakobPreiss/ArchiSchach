@@ -7,8 +7,8 @@ import cController.ControllerComponent.StateComponent.ApiFileTrait
 import util.Observable
 
 class Controller(override var fen : String, var context : ChessContext, var output : String)(using val gameMode : ChessTrait)(using val fileapi: ApiFileTrait) extends Observable with ControllerTrait {
-    var activeSquare : Int = -5;
-    var current_theme: Int = 0;
+    var activeSquare : Option[Int] = None
+    var current_theme: Int = 0
     
     def boardToString() : String = {gameMode.getBoardString(gameMode.fenToBoard(fen))}
 
@@ -68,10 +68,14 @@ class Controller(override var fen : String, var context : ChessContext, var outp
 
     def squareClicked(clickedSquare: Int) : Unit = {
         if(gameMode.isColorPiece(fen, clickedSquare)) {
-            activeSquare = clickedSquare
-        } else if (!gameMode.isColorPiece(fen, clickedSquare) && activeSquare != -5) {
-            play(gameMode.translateCastle(gameMode.fenToBoard(fen), (activeSquare, clickedSquare)))
-            activeSquare = -5
+            activeSquare = Some(clickedSquare)
+        } else if (!gameMode.isColorPiece(fen, clickedSquare) && activeSquare != None) {
+            val square = activeSquare match {
+                case Some(a) => a
+                case None => -5
+            }
+            play(gameMode.translateCastle(gameMode.fenToBoard(fen), (square, clickedSquare)))
+            activeSquare = None
         }
     }
 
