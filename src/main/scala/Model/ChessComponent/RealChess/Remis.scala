@@ -9,10 +9,7 @@ object Remis {
 
     def isPatt(fen: String, legalMoves: List[(Int, Int)]): Boolean = {
         if (legalMoves.isEmpty) {
-            val board: Vector[Piece] = BasicChessFacade.fenToBoard(fen)
-            val fenSplit: List[String] = fen.split(" ").toList;
-
-            val (attackColorNum, moveColor, attackColor): (Int, Color, Color) = BasicChessFacade.extractColor(fenSplit(1));
+            val (board, fenSplit, attackColorNum, moveColor, attackColor) = LegalMoves.readyingLegalMoveData(fen)
                 val kingPos: Int = BasicChessFacade.piecePositions(board, Piece(PieceType.KING, moveColor)).head
             if (!LegalMoves.isPosAttacked(fen, kingPos)) {
                 return true
