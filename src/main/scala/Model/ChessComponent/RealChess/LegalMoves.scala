@@ -171,31 +171,29 @@ object LegalMoves {
         pawnAttack(fen, position) || knightAttack(fen, position) || verticalAttack(fen, position) || horizontalAttack(fen, position) || kingAttack(fen, position)
     }
 
-    def makeMove(board: Vector[Piece], move: (Int, Int)): Vector[Piece] = {
+    private def calculateMoveValues(color: Color) = {
+        val e = Piece(PieceType.EMPTY, Color.EMPTY)
+        val K = Piece(PieceType.KING, color)
+        val R = Piece(PieceType.ROOK, color)
+        (e, K, R)
+    }
 
+    def makeMove(board: Vector[Piece], move: (Int, Int)): Vector[Piece] = {
         move match {
             case (-1, -1) => {
-                val e = Piece(PieceType.EMPTY, Color.EMPTY);
-                val K = Piece(PieceType.KING, Color.WHITE);
-                val R = Piece(PieceType.ROOK, Color.WHITE)
+                val (e, K, R) = calculateMoveValues(Color.WHITE)
                 board.updated(60, e).updated(62, K).updated(63, e).updated(61, R);
             }
             case (-2, -1) => {
-                val e = Piece(PieceType.EMPTY, Color.EMPTY);
-                val K = Piece(PieceType.KING, Color.WHITE);
-                val R = Piece(PieceType.ROOK, Color.WHITE)
+                val (e, K, R) = calculateMoveValues(Color.WHITE)
                 board.updated(60, e).updated(58, K).updated(56, e).updated(59, R);
             }
             case (-3, -1) => {
-                val e = Piece(PieceType.EMPTY, Color.EMPTY);
-                val k = Piece(PieceType.KING, Color.BLACK);
-                val r = Piece(PieceType.ROOK, Color.BLACK)
+                val (e, K, R) = calculateMoveValues(Color.BLACK)
                 board.updated(4, e).updated(6, k).updated(7, e).updated(5, r);
             }
             case (-4, -1) => {
-                val e = Piece(PieceType.EMPTY, Color.EMPTY);
-                val k = Piece(PieceType.KING, Color.BLACK);
-                val r = Piece(PieceType.ROOK, Color.BLACK)
+                val (e, K, R) = calculateMoveValues(Color.BLACK)
                 board.updated(4, e).updated(2, k).updated(0, e).updated(3, r);
             }
             case _ => {
