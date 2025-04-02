@@ -192,8 +192,8 @@ object PseudoMoves {
         pieceTypes match {
             case x: List[PieceType] if x.contains(PieceType.KNIGHT) => List((-2, 1), (-2, -1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2))
             case x: List[PieceType] if x.contains(PieceType.KING) => List((1, 1), (-1, 1), (-1, -1), (1, -1), (-1, 0), (1, 0), (0, 1), (0, -1))
-            case x: List[PieceType] if x.contains(List(PieceType.ROOK, PieceType.QUEEN)) => List((-1, 0), (1, 0), (0, 1), (0, -1))
-            case x: List[PieceType] if x.contains(List(PieceType.BISHOP, PieceType.QUEEN)) => List((-1, 1), (1, 1), (1, -1), (-1, -1))
+            case x: List[PieceType] if (x.contains(PieceType.ROOK) && x.contains(PieceType.QUEEN)) => List((-1, 0), (1, 0), (0, 1), (0, -1))
+            case x: List[PieceType] if (x.contains(PieceType.BISHOP) && x.contains(PieceType.QUEEN)) => List((-1, 1), (1, 1), (1, -1), (-1, -1))
             case _ => List()
         }
     }
@@ -287,11 +287,12 @@ object PseudoMoves {
     }
 
     @tailrec
-    def moveGeneralRecursive(board: Vector[Piece], attackColor: Color, accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)] = {
+    def moveGeneralRecursive(board: Vector[Piece], attackColor: Color, accumulator: List[(Int, Int)], piecePos: List[Int], moveDirs: List[(Int, Int)],
+                             checkDirection: (Vector[Piece], Color, List[(Int, Int)], Int, List[(Int, Int)]) => List[(Int, Int)]): List[(Int, Int)] = {
         piecePos match {
             case Nil => accumulator
             case h :: t => {
-                moveGeneralRecursive(board, attackColor, accumulator, t);
+                moveGeneralRecursive(board, attackColor, checkDirection(board, attackColor, accumulator, h, moveDirs), t, moveDirs, checkDirection);
             }
         }
     }
@@ -300,37 +301,13 @@ object PseudoMoves {
         val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(ROOK, QUEEN))
         val directions: List[(Int, Int)]=  pieceMoves(List(ROOK, QUEEN))
 
-        @tailrec
-        def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)]
-        = checkGeneralMoveInDirection(board, attackColor, accumulator, piecePos, startingPosition, moveDir)
-
-        @tailrec
-        def checkDirection(accumulator: List[(Int, Int)], piecePos: Int, moveDirections: List[(Int, Int)]): List[(Int, Int)]
-        = checkGeneralDirection(board, attackColor, accumulator, piecePos, moveDirections)
-
-        @tailrec
-        def rookAndQueenMovesRecursive(accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)]
-        = moveGeneralRecursive(board, attackColor, accumulator, piecePos)
-
-        rookAndQueenMovesRecursive(resultAccumulator, piecePos);
+        moveGeneralRecursive(board, attackColor, resultAccumulator, piecePos, directions, checkGeneralDirection)
     }
 
     def pseudoVerticalMoves(resultAccumulator: List[(Int, Int)], fen: String): List[(Int, Int)] = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor, piecePos) = readyingPseudoMoveData(fen, List(BISHOP, QUEEN))
         val directions: List[(Int, Int)] = pieceMoves(List(BISHOP, QUEEN))
 
-        @tailrec
-        def checkMoveInDirection(accumulator: List[(Int, Int)], piecePos: Int, startingPosition: Int, moveDir: (Int, Int)): List[(Int, Int)]
-        = checkGeneralMoveInDirection(board, attackColor, accumulator, piecePos, startingPosition, moveDir)
-
-        @tailrec
-        def checkDirection(accumulator: List[(Int, Int)], piecePos: Int, moveDirections: List[(Int, Int)]): List[(Int, Int)]
-        = checkGeneralDirection(board, attackColor, accumulator, piecePos, moveDirections)
-
-        @tailrec
-        def verticalMovesRecursive(accumulator: List[(Int, Int)], piecePos: List[Int]): List[(Int, Int)]
-        = moveGeneralRecursive(board, attackColor, accumulator, piecePos)
-
-        verticalMovesRecursive(resultAccumulator, piecePos);
+        moveGeneralRecursive(board, attackColor, resultAccumulator, piecePos, directions, checkGeneralDirection)
     }
 }
