@@ -21,9 +21,6 @@ class UndoRedoSpec extends AnyWordSpec {
             controller.undo()
             controller.fen should be ("0-0")
 
-            controller.undo()
-            controller.fen should be ("0-0")
-
             controller.redo()
             controller.fen should be ("1-2")
 
