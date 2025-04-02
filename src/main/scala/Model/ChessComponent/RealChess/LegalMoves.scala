@@ -65,77 +65,44 @@ object LegalMoves {
         checkKnightAttack(attacks)
     }
 
-
-    def horizontalAttack(fen: String, position: Int): Boolean = {
-        val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
-
-        val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(ROOK, QUEEN))
-
-        @tailrec
-        def checkSpaceInDirection(currentRow: Int, currentColum: Int, position: Int): Boolean = {
-            if (!BasicChessFacade.onBoard(position, currentRow, currentColum)) {
-                return false;
-            }
-
-            board(position + 8 * currentRow + currentColum) match {
-                case Piece(e, `attackColor`) if e == PieceType.ROOK || e == PieceType.QUEEN => true
-                case Piece(PieceType.EMPTY, Color.EMPTY) => checkSpaceInDirection(currentRow, currentColum, position + 8 * currentRow + currentColum);
-                case _ => false;
-            }
+    @tailrec
+    def checkSpaceInDirection(currentRow: Int, currentColum: Int, position: Int, pieces: List[PieceType], board: Vector[Piece], attackColor: Color): Boolean = {
+        if (!BasicChessFacade.onBoard(position, currentRow, currentColum)) {
+            return false;
         }
 
+        board(position + 8 * currentRow + currentColum) match {
+            case Piece(e, `attackColor`) if e == pieces.head || e == pieces(1) => true
+            case Piece(PieceType.EMPTY, Color.EMPTY) => checkSpaceInDirection(currentRow, currentColum, position + 8 * currentRow + currentColum, pieces, board, attackColor);
+            case _ => false;
+        }
+    }
 
-        @tailrec
-        def checkHorizontalDirection(moves: List[(Int, Int)]): Boolean = {
-            moves match {
-                case Nil => false;
-                case (rowDirection, columDirection) :: t => {
-                    if(checkSpaceInDirection(rowDirection, columDirection, position)) {
-                        true;
-                    } else {
-                        checkHorizontalDirection(t);
-                    }
+
+    @tailrec
+    def checkDirection(moves: List[(Int, Int)], board: Vector[Piece], position: Int, pieces: List[PieceType], attackColor: Color): Boolean = {
+        moves match {
+            case Nil => false;
+            case (rowDirection, columDirection) :: t => {
+                if (checkSpaceInDirection(rowDirection, columDirection, position, pieces, board, attackColor)) {
+                    true;
+                } else {
+                    checkDirection(t, board, position, pieces, attackColor)
                 }
             }
         }
+    }
 
-        checkHorizontalDirection(attacks);
+    def horizontalAttack(fen: String, position: Int): Boolean = {
+        val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
+        val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(ROOK, QUEEN))
+        checkDirection(attacks, board, position, List(ROOK, QUEEN), attackColor)
     }
 
     def verticalAttack(fen: String, position: Int): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
-
         val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(BISHOP, QUEEN))
-
-        @tailrec
-        def checkSpaceInDirection(lr: Int, lc: Int, pos: Int): Boolean = {
-            if (!BasicChessFacade.onBoard(pos, lr, lc)) {
-                return false;
-            }
-
-            board(pos + 8 * lr + lc) match {
-                case Piece(e, `attackColor`) if e == PieceType.BISHOP || e == PieceType.QUEEN => true;
-                case Piece(PieceType.EMPTY, Color.EMPTY) => checkSpaceInDirection(lr, lc, pos + 8 * lr + lc);
-                case _ => false;
-            }
-        }
-
-
-        @tailrec
-        def checkVerticalDirection(moves: List[(Int, Int)]): Boolean = {
-            moves match {
-                case Nil => false;
-                case (rd, cd) :: t => {
-                    if (checkSpaceInDirection(rd, cd, position)) {
-                        true;
-                    } else {
-                        checkVerticalDirection(t);
-                    }
-                }
-            }
-        }
-
-        checkVerticalDirection(attacks);
+        checkDirection(attacks, board, position, List(BISHOP, QUEEN), attackColor)
     }
 
     def kingAttack(fen: String, position: Int): Boolean = {
