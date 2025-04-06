@@ -104,14 +104,14 @@ You will be asked to move. To make a move you simply have to type in the field f
 which you wish to move and the field that marks the new intended position of your chosen Piece.
 Choose your formatting carefully. It should always look like this: e2e4 
 
-But be warned: should your command defy the holy rules of Chess. The Game will not hesiate
+But be warned: should your command defy the holy rules of Chess. The Game will not hesitate
 to scold you in worse ways than your tiny brain could comprehend!
 
 Now:
 
 ### Start Playing
 
-If you are unfamiliar with the the ways of Chess one must ask the question of what deficiencies you must suffer from
+If you are unfamiliar with the the ways of Chess, one must ask the question of what deficiencies you must suffer from
 and what exactly your father has done to deserve an offspring like you.
 
 ### Our Journey
