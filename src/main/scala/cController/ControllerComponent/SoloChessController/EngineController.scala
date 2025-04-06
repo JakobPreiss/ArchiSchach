@@ -31,8 +31,10 @@ class EngineController (override var fen : String, var context : ChessContext, v
             UndoInvoker.doStep(new SetCommand(gameMode.makeMove(fen, move), fen, this))
             if (gameMode.canPromote(fen) != -1) {
                 ringObservers
+                output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
+            } else {
+                output = boardToString()
             }
-            output = boardToString()
         }
         val state = checkGameState(legalMoves)
 
@@ -67,6 +69,8 @@ class EngineController (override var fen : String, var context : ChessContext, v
 
     def promotePawn(pieceKind : String) : Unit = {
         fen = gameMode.promote(pieceKind, fen, gameMode.canPromote(fen));
+        output = boardToString()
+        deRingObservers
     }
 
     def undo(): Unit = {

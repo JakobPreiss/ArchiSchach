@@ -7,6 +7,8 @@ trait Observer {
     def update: Unit
     
     def specialCase : Unit
+    
+    def reverseSpecialCase : Unit
 }
 
 class Observable {
@@ -27,4 +29,6 @@ class Observable {
     )
     
     def ringObservers : Unit = subscribers.foreach(o => o.specialCase)
+
+    def deRingObservers : Unit = subscribers.foreach(o => o.reverseSpecialCase)
 }

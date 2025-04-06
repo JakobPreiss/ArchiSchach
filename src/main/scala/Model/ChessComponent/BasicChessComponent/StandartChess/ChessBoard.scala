@@ -147,7 +147,7 @@ object ChessBoard {
             }
             case (-3, -1) => {
                 val newRights = fenCastles.replace("k", "").replace("q", "")
-                if (newRights.isEmpty) "-" else newRights
+                if (newRights.isEmpty) "-" else newRights 
             }
             case (-4, -1) => {
                 val newRights = fenCastles.replace("q", "").replace("k", "")

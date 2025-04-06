@@ -8,15 +8,26 @@ import scala.io.StdIn.readLine
 import scala.util.{Failure, Success, Try}
 
 class Tui(controller: ControllerTrait) extends Observer {
-
+    var readMode = "move"
     controller.add(this)
 
     def processInputLine(input: String):Unit = {
-        input match {
-            case "undo" => controller.undo();
-            case "redo" => controller.redo();
-            case move if move.matches("(([a-h][1-8][a-h][1-8])|undo|redo)") => controller.play(ChessBoard.translateMoveStringToInt(controller.fen, move))
-            case _ => println("Denk nochmal nach Bro")
+        if(readMode == "move") {
+            input match {
+                case "undo" => controller.undo()
+                case "redo" => controller.redo()
+                case "reset" => controller.resetBoard()
+                case move if move.matches("(([a-h][1-8][a-h][1-8])|undo|redo)") => controller.play(ChessBoard.translateMoveStringToInt(controller.fen, move))
+                case _ => println("Denk nochmal nach Bro")
+            }
+        } else {
+            if(input.matches("^(Q|R|B|N|q|r|b|n)$")) {
+                controller.promotePawn(input)
+
+                update
+            } else {
+                println("Alter, da steht sogar, was du eingeben kannst!!!")
+            }
         }
     }
 
@@ -26,12 +37,10 @@ class Tui(controller: ControllerTrait) extends Observer {
     }
 
     override def specialCase: Unit = {
-        println("Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)")
-        var input : String = readLine()
-        while(!input.matches("^(Q|R|B|N|q|r|b|n)$")) {
-            println("Alter, da steht sogar, was du eingeben kannst!!!")
-            input = readLine()
-        }
-        controller.promotePawn(input)
+        readMode = "promotion"
+    }
+
+    override def reverseSpecialCase : Unit = {
+        readMode = "move"
     }
 }

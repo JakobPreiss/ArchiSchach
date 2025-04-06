@@ -28,8 +28,10 @@ class Controller(override var fen : String, var context : ChessContext, var outp
             UndoInvoker.doStep(new SetCommand(gameMode.makeMove(fen, move), fen, this))
             if (gameMode.canPromote(fen) != -1) {
                 ringObservers
+                output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
+            } else {
+                output = boardToString()
             }
-            output = boardToString()
         }
         checkGameState(gameMode.getAllLegalMoves(fen))
         fileapi.printTo(context, fen)
@@ -52,6 +54,8 @@ class Controller(override var fen : String, var context : ChessContext, var outp
 
     def promotePawn(pieceKind : String) : Unit = {
         fen = gameMode.promote(pieceKind, fen, gameMode.canPromote(fen));
+        output = boardToString()
+        deRingObservers
     }
 
     def undo(): Unit = {
