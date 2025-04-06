@@ -32,8 +32,10 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
     override def update: Unit = {
         updateGrid()
     }
-    given ChessTrait = RealChessFacade()
     override def specialCase: Unit = ()
+    override def reverseSpecialCase: Unit = {
+        updateGrid()
+    }
     val controller : ControllerTrait = option_controller match {
         case Some(a) => a
         case _ => null

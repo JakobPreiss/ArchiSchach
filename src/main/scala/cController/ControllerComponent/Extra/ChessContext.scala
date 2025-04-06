@@ -15,14 +15,14 @@ class ChessContext {
             state = State.remisState
         } else {
             color match {
-                case "w" => {
+                case "b" => {
                     if (event.noMoves) {
                         state = State.blackWonState
                     } else {
                         state = State.blackPlayingState
                     }
                 }
-                case "b" => {
+                case "w" => {
                     if (event.noMoves) {
                         state = State.whiteWonState
                     } else {

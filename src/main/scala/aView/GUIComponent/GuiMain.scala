@@ -31,6 +31,7 @@ object GuiMain extends JFXApp3 {
                     //padding
                     style = "-fx-background-color:BLACK"
                     left  = new GuiBoard(controller)
+                    center = new GuiPromoWindow(controller)
                     right = new GuiMenu(controller)
                     style = "-fx-background-color: #F5F5DC;"
                     
@@ -40,7 +41,8 @@ object GuiMain extends JFXApp3 {
         }
     }
 
-    def setController(controller: ControllerTrait) : Unit = {
+    def setController(controller: ControllerTrait): Unit = {
         this.controller = Some(controller)
     }
+    
 }

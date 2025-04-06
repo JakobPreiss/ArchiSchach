@@ -34,22 +34,23 @@ class EngineController (override var fen : String, var context : ChessContext, v
                 output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
             } else {
                 output = boardToString()
+                val state = checkGameState(legalMoves)
+
+                notifyObservers
+                if (state) {
+                    return
+                }
+
+                val engineMoveString = gameMode.getBestMove(fen, depth)
+
+                val engineMoveInt = gameMode.translateMoveStringToInt(fen, engineMoveString)
+
+                UndoInvoker.doStep(new SetCommand(gameMode.makeMove(fen, engineMoveInt), fen, this))
+                val legalMoves2 = gameMode.getAllLegalMoves(fen);
+                output = boardToString()
+                checkGameState(legalMoves2)
             }
         }
-        val state = checkGameState(legalMoves)
-
-        notifyObservers
-        if(state) {return}
-
-        val engineMoveString = gameMode.getBestMove(fen, depth)
-
-        val engineMoveInt = gameMode.translateMoveStringToInt(fen, engineMoveString)
-
-        UndoInvoker.doStep(new SetCommand(gameMode.makeMove(fen, engineMoveInt), fen, this))
-        val legalMoves2 = gameMode.getAllLegalMoves(fen);
-        output = boardToString()
-        checkGameState(legalMoves2)
-
         notifyObservers
     }
 
@@ -75,12 +76,16 @@ class EngineController (override var fen : String, var context : ChessContext, v
 
     def undo(): Unit = {
         UndoInvoker.undoStep()
+        checkGameState(gameMode.getAllLegalMoves(fen))
+        fileapi.printTo(context, fen)
         output = boardToString()
         notifyObservers
     }
 
     def redo() : Unit = {
         UndoInvoker.redoStep()
+        checkGameState(gameMode.getAllLegalMoves(fen))
+        fileapi.printTo(context, fen)
         output = boardToString()
         notifyObservers
     }

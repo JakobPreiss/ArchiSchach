@@ -16,6 +16,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
 
     def resetBoard(): Unit = {
         fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        checkGameState(gameMode.getAllLegalMoves(fen))
         fileapi.printTo(context, fen)
         this.notifyObservers
     }
@@ -31,9 +32,9 @@ class Controller(override var fen : String, var context : ChessContext, var outp
                 output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
             } else {
                 output = boardToString()
+                checkGameState(gameMode.getAllLegalMoves(fen))
             }
         }
-        checkGameState(gameMode.getAllLegalMoves(fen))
         fileapi.printTo(context, fen)
         notifyObservers
     }
@@ -60,12 +61,16 @@ class Controller(override var fen : String, var context : ChessContext, var outp
 
     def undo(): Unit = {
         UndoInvoker.undoStep()
+        checkGameState(gameMode.getAllLegalMoves(fen))
+        fileapi.printTo(context, fen)
         output = boardToString()
         notifyObservers
     }
 
     def redo() : Unit = {
         UndoInvoker.redoStep()
+        checkGameState(gameMode.getAllLegalMoves(fen))
+        fileapi.printTo(context, fen)
         output = boardToString()
         notifyObservers
     }

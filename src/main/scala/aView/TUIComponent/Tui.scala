@@ -23,7 +23,6 @@ class Tui(controller: ControllerTrait) extends Observer {
         } else {
             if(input.matches("^(Q|R|B|N|q|r|b|n)$")) {
                 controller.promotePawn(input)
-
                 update
             } else {
                 println("Alter, da steht sogar, was du eingeben kannst!!!")
