@@ -30,6 +30,7 @@ class ControllerSpec extends AnyWordSpec with Matchers {
                 override def update: Unit = updated = true
                 override def specialCase: Unit = fen = ""
                 def specialHatFunktioniert : String = fen
+                override def reverseSpecialCase: Unit = ???
             }
             val testOb = new TestObserver(false, "heyyy", controller, " ")
             controller.play(ChessBoard.moveToIndex("e2","e4"))
@@ -81,7 +82,7 @@ class ControllerSpec extends AnyWordSpec with Matchers {
             val promotionFen = "rnbqkbnr/Ppppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5"
             val controller = new Controller(promotionFen, new ChessContext(), "")
             controller.play(ChessBoard.moveToIndex("a7", "b8"))
-            controller.context.state should be (State.whitePlayingState)
+            controller.context.state should be (State.blackPlayingState)
         }
 
         "outsource promoting a pawn correctly" in {
@@ -94,13 +95,13 @@ class ControllerSpec extends AnyWordSpec with Matchers {
         "return the correct Boolean depending on if on a certain Square is a Piece of the Color to move" in {
             val controller = new Controller("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", new ChessContext(), "")
             controller.squareClicked(7)
-            controller.activeSquare should be(-5)
+            controller.activeSquare should be(None)
 
             controller.squareClicked(52)
-            controller.activeSquare should be(52)
+            controller.activeSquare should be(Some(52))
             controller.squareClicked(36)
             controller.fen should be ("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
-            controller.activeSquare should be (-5)
+            controller.activeSquare should be (None)
         }
 
         "return the output if asked" in {
@@ -174,10 +175,10 @@ class ControllerSpec extends AnyWordSpec with Matchers {
         "implement squareClicked correctly" in {
             val controller = new Controller("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", new ChessContext(), "")
             controller.squareClicked(7)
-            controller.activeSquare should be(-5)
+            controller.activeSquare should be(None)
 
             controller.squareClicked(60)
-            controller.activeSquare should be(60)
+            controller.activeSquare should be(Some(60))
 
             controller.fen = "r3k2r/pppq1ppp/2np1n2/2b1pb2/2B1PB2/2NP1N2/PPPQ1PPP/R3K2R w KQkq - 6 8"
             controller.squareClicked(60)

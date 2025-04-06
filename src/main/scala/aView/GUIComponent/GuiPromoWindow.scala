@@ -12,6 +12,8 @@ import scalafx.scene.paint.Color
 import scalafx.geometry.{Insets, Pos}
 import util.Observer
 
+import scala.annotation.tailrec
+
 class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, Observer {
 
     val controller: ControllerTrait = option_controller match {
@@ -90,15 +92,16 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
                 onAction = (_ => controller.promotePawn(pieceKind))
                 //focusWithin.apply()
             }
-            button.setPrefSize(varHeight * 0.1, varHeight * 0.1)
-            return button
+                button.setPrefSize(varHeight * 0.1, varHeight * 0.1)
+                return button
         }
 
         def getPieceList(pathList: List[String]) : List[StackPane] = {
             val imageList = pathList.map(getImage: String => ImageView)
             val buttonInputList = List("r", "n", "b", "q")
             val buttonList = buttonInputList.map(getButton: String => Button)
-
+            
+            @tailrec
             def buildStackPaneRecursive(imgList: List[ImageView], bList: List[Button], accumulator : List[StackPane]) : List[StackPane] = {
                 (imgList, bList) match {
                     case (Nil, _) | (_, Nil) => accumulator

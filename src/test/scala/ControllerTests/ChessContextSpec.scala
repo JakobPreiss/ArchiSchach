@@ -17,11 +17,11 @@ class ChessContextSpec extends AnyWordSpec with Matchers {
             var context = new ChessContext()
             val white1 = Event(false, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false)
             context.handle(white1);
-            context.state should be (State.blackPlayingState);
+            context.state should be (State.whitePlayingState);
 
             val black1 = Event(false, "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1", false)
             context.handle(black1);
-            context.state should be (State.whitePlayingState);
+            context.state should be (State.blackPlayingState);
 
             val white2 = Event(true, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false)
             context.handle(white2);

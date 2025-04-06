@@ -7,7 +7,7 @@ enum PieceType:
     case PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING, EMPTY
 
 
-final case class Piece (pieceType: PieceType, color: Color) {
+case class Piece (pieceType: PieceType, color: Color) {
 
     override def toString(): String = {
         val pieceMap: Map[(PieceType, Color), String] = Map(
