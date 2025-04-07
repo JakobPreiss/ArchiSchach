@@ -15,6 +15,7 @@ import play.api.libs.json.*
 
 import scala.io.Source
 import scala.language.postfixOps
+import scala.util.{Try, Success, Failure}
 import scala.xml.XML
 
 object ChessModule {
@@ -35,8 +36,11 @@ object ChessModule {
         given ApiFileTrait = XMLApi()
         given ChessTrait = RealChessFacade()
         val fileApi = XMLApi()
-        val xmlContent: scala.xml.Node = XML.loadFile("src/main/resources/GameState.xml")
-        val wrapper: DataWrapper = DataWrapper(Some(xmlContent), None)
+        val xmlContent: Try[scala.xml.Node] = Try(XML.loadFile("src/main/resources/GameState.xml"))
+        val wrapper: DataWrapper = xmlContent match {
+            case Success(content) => DataWrapper(Some(content), None)
+            case Failure(content) => DataWrapper(None, None)
+        }
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
         val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
@@ -48,8 +52,14 @@ object ChessModule {
         given ChessTrait = RealChessFacade()
         val fileApi = JSONApi()
         val filePath = "src/main/resources/GameState.json"
-        val fileContents = Source.fromFile(filePath).getLines().mkString
-        val json: JsValue = Json.parse(fileContents)
+        val fileContents = Try(Source.fromFile(filePath).getLines().mkString) match {
+            case Success(content) => content
+            case Failure(content) => defaultJson()
+        }
+        val json: JsValue = Try(Json.parse(fileContents)) match {
+            case Success(content) => content
+            case Failure(content) => Json.parse(defaultJson())
+        }
         val wrapper: DataWrapper = DataWrapper(None, Some(json))
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
@@ -84,5 +94,9 @@ object ChessModule {
         val arg2 = new ChessContext
         val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
         new EngineController(arg1, arg2, arg3, 15)
+    }
+
+    private def defaultJson() = {
+        "{\"Box\":{\"fen\":\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\",\"state\":0}}"
     }
 }
