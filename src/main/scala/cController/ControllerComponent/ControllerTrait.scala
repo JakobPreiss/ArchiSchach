@@ -76,7 +76,7 @@ trait ControllerTrait extends Observable {
      * squareClicked gets the Index of a Square from the Gui. If two clicked squares make a move (the last is saved) it plays that move
      * @param clickedSquare
      */
-    def squareClicked(clickedSquare: Int) : Unit
+    def squareClicked(clickedSquare: Try[Int]) : Unit
 
     /**
      * nextTheme changes the current theme of the Gui

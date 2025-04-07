@@ -21,7 +21,7 @@ object BasicChessFacade extends BasicChessTrait {
         ChessBoard.makeMove(fen, move)
     }
 
-    def canPromote(fen: String): Int = {
+    def canPromote(fen: String): Option[Int] = {
         ChessBoard.canPromote(fen)
     }
 

@@ -9,6 +9,8 @@ trait Observer {
     def specialCase : Unit
     
     def reverseSpecialCase : Unit
+    
+    def errorDisplay : Unit
 }
 
 class Observable {
@@ -31,4 +33,6 @@ class Observable {
     def ringObservers : Unit = subscribers.foreach(o => o.specialCase)
 
     def deRingObservers : Unit = subscribers.foreach(o => o.reverseSpecialCase)
+    
+    def tellErrorToObservers : Unit = subscribers.foreach(o => o.errorDisplay)
 }

@@ -40,9 +40,9 @@ trait BasicChessTrait {
     /**
      * canPromote checks if a pawn promotion is possible on the given board state and returns the index of the square of the promoteable pawn
      * @param fen current board state as fen-String
-     * @return index of the square of the promoteable pawn
+     * @return index of the square of the promoteable pawn or None if not possible
      * */
-    def canPromote(fen: String): Int
+    def canPromote(fen: String): Option[Int]
 
     /**
      * promote changes the current board state after a promotion happend. The Pawn will be replaced by the given Piece

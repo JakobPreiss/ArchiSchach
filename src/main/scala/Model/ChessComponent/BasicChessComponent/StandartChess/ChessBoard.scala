@@ -234,17 +234,17 @@ object ChessBoard {
         }
     }
     
-    def canPromote(fen: String): Int = {
+    def canPromote(fen: String): Option[Int] = {
         val boardFen = fen.split(" ")(0);
         val first_row = boardFen.split("/")(0);
         val last_row = boardFen.split("/")(7);
         if (first_row.contains("P")) {
-            return first_row.indexOf('P');
+            return Option[first_row.indexOf('P')];
         }
         if (last_row.contains("p")) {
-            return 56 + last_row.indexOf('p')
+            return Option[(last_row.indexOf('p') + 56)]
         }
-        -1
+        None
     }
 
     def promote(pieceName: String, fen : String, position : Int) : String = {

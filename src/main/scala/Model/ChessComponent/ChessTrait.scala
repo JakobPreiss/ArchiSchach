@@ -12,13 +12,6 @@ trait ChessTrait {
     def getBoardString(fen : String) : String
 
     /**
-     * fenToBoard translates the fen-String representation of the board state as a Vector[Piece] Type
-     * @param fen current board state as fen-String
-     * @return board state as a Vector[Piece]
-     */
-    def fenToBoard(fen: String): Vector[Piece]
-
-    /**
      * getAllLegalMoves calculates all legal Moves that can be played in the current position (represented by the fen-String)
      * by the Color that is to move
      * @param fen current board state as fen-String
@@ -37,9 +30,9 @@ trait ChessTrait {
     /**
      * canPromote checks if a pawn promotion is possible on the given board state and returns the index of the square of the promoteable pawn
      * @param fen current board state as fen-String
-     * @return index of the square of the promoteable pawn
+     * @return index of the square of the promoteable pawn or None if not possible
      */
-    def canPromote(fen: String): Int
+    def canPromote(fen: String): Option[Int]
 
     /**
      * promote changes the current board state after a promotion happend. The Pawn will be replaced by the given Piece

@@ -5,11 +5,10 @@ import Model.ChessComponent.ChessTrait
 
 class RealChessFacade extends ChessTrait {
 
-    def fenToBoard(fen: String): Vector[Piece] = {
-        BasicChessFacade.fenToBoard(fen)
-    }
-
     def getAllLegalMoves(fen: String): List[(Int, Int)] = {
+        //checkfen
+        //if correct -> weitergeben
+        //if not correct -> Failure an Controller geben
         LegalMoves.getAllLegalMoves(fen)
     }
 
@@ -21,7 +20,7 @@ class RealChessFacade extends ChessTrait {
         Remis.isRemis(fen, legalMoves)
     }
 
-    def canPromote(fen: String): Int = {
+    def canPromote(fen: String): Option[Int] = {
         BasicChessFacade.canPromote(fen)
     }
 

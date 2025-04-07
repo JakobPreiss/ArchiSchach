@@ -8,10 +8,6 @@ class DevourChessFacade extends ChessTrait {
         BasicChessFacade.getBoardString(fen)
     }
 
-    def fenToBoard(fen: String): Vector[Piece] = {
-        BasicChessFacade.fenToBoard(fen)
-    }
-
     def getAllLegalMoves(fen: String): List[(Int, Int)] = {
         LegalMoves.getAllLegalMoves(fen)
     }
@@ -20,7 +16,7 @@ class DevourChessFacade extends ChessTrait {
         BasicChessFacade.makeMove(fen, move)
     }
 
-    def canPromote(fen: String): Int = {
+    def canPromote(fen: String): Option[Int] = {
         BasicChessFacade.canPromote(fen)
     }
 
