@@ -5,6 +5,8 @@ import Model.ChessComponent.BasicChessComponent.StandartChess.{ChessBoard, Color
 import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
 
+import scala.util.{Failure, Success}
+
 class ChessBoardSpec extends AnyWordSpec {
 
     "ChessBoard" should {
@@ -237,6 +239,43 @@ class ChessBoardSpec extends AnyWordSpec {
             ChessBoard.promote("n", "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5", 1) should be ("rNbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5")
             ChessBoard.promote("B", "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5", 1) should be ("rBbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5")
             ChessBoard.promote("b", "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5", 1) should be ("rBbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5")
+        }
+
+        "validate fen correctly" in {
+            val fen1 = "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5"
+            val fen2 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            val fen3 = "rnbq1bnr/ppppkppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 3"
+            val wrongFen1 = ""
+            val wrongFen2 = "rnbq1bnr/ppppkpZp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 3"
+            val wrongFen3 = "rnbq1bnr/ppppkpppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 3"
+            val wrongFen4 = "rnbq1bnr/ppp11ppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 3"
+            val wrongFen5 ="rnbq1bnr/rnbq1bnr/ppp31ppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 3"
+
+            ChessBoard.isValidFen(fen1) should be(Success(true))
+            ChessBoard.isValidFen(fen2) should be(Success(true))
+            ChessBoard.isValidFen(fen3) should be(Success(true))
+            val message1 = ChessBoard.isValidFen(wrongFen1) match {
+                case Success(i) => i
+                case Failure(m) => m.getMessage
+            }
+            message1 should be ("fen doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ")
+
+            val message2 = ChessBoard.isValidFen(wrongFen2) match {
+                case Success(i) => i
+                case Failure(m) => m.getMessage
+            }
+            message2 should be("fen doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ")
+            val message3 = ChessBoard.isValidFen(wrongFen3) match {
+                case Success(i) => i
+                case Failure(m) => m.getMessage
+            }
+            message3 should be("Not 8 columns in each row")
+
+            val message4 = ChessBoard.isValidFen(wrongFen4) match {
+                case Success(i) => i
+                case Failure(m) => m.getMessage
+            }
+            message4 should be("two subsequent digits")
         }
     }
 
