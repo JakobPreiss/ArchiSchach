@@ -76,4 +76,8 @@ object BasicChessFacade extends BasicChessTrait {
     def pieceMoves(pieceTypes: List[PieceType]): List[(Int, Int)] = {
         PseudoMoves.pieceMoves(pieceTypes)
     }
+
+    def isValidFen(fen : String) : Try[String] = {
+        ChessBoard.isValidFen(fen)
+    }
 }

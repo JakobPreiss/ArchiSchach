@@ -2,6 +2,8 @@ package Model.ChessComponent.BasicChessComponent
 
 import Model.ChessComponent.BasicChessComponent.StandartChess.{Color, Piece, PieceType}
 
+import scala.util.Try
+
 trait BasicChessTrait {
     /**
      * getBoardString returns the string view of the current board state for the TUI given by the Vector parameter
@@ -141,4 +143,11 @@ trait BasicChessTrait {
      * @return the directions the piece can go
      */
     def pieceMoves(pieceTypes: List[PieceType]): List[(Int, Int)]
+
+    /**
+     * isValidFen checks if the given fen fits the format
+     * @param fen gamestate in fen
+     * @return Success(fen) if correct Failure(exeption) if incorrect
+     */
+    def isValidFen(fen : String) : Try[String] 
 }
