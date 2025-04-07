@@ -32,8 +32,8 @@ class DevourChessFacade extends ChessTrait {
         BasicChessFacade.isColorPiece(fen, position)
     }
 
-    def translateCastle(board: Vector[Piece], move: (Int, Int)): (Int, Int) = {
-        BasicChessFacade.translateCastle(board, move)
+    def translateCastle(fen : String, move: (Int, Int)): (Int, Int) = {
+        BasicChessFacade.translateCastle(BasicChessFacade.fenToBoard(fen), move)
     }
 
     def isRemis(fen: String, legalMoves: List[(Int, Int)]): Boolean = {

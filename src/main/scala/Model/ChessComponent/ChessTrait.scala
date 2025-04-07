@@ -64,7 +64,7 @@ trait ChessTrait {
      * @param move move as a Int-Tupel (fromSquare, toSquare)
      * @return move (if move was a castle move it is a little bit different (negative number in front)
      */
-    def translateCastle(board: Vector[Piece], move: (Int, Int)): (Int, Int)
+    def translateCastle(fen : String, move: (Int, Int)): (Int, Int)
 
     /**
      * isRemis checks if the given game state is a remis ending
@@ -96,10 +96,4 @@ trait ChessTrait {
      * @return move as Int-Tupel
      */
     def translateMoveStringToInt(fen: String, move: String): (Int, Int)
-
-    /**
-     * getDefaultBoard returns the starting board in the Vector[Piece] format
-     * @return starting board in the Vector[Piece] format
-     */
-    def getDefaultBoard(): Vector[Piece]
 }

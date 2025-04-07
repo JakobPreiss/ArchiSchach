@@ -2,16 +2,14 @@ package Model.ChessComponent.BasicChessComponent.StandartChess
 
 import Model.ChessComponent.BasicChessComponent.BasicChessTrait
 
+import scala.util.Try
+
 object BasicChessFacade extends BasicChessTrait {
     def getBoardString(fen : String): String = {
         ChessBoard.getBoardString(ChessBoard.fenToBoard(fen))
     }
 
     def fenToBoard(fen: String): Vector[Piece] = {
-        /*val fEN = ChessBoard.isValidFen(fen) match {
-            case Success(value) => value
-            case 
-        }*/
         ChessBoard.fenToBoard(fen)
     }
 
@@ -77,5 +75,9 @@ object BasicChessFacade extends BasicChessTrait {
 
     def pieceMoves(pieceTypes: List[PieceType]): List[(Int, Int)] = {
         PseudoMoves.pieceMoves(pieceTypes)
+    }
+
+    def isValidFen(fen : String) : Try[String] = {
+        ChessBoard.isValidFen(fen)
     }
 }

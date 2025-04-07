@@ -84,7 +84,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
                 case Some(a) => a
                 case None => -5
             }
-            play(gameMode.translateCastle(gameMode.fenToBoard(fen), (square, clickedSquare)))
+            play(gameMode.translateCastle(fen, (square, clickedSquare)))
             activeSquare = None
         }
     }
