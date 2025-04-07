@@ -39,7 +39,7 @@ class DevourChessFacadeSpec extends AnyWordSpec {
             testInstance.getDefaultBoard() should equal(board);
         }
         "return the correct board string" in {
-            testInstance.getBoardString(testInstance.getDefaultBoard()) should be((
+            testInstance.getBoardString(testInstance.getDefaultFen()) should be((
                 "    +-----+-----+-----+-----+-----+-----+-----+-----+\n" +
                     "8   |  r  |  n  |  b  |  q  |  k  |  b  |  n  |  r  |\n" +
                     "    +-----+-----+-----+-----+-----+-----+-----+-----+\n" +

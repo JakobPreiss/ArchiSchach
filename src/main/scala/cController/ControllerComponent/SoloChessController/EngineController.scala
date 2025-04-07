@@ -11,7 +11,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
     var activeSquare : Int = -5;
     var current_theme: Int = 0;
 
-    def boardToString() : String = {gameMode.getBoardString(gameMode.fenToBoard(fen))}
+    def boardToString() : String = {gameMode.getBoardString(fen)}
 
     def resetBoard(): Unit = {
         fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"

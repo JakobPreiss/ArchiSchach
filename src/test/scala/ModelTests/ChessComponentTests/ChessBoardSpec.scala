@@ -251,9 +251,9 @@ class ChessBoardSpec extends AnyWordSpec {
             val wrongFen4 = "rnbq1bnr/ppp11ppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 3"
             val wrongFen5 ="rnbq1bnr/rnbq1bnr/ppp31ppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 3"
 
-            ChessBoard.isValidFen(fen1) should be(Success(true))
-            ChessBoard.isValidFen(fen2) should be(Success(true))
-            ChessBoard.isValidFen(fen3) should be(Success(true))
+            ChessBoard.isValidFen(fen1) should be(Success("rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5"))
+            ChessBoard.isValidFen(fen2) should be(Success("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"))
+            ChessBoard.isValidFen(fen3) should be(Success("rnbq1bnr/ppppkppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 3"))
             val message1 = ChessBoard.isValidFen(wrongFen1) match {
                 case Success(i) => i
                 case Failure(m) => m.getMessage

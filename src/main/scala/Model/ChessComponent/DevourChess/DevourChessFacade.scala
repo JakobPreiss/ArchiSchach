@@ -4,8 +4,8 @@ import Model.ChessComponent.BasicChessComponent.StandartChess.{BasicChessFacade,
 import Model.ChessComponent.ChessTrait
 
 class DevourChessFacade extends ChessTrait {
-    def getBoardString(board: Vector[Piece]): String = {
-        BasicChessFacade.getBoardString(board)
+    def getBoardString(fen :String): String = {
+        BasicChessFacade.getBoardString(fen)
     }
 
     def fenToBoard(fen: String): Vector[Piece] = {

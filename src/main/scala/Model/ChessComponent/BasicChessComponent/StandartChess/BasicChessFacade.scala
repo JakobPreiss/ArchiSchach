@@ -3,11 +3,15 @@ package Model.ChessComponent.BasicChessComponent.StandartChess
 import Model.ChessComponent.BasicChessComponent.BasicChessTrait
 
 object BasicChessFacade extends BasicChessTrait {
-    def getBoardString(board: Vector[Piece]): String = {
-        ChessBoard.getBoardString(board)
+    def getBoardString(fen : String): String = {
+        ChessBoard.getBoardString(ChessBoard.fenToBoard(fen))
     }
 
     def fenToBoard(fen: String): Vector[Piece] = {
+        /*val fEN = ChessBoard.isValidFen(fen) match {
+            case Success(value) => value
+            case 
+        }*/
         ChessBoard.fenToBoard(fen)
     }
 

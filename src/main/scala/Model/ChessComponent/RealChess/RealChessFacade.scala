@@ -53,7 +53,7 @@ class RealChessFacade extends ChessTrait {
         BasicChessFacade.getDefaultBoard()
     }
 
-    def getBoardString(board: Vector[Piece]): String = {
-        BasicChessFacade.getBoardString(board)
+    def getBoardString(fen : String): String = {
+        BasicChessFacade.getBoardString(fen)
     }
 }

@@ -10,7 +10,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
     var activeSquare : Option[Int] = None
     var current_theme: Int = 0
     
-    def boardToString() : String = {gameMode.getBoardString(gameMode.fenToBoard(fen))}
+    def boardToString() : String = {gameMode.getBoardString(fen)}
 
     def createOutput() : String = {output}
 

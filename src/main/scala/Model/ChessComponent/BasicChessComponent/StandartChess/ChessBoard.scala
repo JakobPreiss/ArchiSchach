@@ -283,7 +283,7 @@ object ChessBoard {
         board(position).color != EMPTY && board(position).color != colorDetection(fen, position)
     }
 
-    def isValidFen(fen : String) : Try[Boolean] = {
+    def isValidFen(fen : String) : Try[String] = {
         if (fen.matches("^(((?:[rnbqkpRNBQKP1-8]+/){7})[rnbqkpRNBQKP1-8]+)\\s([b|w])\\s([K|Q|k|q]{1,4})\\s(-|[a-h][1-8])\\s(\\d+\\s\\d+)$")) {
             val beginningfen = fen.split(" ")(0)
             val fenList = beginningfen.split("/")
@@ -317,7 +317,7 @@ object ChessBoard {
             if (results.exists(_ != Success(8))) {
                 return Failure(new IllegalArgumentException("Not 8 columns in each row"))
             }
-            return Success(true)
+            return Success(fen)
         } else {
             return Failure(new IllegalArgumentException("fen doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 "))
         }

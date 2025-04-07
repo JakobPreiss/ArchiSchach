@@ -6,10 +6,10 @@ import cController.ControllerComponent.Extra.Event
 trait ChessTrait {
     /**
      * getBoardString returns the string view of the current board state for the TUI given by the Vector parameter
-     * @param board current board state as vector
+     * @param fen current board state as fen
      * @return string view of the current board
      */
-    def getBoardString(board : Vector[Piece]) : String
+    def getBoardString(fen : String) : String
 
     /**
      * fenToBoard translates the fen-String representation of the board state as a Vector[Piece] Type
