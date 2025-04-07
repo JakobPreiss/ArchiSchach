@@ -11,33 +11,6 @@ import Model.ChessComponent.BasicChessComponent.StandartChess.BasicChessFacade
 class DevourChessFacadeSpec extends AnyWordSpec {
     val testInstance = DevourChessFacade()
     "DevourChessFacade" should {
-        "return default board" in {
-            val p = Piece(PieceType.PAWN, Color.BLACK);
-            val r = Piece(PieceType.ROOK, Color.BLACK);
-            val n = Piece(PieceType.KNIGHT, Color.BLACK);
-            val b = Piece(PieceType.BISHOP, Color.BLACK);
-            val q = Piece(PieceType.QUEEN, Color.BLACK);
-            val k = Piece(PieceType.KING, Color.BLACK);
-
-            val P = Piece(PieceType.PAWN, Color.WHITE);
-            val R = Piece(PieceType.ROOK, Color.WHITE);
-            val N = Piece(PieceType.KNIGHT, Color.WHITE);
-            val B = Piece(PieceType.BISHOP, Color.WHITE);
-            val Q = Piece(PieceType.QUEEN, Color.WHITE);
-            val K = Piece(PieceType.KING, Color.WHITE);
-            val point = Piece(PieceType.EMPTY, Color.EMPTY);
-            val board: Vector[Piece] = Vector(
-                r, n, b, q, k, b, n, r,
-                p, p, p, p, p, p, p, p,
-                point, point, point, point, point, point, point, point,
-                point, point, point, point, point, point, point, point,
-                point, point, point, point, point, point, point, point,
-                point, point, point, point, point, point, point, point,
-                P, P, P, P, P, P, P, P,
-                R, N, B, Q, K, B, N, R)
-
-            testInstance.getDefaultBoard() should equal(board);
-        }
         "return the correct board string" in {
             testInstance.getBoardString(testInstance.getDefaultFen()) should be((
                 "    +-----+-----+-----+-----+-----+-----+-----+-----+\n" +
@@ -62,7 +35,7 @@ class DevourChessFacadeSpec extends AnyWordSpec {
 
         "return a correct Vector[Piece] board given a FEN" in {
             val testFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-            testInstance.fenToBoard(testFen) should equal(testInstance.getDefaultBoard());
+            testInstance.fenToBoard(testFen) should equal(ChessBoard.getDefaultBoard());
         }
 
        
@@ -142,7 +115,6 @@ class DevourChessFacadeSpec extends AnyWordSpec {
         }
         "realchess should outsource correctly" in {
             val instance = new RealChessFacade
-            instance.getDefaultBoard() should be (BasicChessFacade.getDefaultBoard())
             instance.getDefaultFen() should be (BasicChessFacade.getDefaultFen())
             instance.translateMoveStringToInt("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "e2e4") should be (BasicChessFacade.translateMoveStringToInt("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "e2e4"))
         }

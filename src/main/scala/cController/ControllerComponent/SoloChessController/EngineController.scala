@@ -94,7 +94,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
         if(gameMode.isColorPiece(fen, clickedSquare)) {
             activeSquare = clickedSquare
         } else if (!gameMode.isColorPiece(fen, clickedSquare) && activeSquare != -5) {
-            play(gameMode.translateCastle(gameMode.fenToBoard(fen), (activeSquare, clickedSquare)))
+            play(gameMode.translateCastle(fen, (activeSquare, clickedSquare)))
             activeSquare = -5
         }
     }
