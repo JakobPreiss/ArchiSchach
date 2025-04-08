@@ -55,7 +55,8 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
     override def specialCase: Unit = {
         showPieces()
     }
-    def update: Unit = ()
+    override def update: Unit = ()
+    override def errorDisplay: Unit = {}
 
     def showPieces(): Unit = {
         val paths : List[String] = controller.context.state match {

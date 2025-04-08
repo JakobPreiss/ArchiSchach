@@ -179,6 +179,9 @@ class Controller(override var fen : String, var context : ChessContext, var outp
         tellErrorToObservers
     }
 
+    def getErrorMessage : String = {
+        errorMessage
+    }
     //give error an UI
     //notifyMyAss
     //-> Tui und Gui geben Error aus

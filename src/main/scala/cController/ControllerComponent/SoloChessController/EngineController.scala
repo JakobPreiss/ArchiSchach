@@ -29,7 +29,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
             case Success(legalMoves) => checkGameState(legalMoves)
             case Failure(err) =>
                 failureHandle(err.getMessage)
-                return false
+                return
         }
 
         fileapi.printTo(context, fen)
@@ -202,5 +202,9 @@ class EngineController (override var fen : String, var context : ChessContext, v
     def failureHandle(errorMsg: String): Unit = {
         errorMessage = errorMsg
         tellErrorToObservers
+    }
+
+    def getErrorMessage: String = {
+        errorMessage
     }
 }

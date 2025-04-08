@@ -90,6 +90,12 @@ trait ControllerTrait extends Observable {
      * @param s Tui or Gui (Observer)
      */
     def add(s: Observer): Unit
+
+    /**
+     * get ErrorMessage returns the error message to the UI
+     * @return ErrorMessage from failure
+     */
+    def getErrorMessage : String
 }
 
 

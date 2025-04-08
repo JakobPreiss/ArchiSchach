@@ -54,6 +54,7 @@ class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer
 
     override def specialCase: Unit = ()
     override def reverseSpecialCase: Unit = ()
+    override def errorDisplay: Unit = {}
 
     val screenBounds = Screen.getPrimary.getVisualBounds
     val vw = screenBounds.getWidth

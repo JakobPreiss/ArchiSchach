@@ -42,4 +42,8 @@ class Tui(controller: ControllerTrait) extends Observer {
     override def reverseSpecialCase : Unit = {
         readMode = "move"
     }
+
+    override def errorDisplay : Unit = {
+        println("Error: " + controller.getErrorMessage)
+    }
 }

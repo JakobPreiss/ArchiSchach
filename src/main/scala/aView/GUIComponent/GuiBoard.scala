@@ -37,6 +37,8 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
     override def reverseSpecialCase: Unit = {
         updateGrid()
     }
+
+    override def errorDisplay: Unit = {}
     val controller : ControllerTrait = option_controller match {
         case Some(a) => a
         case _ => null

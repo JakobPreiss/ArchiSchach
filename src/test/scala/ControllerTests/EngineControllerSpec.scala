@@ -12,6 +12,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers.*
 import util.Observer
 
+import scala.util.Success
 import scala.xml.XML
 
 class EngineControllerSpec extends AnyWordSpec {
@@ -49,7 +50,7 @@ class EngineControllerSpec extends AnyWordSpec {
 
         "play Test" in {
             ec.resetBoard()
-            ec.play(ChessBoard.translateMoveStringToInt(ec.fen, "e2e4"))
+            ec.play(Success(ChessBoard.translateMoveStringToInt(ec.fen, "e2e4")))
             ec.fen should be ("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2")
         }
 
@@ -67,7 +68,7 @@ class EngineControllerSpec extends AnyWordSpec {
 
         "do redo and undo correctly" in {
             ec.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            ec.play(ChessBoard.moveToIndex("e2","e4"))
+            ec.play(Success(ChessBoard.moveToIndex("e2","e4")))
             val save = ec.fen
             ec.undo()
             ec.undo()
@@ -80,10 +81,10 @@ class EngineControllerSpec extends AnyWordSpec {
 
         "implement squareClicked correctly" in {
             ec.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            ec.squareClicked(7)
+            ec.squareClicked(Success(7))
             ec.activeSquare should be(-5)
 
-            ec.squareClicked(60)
+            ec.squareClicked(Success(60))
             ec.activeSquare should be(60)
 
         }
