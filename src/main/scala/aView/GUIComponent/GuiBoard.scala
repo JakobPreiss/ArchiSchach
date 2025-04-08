@@ -27,6 +27,7 @@ import util.Observer
 import java.nio.file.Paths
 import java.nio.file.Paths.*
 import scala.annotation.tailrec
+import scala.util.Success
 
 class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Observer{
     override def update: Unit = {
@@ -111,7 +112,7 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
                             }
                             val button1: Button = new Button() {
                                 style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
-                                onAction = (_ => controller.squareClicked(63 - i))
+                                onAction = (_ => controller.squareClicked(Success(63 - i)))
                                 focusWithin.apply()
 
                             }

@@ -33,7 +33,7 @@ object ChessModule {
                     case Failure(error) => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
                 }
         }
-    }
+    } 
 
 
     def provideDuoChessXML(): ControllerTrait = {

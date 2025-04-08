@@ -3,13 +3,15 @@ package Model.ChessComponent
 import Model.ChessComponent.BasicChessComponent.StandartChess.Piece
 import cController.ControllerComponent.Extra.Event
 
+import scala.util.Try
+
 trait ChessTrait {
     /**
      * getBoardString returns the string view of the current board state for the TUI given by the Vector parameter
      * @param fen current board state as fen
      * @return string view of the current board
      */
-    def getBoardString(fen : String) : String
+    def getBoardString(fen : String) : Try[String]
 
     /**
      * getAllLegalMoves calculates all legal Moves that can be played in the current position (represented by the fen-String)
@@ -17,7 +19,7 @@ trait ChessTrait {
      * @param fen current board state as fen-String
      * @return List of Int-Tupels (fromSquare, toSquare)
      */
-    def getAllLegalMoves(fen: String): List[(Int, Int)]
+    def getAllLegalMoves(fen: String): Try[List[(Int, Int)]]
 
     /**
      * makeMove gets a Int-Tupel as a move to make and transforms the given fen into a new fen with the given move made
@@ -25,14 +27,14 @@ trait ChessTrait {
      * @param move move as a Int-Tupel (fromSquare, toSquare)
      * @return new board state as fen-String
      */
-    def makeMove(fen: String, move: (Int, Int)): String
+    def makeMove(fen: String, move: (Int, Int)): Try[String]
 
     /**
      * canPromote checks if a pawn promotion is possible on the given board state and returns the index of the square of the promoteable pawn
      * @param fen current board state as fen-String
      * @return index of the square of the promoteable pawn or None if not possible
      */
-    def canPromote(fen: String): Option[Int]
+    def canPromote(fen: String): Try[Option[Int]]
 
     /**
      * promote changes the current board state after a promotion happend. The Pawn will be replaced by the given Piece
@@ -41,7 +43,7 @@ trait ChessTrait {
      * @param position index of the square of the promoteable pawn
      * @return new board state as fen-String
      */
-    def promote(pieceName: String, fen : String, position : Int) : String
+    def promote(pieceName: String, fen : String, position : Int) : Try[String]
 
     /**
      * isColorPiece checks if a piece a given position is a piece of the Color that is to move right now
@@ -49,7 +51,7 @@ trait ChessTrait {
      * @param position the position that should be checked
      * @return true if there is a piece of the color that is to move. Otherwise false
      */
-    def isColorPiece(fen : String, position : Int) : Boolean
+    def isColorPiece(fen : String, position : Int) : Try[Boolean]
 
     /**
      * translateCastle translates a raw King Move (over 2 squares) into a castling move that the model will understand
@@ -57,7 +59,7 @@ trait ChessTrait {
      * @param move move as a Int-Tupel (fromSquare, toSquare)
      * @return move (if move was a castle move it is a little bit different (negative number in front)
      */
-    def translateCastle(fen : String, move: (Int, Int)): (Int, Int)
+    def translateCastle(fen : String, move: (Int, Int)): Try[(Int, Int)]
 
     /**
      * isRemis checks if the given game state is a remis ending
@@ -65,7 +67,7 @@ trait ChessTrait {
      * @param legalMoves List of possible moves in the current position
      * @return true if it is a remis. Otherwise false
      */
-    def isRemis(fen: String, legalMoves: List[(Int, Int)]) : Boolean
+    def isRemis(fen: String, legalMoves: List[(Int, Int)]) : Try[Boolean]
 
     /**
      * getBestMove talks to the ChessApi and returns the best move from the chess engine depending on the depth (how
@@ -74,7 +76,7 @@ trait ChessTrait {
      * @param depth how many moves in advance should be calculated
      * @return best move as a String (fe e2e4)
      */
-    def getBestMove(fen: String, depth: Int): String
+    def getBestMove(fen: String, depth: Int): Try[String]
 
     /**
      * getDefaultFen returns the starting fen position without the extra info at the end
@@ -88,5 +90,5 @@ trait ChessTrait {
      * @param move as one String
      * @return move as Int-Tupel
      */
-    def translateMoveStringToInt(fen: String, move: String): (Int, Int)
+    def translateMoveStringToInt(fen: String, move: String): Try[(Int, Int)]
 }

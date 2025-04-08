@@ -239,10 +239,10 @@ object ChessBoard {
         val first_row = boardFen.split("/")(0);
         val last_row = boardFen.split("/")(7);
         if (first_row.contains("P")) {
-            return Option[first_row.indexOf('P')];
+            return Some(first_row.indexOf('P'))
         }
         if (last_row.contains("p")) {
-            return Option[(last_row.indexOf('p') + 56)]
+            return Some(last_row.indexOf('p') + 56)
         }
         None
     }
@@ -320,6 +320,35 @@ object ChessBoard {
             return Success(fen)
         } else {
             return Failure(new IllegalArgumentException("fen doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 "))
+        }
+    }
+
+    def isValidMove(move: String): Try[String] = {
+        if (move.matches("^[a-h][1-8][a-h][1-8]$")) {
+            Success(move)
+        } else {
+            Failure(new IllegalArgumentException("Invalid move format. Expected format: a1b2"))
+        }
+    }
+
+    // TODO: Implement the logic to check if the move is valid based on the current game state
+    def isValidMove(move: (Int, Int)): Try[(Int, Int)] = {
+        Success(move)
+    }
+
+    def isValidPosition(fen: String, position: Int): Try[Int] = {
+        if (position >= 0 && position < fen.length) {
+            Success(position)
+        } else {
+            Failure(new IllegalArgumentException("Invalid position. Expected a value between 0 and 71."))
+        }
+    }
+
+    def isValidPieceName(pieceName: String): Try[String] = {
+        if (pieceName.matches("^[KQRBNPkqrbnp]$")) {
+            Success(pieceName)
+        } else {
+            Failure(new IllegalArgumentException("Invalid piece name. Expected one of K, Q, R, B, N, P, k, q, r, b, n, p."))
         }
     }
 }

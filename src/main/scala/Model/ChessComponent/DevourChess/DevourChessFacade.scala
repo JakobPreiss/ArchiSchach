@@ -1,45 +1,90 @@
 package Model.ChessComponent.DevourChess
 
-import Model.ChessComponent.BasicChessComponent.StandartChess.{BasicChessFacade, Piece}
+import Model.ChessComponent.BasicChessComponent.StandartChess.{BasicChessFacade, ChessBoard, Piece}
 import Model.ChessComponent.ChessTrait
+import Model.ChessComponent.RealChess.Remis
+
+import scala.util.{Failure, Success, Try}
 
 class DevourChessFacade extends ChessTrait {
-    def getBoardString(fen :String): String = {
-        BasicChessFacade.getBoardString(fen)
+    private def withValidFen[T](fen: String)(f: String => T): Try[T] = {
+        ChessBoard.isValidFen(fen).map(validFen => f(validFen))
     }
 
-    def getAllLegalMoves(fen: String): List[(Int, Int)] = {
-        LegalMoves.getAllLegalMoves(fen)
+    def getBoardString(fen :String): Try[String] = {
+        withValidFen(fen) { validFen =>
+            BasicChessFacade.getBoardString(validFen)
+        }
     }
 
-    def makeMove(fen: String, move: (Int, Int)): String = {
-        BasicChessFacade.makeMove(fen, move)
+    def getAllLegalMoves(fen: String): Try[List[(Int, Int)]] = {
+        withValidFen(fen) { validFen =>
+            LegalMoves.getAllLegalMoves(validFen)
+        }
     }
 
-    def canPromote(fen: String): Option[Int] = {
-        BasicChessFacade.canPromote(fen)
+    def makeMove(fen: String, move: (Int, Int)): Try[String] = {
+        for {
+            validFen <- ChessBoard.isValidFen(fen)
+            validMove <- ChessBoard.isValidMove(move)
+        } yield {
+            BasicChessFacade.makeMove(validFen, validMove)
+        }
     }
 
-    def promote(pieceName: String, fen: String, position: Int): String = {
-        BasicChessFacade.promote(pieceName, fen, position)
+    def canPromote(fen: String): Try[Option[Int]] = {
+        val validFen = ChessBoard.isValidFen(fen) match {
+            case Success(validFen) => validFen
+            case Failure(exception) =>
+                return Failure(exception)
+        }
+
+        Success(BasicChessFacade.canPromote(validFen))
     }
 
-    def isColorPiece(fen: String, position: Int): Boolean = {
-        BasicChessFacade.isColorPiece(fen, position)
+    def promote(pieceName: String, fen: String, position: Int): Try[String] = {
+        for {
+            validFen <- ChessBoard.isValidFen(fen)
+            validPosition <- ChessBoard.isValidPosition(fen, position)
+            validPieceName <- ChessBoard.isValidPieceName(pieceName)
+        } yield {
+            BasicChessFacade.promote(validPieceName, validFen, validPosition)
+        }
     }
 
-    def translateCastle(fen : String, move: (Int, Int)): (Int, Int) = {
-        BasicChessFacade.translateCastle(BasicChessFacade.fenToBoard(fen), move)
+    def isColorPiece(fen: String, position: Int): Try[Boolean] = {
+        for {
+            validFen <- ChessBoard.isValidFen(fen)
+            validPosition <- ChessBoard.isValidPosition(fen, position)
+        } yield {
+            BasicChessFacade.isColorPiece(validFen, validPosition)
+        }
     }
 
-    def isRemis(fen: String, legalMoves: List[(Int, Int)]): Boolean = {
-        Remis.isRemis(fen)
+    def translateCastle(fen: String, move: (Int, Int)): Try[(Int, Int)] = {
+        for {
+            validFen <- ChessBoard.isValidFen(fen)
+            validMove <- ChessBoard.isValidMove(move)
+        } yield {
+            BasicChessFacade.translateCastle(BasicChessFacade.fenToBoard(validFen), validMove)
+        }
     }
 
-    def getBestMove(fen: String, depth: Int): String = {""}
+    def isRemis(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
+        withValidFen(fen) { validFen =>
+            Remis.isRemis(validFen, legalMoves)
+        }
+    }
 
-    def translateMoveStringToInt(fen: String, move: String): (Int, Int) = {
-        BasicChessFacade.translateMoveStringToInt(fen, move)
+    def getBestMove(fen: String, depth: Int): Try[String] = {Success("")}
+
+    def translateMoveStringToInt(fen: String, move: String): Try[(Int, Int)] = {
+        for {
+            validFen <- ChessBoard.isValidFen(fen)
+            validMove <- ChessBoard.isValidMove(move)
+        } yield {
+            BasicChessFacade.translateMoveStringToInt(validFen, validMove)
+        }
     }
 
     def getDefaultFen(): String = {

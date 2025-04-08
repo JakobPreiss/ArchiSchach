@@ -2,6 +2,8 @@ package cController.ControllerComponent
 import cController.ControllerComponent.Extra.ChessContext
 import util.{Observable, Observer}
 
+import scala.util.Try
+
 trait ControllerTrait extends Observable {
     /**
      * variable String called fen representing the board state
@@ -48,7 +50,7 @@ trait ControllerTrait extends Observable {
      * checks if a move is playable and if so changes the Game state (fen and Chesscontext) accordingly
      * @param move Index Tupel from Square to Square
      */
-    def play(move : (Int, Int)) : Unit
+    def play(move : Try[(Int, Int)]) : Unit
 
     /**
      * undo the last played move
