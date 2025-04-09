@@ -222,17 +222,6 @@ object ChessBoard {
     def translateMoveStringToInt(fen: String, move: String): (Int, Int) = {
         ChessBoard.translateCastle(ChessBoard.fenToBoard(fen), ChessBoard.moveToIndex(move.substring(0, 2), move.substring(2, 4)))
     }
-
-    def makeMove(fen: String, move: (Int, Int)): String = {
-        val fenSplit = fen.split(" ")
-        val board = ChessBoard.fenToBoard(fen);
-        val newBoard = LegalMoves.makeMove(board, move);
-        if (fenSplit(1) == "w") {
-            ChessBoard.boardToFen(newBoard) + " b " + updateCastleing(fenSplit(2), move) + " " + updateEnpassant(fen, move) + " " + fenSplit(4) + " " + fenSplit(5)
-        } else {
-            ChessBoard.boardToFen(newBoard) + " w " + updateCastleing(fenSplit(2), move) + " " + updateEnpassant(fen, move) + " " + fenSplit(4) + " " + (fenSplit(5).toInt+1).toString
-        }
-    }
     
     def canPromote(fen: String): Option[Int] = {
         val boardFen = fen.split(" ")(0);
@@ -284,7 +273,7 @@ object ChessBoard {
     }
 
     def isValidFen(fen : String) : Try[String] = {
-        if (fen.matches("^(((?:[rnbqkpRNBQKP1-8]+/){7})[rnbqkpRNBQKP1-8]+)\\s([b|w])\\s([K|Q|k|q]{1,4})\\s(-|[a-h][1-8])\\s(\\d+\\s\\d+)$")) {
+        if (fen.matches("^(((?:[rnbqkpRNBQKP1-8]+/){7})[rnbqkpRNBQKP1-8]+)\\s([b|w])\\s([K|Q|k|q|-]{1,4})\\s(-|[a-h][1-8])\\s(\\d+\\s\\d+)$")) {
             val beginningfen = fen.split(" ")(0)
             val fenList = beginningfen.split("/")
             if (fenList.length != 8) {
@@ -331,16 +320,11 @@ object ChessBoard {
         }
     }
 
-    // TODO: Implement the logic to check if the move is valid based on the current game state
-    def isValidMove(move: (Int, Int)): Try[(Int, Int)] = {
-        Success(move)
-    }
-
     def isValidPosition(fen: String, position: Int): Try[Int] = {
-        if (position >= 0 && position < fen.length) {
+        if (position >= 0 && position < 64) {
             Success(position)
         } else {
-            Failure(new IllegalArgumentException("Invalid position. Expected a value between 0 and 71."))
+            Failure(new IllegalArgumentException("Invalid position. Expected a value between 0 and 63."))
         }
     }
 
@@ -350,5 +334,12 @@ object ChessBoard {
         } else {
             Failure(new IllegalArgumentException("Invalid piece name. Expected one of K, Q, R, B, N, P, k, q, r, b, n, p."))
         }
+    }
+
+    def calculateMoveValues(color: Color) : (Piece, Piece, Piece) = {
+        val e = Piece(PieceType.EMPTY, Color.EMPTY)
+        val K = Piece(PieceType.KING, color)
+        val R = Piece(PieceType.ROOK, color)
+        (e, K, R)
     }
 }

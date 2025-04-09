@@ -10,6 +10,7 @@ import scalafx.scene.layout.BackgroundPosition.Center
 import scalafx.scene.layout.{StackPane, VBox}
 import scalafx.scene.paint.Color
 import scalafx.geometry.{Insets, Pos}
+import scalafx.scene.text.Text
 import util.Observer
 
 import scala.annotation.tailrec
@@ -56,7 +57,10 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
         showPieces()
     }
     override def update: Unit = ()
-    override def errorDisplay: Unit = {}
+    override def errorDisplay: Unit = {
+        val errMsg = new Text(controller.getErrorMessage)
+        children = Seq(errMsg)
+    }
 
     def showPieces(): Unit = {
         val paths : List[String] = controller.context.state match {

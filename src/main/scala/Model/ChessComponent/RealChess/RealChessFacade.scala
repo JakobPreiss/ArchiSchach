@@ -19,9 +19,9 @@ class RealChessFacade extends ChessTrait {
     def makeMove(fen: String, move: (Int, Int)): Try[String] = {
         for {
             validFen <- ChessBoard.isValidFen(fen)
-            validMove <- ChessBoard.isValidMove(move)
+            validMove <- LegalMoves.isValidMove(move, fen)
         } yield {
-            BasicChessFacade.makeMove(validFen, validMove)
+            LegalMoves.makeMove(validFen, validMove)
         }
     }
 
@@ -63,7 +63,7 @@ class RealChessFacade extends ChessTrait {
     def translateCastle(fen : String, move: (Int, Int)): Try[(Int, Int)] = {
         for {
             validFen <- ChessBoard.isValidFen(fen)
-            validMove <- ChessBoard.isValidMove(move)
+            validMove <- LegalMoves.isValidMove(move, fen)
         } yield {
             BasicChessFacade.translateCastle(BasicChessFacade.fenToBoard(validFen), validMove)
         }

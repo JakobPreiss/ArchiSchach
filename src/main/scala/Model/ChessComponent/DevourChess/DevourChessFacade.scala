@@ -2,7 +2,6 @@ package Model.ChessComponent.DevourChess
 
 import Model.ChessComponent.BasicChessComponent.StandartChess.{BasicChessFacade, ChessBoard, Piece}
 import Model.ChessComponent.ChessTrait
-import Model.ChessComponent.RealChess.Remis
 
 import scala.util.{Failure, Success, Try}
 
@@ -26,9 +25,9 @@ class DevourChessFacade extends ChessTrait {
     def makeMove(fen: String, move: (Int, Int)): Try[String] = {
         for {
             validFen <- ChessBoard.isValidFen(fen)
-            validMove <- ChessBoard.isValidMove(move)
+            validMove <- LegalMoves.isValidMove(move, fen)
         } yield {
-            BasicChessFacade.makeMove(validFen, validMove)
+            LegalMoves.makeMove(validFen, validMove)
         }
     }
 
@@ -64,7 +63,7 @@ class DevourChessFacade extends ChessTrait {
     def translateCastle(fen: String, move: (Int, Int)): Try[(Int, Int)] = {
         for {
             validFen <- ChessBoard.isValidFen(fen)
-            validMove <- ChessBoard.isValidMove(move)
+            validMove <- LegalMoves.isValidMove(move, fen)
         } yield {
             BasicChessFacade.translateCastle(BasicChessFacade.fenToBoard(validFen), validMove)
         }
@@ -72,7 +71,7 @@ class DevourChessFacade extends ChessTrait {
 
     def isRemis(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
         withValidFen(fen) { validFen =>
-            Remis.isRemis(validFen, legalMoves)
+            Remis.isRemis(validFen)
         }
     }
 

@@ -17,10 +17,6 @@ object BasicChessFacade extends BasicChessTrait {
         PseudoMovesFacade.subSystemOperation(fen)
     }
 
-    def makeMove(fen: String, move: (Int, Int)): String = {
-        ChessBoard.makeMove(fen, move)
-    }
-
     def canPromote(fen: String): Option[Int] = {
         ChessBoard.canPromote(fen)
     }
@@ -66,7 +62,7 @@ object BasicChessFacade extends BasicChessTrait {
     }
 
     def getDefaultFen(): String = {
-        ChessBoard.boardToFen(ChessBoard.getDefaultBoard())
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     }
 
     def getDefaultBoard(): Vector[Piece] = {
@@ -79,5 +75,17 @@ object BasicChessFacade extends BasicChessTrait {
 
     def isValidFen(fen : String) : Try[String] = {
         ChessBoard.isValidFen(fen)
+    }
+
+    def updateCastleing(fenCastles: String, move:(Int, Int)): String = {
+        ChessBoard.updateCastleing(fenCastles, move)
+    }
+
+    def updateEnpassant(fen: String, move:(Int, Int)): String = {
+        ChessBoard.updateEnpassant(fen, move)
+    }
+
+    def calculateMoveValues(color: Color) : (Piece, Piece, Piece) = {
+        ChessBoard.calculateMoveValues(color)
     }
 }

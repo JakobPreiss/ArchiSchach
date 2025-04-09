@@ -82,10 +82,10 @@ class EngineControllerSpec extends AnyWordSpec {
         "implement squareClicked correctly" in {
             ec.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             ec.squareClicked(Success(7))
-            ec.activeSquare should be(-5)
+            ec.activeSquare should be(None)
 
             ec.squareClicked(Success(60))
-            ec.activeSquare should be(60)
+            ec.activeSquare should be(Some(60))
 
         }
 

@@ -4,7 +4,6 @@ import Model.ChessComponent.BasicChessComponent.StandartChess.ChessBoard
 import util.Observer
 import Model.ChessComponent.ChessTrait
 import Model.ChessComponent.RealChess.RealChessFacade
-import ModelTests.ChessComponentTests.ControllerFakeSpy
 import cController.ControllerComponent.Extra.{ChessContext, State}
 import cController.ControllerComponent.RealChessController.Controller
 import cController.ControllerComponent.StateComponent.ApiFileTrait
@@ -33,6 +32,7 @@ class ControllerSpec extends AnyWordSpec with Matchers {
                 override def specialCase: Unit = fen = ""
                 def specialHatFunktioniert : String = fen
                 override def reverseSpecialCase: Unit = ???
+                override def errorDisplay: Unit = ???
             }
             val testOb = new TestObserver(false, "heyyy", controller, " ")
             controller.play(Success(ChessBoard.moveToIndex("e2","e4")))

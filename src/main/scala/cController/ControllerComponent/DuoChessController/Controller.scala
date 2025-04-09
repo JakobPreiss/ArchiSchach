@@ -34,6 +34,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
         }
         fileapi.printTo(context, fen)
         notifyObservers
+        deRingObservers
     }
 
     def play(moveRaw : Try[(Int, Int)]) : Unit = {
@@ -46,9 +47,11 @@ class Controller(override var fen : String, var context : ChessContext, var outp
             if (!legalMoves.contains(move)) {
                 output = "Das kannste nicht machen Bro (kein legaler Zug)"
                 checkGameState(legalMoves)
+                notifyObservers
             } else {
                 gameMode.makeMove(fen, move) match {
                     case Success(newFen) => UndoInvoker.doStep(new SetCommand(newFen, fen, this))
+                        checkPromotion()
                     case Failure(err) => failureHandle(err.getMessage)
                 }
             }       

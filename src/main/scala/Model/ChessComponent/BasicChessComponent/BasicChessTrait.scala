@@ -29,15 +29,6 @@ trait BasicChessTrait {
     def getAllPseudoLegalMoves(fen: String): List[(Int, Int)]
 
     /**
-     * makeMove gets a Int-Tupel as a move to make and transforms the given fen into a new fen with the given move made
-     *
-     * @param fen  current board state as fen-String
-     * @param move move as a Int-Tupel (fromSquare, toSquare)
-     * @return new board state as fen-String
-     * */
-    def makeMove(fen: String, move: (Int, Int)): String
-
-    /**
      * canPromote checks if a pawn promotion is possible on the given board state and returns the index of the square of the promoteable pawn
      * @param fen current board state as fen-String
      * @return index of the square of the promoteable pawn or None if not possible
@@ -149,5 +140,28 @@ trait BasicChessTrait {
      * @param fen gamestate in fen
      * @return Success(fen) if correct Failure(exeption) if incorrect
      */
-    def isValidFen(fen : String) : Try[String] 
+    def isValidFen(fen : String) : Try[String]
+
+    /**
+     * updateCastleing updates the fen part that keeps track of castleing rights
+     * @param fenCastles Castle-part of fen
+     * @param move move
+     * @return updated Castle-part of fen
+     */
+    def updateCastleing(fenCastles: String, move:(Int, Int)): String
+
+    /**
+     * updateEnPassant updates the fen part that keeps track of enPassant rights
+     * @param fen fenpart that keeps track of enPassant
+     * @param move move
+     * @return updated fenpart that keeps track of enPassant
+     */
+    def updateEnpassant(fen: String, move:(Int, Int)): String
+
+    /**
+     * calculateMoveValues calculates the correct color pieces relevant for castleing
+     * @param color Color that moved
+     * @return pieces in correct color
+     */
+    def calculateMoveValues(color: Color) : (Piece, Piece, Piece)
 }

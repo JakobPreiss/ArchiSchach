@@ -6,6 +6,7 @@ import Model.ChessComponent.BasicChessComponent.StandartChess.PieceType.{BISHOP,
 import Model.ChessComponent.BasicChessComponent.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
 
 import scala.annotation.tailrec
+import scala.util.{Success, Try, Failure}
 
 object LegalMoves {
 
@@ -26,14 +27,14 @@ object LegalMoves {
     def pawnAttack(fen: String, position: Int): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
 
-        val attacks: List[(Int, Int)] = List((attackColorNum, attackColorNum), (attackColorNum, attackColorNum * -1))
+        val attacks: List[(Int, Int)] = List((attackColorNum * - 1, attackColorNum), (attackColorNum * -1, attackColorNum * -1))
 
         @tailrec
         def checkPawnAttack(moves: List[(Int, Int)]): Boolean = {
             moves match {
                 case Nil => false
                 case (rowDirection, columDirection) :: t => {
-                    if (isAttacker(board, Piece(PieceType.PAWN, attackColor), position, rowDirection, columDirection)) {
+                    if (isAttacker(board, Piece(PieceType.PAWN, moveColor), position, rowDirection, columDirection)) {
                         return true
                     }
                     checkPawnAttack(t)
@@ -54,7 +55,7 @@ object LegalMoves {
             moves match {
                 case Nil => false
                 case (rowDirection, columDirection) :: t => {
-                    if (isAttacker(board, Piece(PieceType.KNIGHT, attackColor), position, rowDirection, columDirection)) {
+                    if (isAttacker(board, Piece(PieceType.KNIGHT, moveColor), position, rowDirection, columDirection)) {
                         return true
                     }
                     checkKnightAttack(t)
@@ -65,29 +66,34 @@ object LegalMoves {
         checkKnightAttack(attacks)
     }
 
-    @tailrec
-    def checkSpaceInDirection(currentRow: Int, currentColum: Int, position: Int, pieces: List[PieceType], board: Vector[Piece], attackColor: Color): Boolean = {
-        if (!BasicChessFacade.onBoard(position, currentRow, currentColum)) {
-            return false;
+
+    def checkSpacesInDirection(currentRow: Int, currentColum: Int, position: Int, pieces: List[Piece], board: Vector[Piece]): Boolean = {
+
+        @tailrec
+        def checkSpaceInDirection(currentRow: Int, currentColum: Int, position: Int, pieces: List[Piece], board: Vector[Piece]): Boolean = {
+            if (!BasicChessFacade.onBoard(position, currentRow, currentColum)) {
+                return false;
+            }
+            board(position + 8 * currentRow + currentColum) match {
+                case piece if piece.equals(pieces.head) || piece.equals(pieces(1)) => true
+                case piece if(piece.pieceType == PieceType.EMPTY && piece.color == Color.EMPTY) => checkSpaceInDirection(currentRow, currentColum, position + 8 * currentRow + currentColum, pieces, board);
+                case _ => false;
+            }
         }
 
-        board(position + 8 * currentRow + currentColum) match {
-            case Piece(e, `attackColor`) if e == pieces.head || e == pieces(1) => true
-            case Piece(PieceType.EMPTY, Color.EMPTY) => checkSpaceInDirection(currentRow, currentColum, position + 8 * currentRow + currentColum, pieces, board, attackColor);
-            case _ => false;
-        }
+
+        checkSpaceInDirection(currentRow, currentColum, position, pieces, board)
     }
 
-
     @tailrec
-    def checkDirection(moves: List[(Int, Int)], board: Vector[Piece], position: Int, pieces: List[PieceType], attackColor: Color): Boolean = {
+    def checkDirections(moves: List[(Int, Int)], board: Vector[Piece], position: Int, pieces: List[Piece]): Boolean = {
         moves match {
             case Nil => false;
             case (rowDirection, columDirection) :: t => {
-                if (checkSpaceInDirection(rowDirection, columDirection, position, pieces, board, attackColor)) {
+                if (checkSpacesInDirection(rowDirection, columDirection, position, pieces, board)) {
                     true;
                 } else {
-                    checkDirection(t, board, position, pieces, attackColor)
+                    checkDirections(t, board, position, pieces)
                 }
             }
         }
@@ -96,13 +102,13 @@ object LegalMoves {
     def horizontalAttack(fen: String, position: Int): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
         val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(ROOK, QUEEN))
-        checkDirection(attacks, board, position, List(ROOK, QUEEN), attackColor)
+        checkDirections(attacks, board, position, List(Piece(ROOK, moveColor), Piece(QUEEN, moveColor)))
     }
 
     def verticalAttack(fen: String, position: Int): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
         val attacks: List[(Int, Int)] = BasicChessFacade.pieceMoves(List(BISHOP, QUEEN))
-        checkDirection(attacks, board, position, List(BISHOP, QUEEN), attackColor)
+        checkDirections(attacks, board, position, List(Piece(BISHOP, moveColor), Piece(QUEEN, moveColor)))
     }
 
     def kingAttack(fen: String, position: Int): Boolean = {
@@ -115,7 +121,7 @@ object LegalMoves {
             moves match {
                 case Nil => false
                 case (rowDirection, columDirection) :: t => {
-                    if (isAttacker(board, Piece(PieceType.KING, attackColor), position, rowDirection, columDirection)) {
+                    if (isAttacker(board, Piece(PieceType.KING, moveColor), position, rowDirection, columDirection)) {
                         return true
                     }
                     checkKingAttack(t)
@@ -126,35 +132,28 @@ object LegalMoves {
         checkKingAttack(attacks)
     }
 
-
-
     def isPosAttacked(fen: String, position: Int): Boolean = {
         pawnAttack(fen, position) || knightAttack(fen, position) || verticalAttack(fen, position) || horizontalAttack(fen, position) || kingAttack(fen, position)
     }
 
-    private def calculateMoveValues(color: Color) = {
-        val e = Piece(PieceType.EMPTY, Color.EMPTY)
-        val K = Piece(PieceType.KING, color)
-        val R = Piece(PieceType.ROOK, color)
-        (e, K, R)
-    }
-
-    def makeMove(board: Vector[Piece], move: (Int, Int)): Vector[Piece] = {
-        move match {
+    def makeMove(fen : String, move: (Int, Int)): String = {
+        val fenSplit = fen.split(" ")
+        val board = BasicChessFacade.fenToBoard(fen);
+        val newBoard = move match {
             case (-1, -1) => {
-                val (e, k, r) = calculateMoveValues(Color.WHITE)
+                val (e, k, r) = BasicChessFacade.calculateMoveValues(Color.WHITE)
                 board.updated(60, e).updated(62, k).updated(63, e).updated(61, r);
             }
             case (-2, -1) => {
-                val (e, k, r) = calculateMoveValues(Color.WHITE)
+                val (e, k, r) = BasicChessFacade.calculateMoveValues(Color.WHITE)
                 board.updated(60, e).updated(58, k).updated(56, e).updated(59, r);
             }
             case (-3, -1) => {
-                val (e, k, r) = calculateMoveValues(Color.BLACK)
+                val (e, k, r) = BasicChessFacade.calculateMoveValues(Color.BLACK)
                 board.updated(4, e).updated(6, k).updated(7, e).updated(5, r);
             }
             case (-4, -1) => {
-                val (e, k, r) = calculateMoveValues(Color.BLACK)
+                val (e, k, r) = BasicChessFacade.calculateMoveValues(Color.BLACK)
                 board.updated(4, e).updated(2, k).updated(0, e).updated(3, r);
             }
             case _ => {
@@ -163,14 +162,19 @@ object LegalMoves {
                 board.updated(from, Piece(PieceType.EMPTY, Color.EMPTY)).updated(to, from_piece);
             }
         }
-
+        if (fenSplit(1) == "w") {
+            BasicChessFacade.boardToFen(newBoard) + " b " + BasicChessFacade.updateCastleing(fenSplit(2), move) + " " + BasicChessFacade.updateEnpassant(fen, move) + " " + fenSplit(4) + " " + fenSplit(5)
+        } else {
+            BasicChessFacade.boardToFen(newBoard) + " w " + BasicChessFacade.updateCastleing(fenSplit(2), move) + " " + BasicChessFacade.updateEnpassant(fen, move) + " " + fenSplit(4) + " " + (fenSplit(5).toInt + 1).toString
+        }
     }
+
 
     def isLegalMove(fen: String, move: (Int, Int)): Boolean = {
         val (board, fenSplit, attackColorNum, moveColor, attackColor) = readyingLegalMoveData(fen)
         val (from, to) = move;
         val kingPos: Int = BasicChessFacade.piecePositions(board, Piece(PieceType.KING, moveColor)).head
-        val moveFen = BasicChessFacade.boardToFen(makeMove(board, move)) + " " + fenSplit.tail.mkString(" ")
+        val moveFen = makeMove(fen, move)
         if (from == kingPos) {
             !isPosAttacked(moveFen, to)
         } else {
@@ -195,4 +199,21 @@ object LegalMoves {
         filterLegal(List(), BasicChessFacade.getAllPseudoLegalMoves(fen));
     }
 
+    // TODO: Implement the logic to check if the move is valid based on the current game state
+    def isValidMove(move: (Int, Int), fen: String): Try[(Int, Int)] = {
+        getAllLegalMoves(fen).contains(mapMove(move)) match {
+            case true => Success(move)
+            case false => Failure(new IllegalArgumentException("not a valid Move"))
+        }
+    }
+
+    def mapMove(move: (Int, Int)) : (Int, Int) = {
+        move match {
+            case (4, 2) => (-4, -1)
+            case (4, 6) => (-3, -1)
+            case (60, 62) => (-1, -1)
+            case (60, 58) => (-2, -1)
+            case _ => move
+        }
+    }
 }

@@ -47,7 +47,7 @@ object ChessModule {
         }
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
+        val arg3 = ChessBoard.getBoardString(ChessBoard.fenToBoard(arg1))
         new Controller(arg1, arg2, arg3)
     }
 

@@ -8,11 +8,13 @@ import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
 import Model.ChessComponent.BasicChessComponent.StandartChess.BasicChessFacade
 
+import scala.util.Success
+
 class DevourChessFacadeSpec extends AnyWordSpec {
     val testInstance = DevourChessFacade()
     "DevourChessFacade" should {
         "return the correct board string" in {
-            testInstance.getBoardString(testInstance.getDefaultFen()) should be((
+            testInstance.getBoardString(testInstance.getDefaultFen()) should be(Success(
                 "    +-----+-----+-----+-----+-----+-----+-----+-----+\n" +
                     "8   |  r  |  n  |  b  |  q  |  k  |  b  |  n  |  r  |\n" +
                     "    +-----+-----+-----+-----+-----+-----+-----+-----+\n" +
@@ -31,11 +33,6 @@ class DevourChessFacadeSpec extends AnyWordSpec {
                     "1   |  R  |  N  |  B  |  Q  |  K  |  B  |  N  |  R  |\n" +
                     "    +-----+-----+-----+-----+-----+-----+-----+-----+\n" +
                     "       a     b     c     d     e     f     g     h     "));
-        }
-
-        "return a correct Vector[Piece] board given a FEN" in {
-            val testFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-            testInstance.fenToBoard(testFen) should equal(ChessBoard.getDefaultBoard());
         }
 
        
@@ -84,14 +81,14 @@ class DevourChessFacadeSpec extends AnyWordSpec {
             val move5 : (Int, Int) = (4,5)
             val move6 : (Int, Int) = (60,61)
             val move7 : (Int, Int) = (0,1)
-            val board = testInstance.fenToBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-            testInstance.translateCastle(board, (60,62)) should be (move1)
-            testInstance.translateCastle(board, (60,58)) should be (move2)
-            testInstance.translateCastle(board, (4,6)) should be (move3)
-            testInstance.translateCastle(board, (4,2)) should be (move4)
-            testInstance.translateCastle(board, (4,5)) should be (move5)
-            testInstance.translateCastle(board, (60, 61)) should be(move6)
-            testInstance.translateCastle(board, (0,1)) should be (move7)
+            val fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            testInstance.translateCastle(fen, (60,62)) should be (move1)
+            testInstance.translateCastle(fen, (60,58)) should be (move2)
+            testInstance.translateCastle(fen, (4,6)) should be (move3)
+            testInstance.translateCastle(fen, (4,2)) should be (move4)
+            testInstance.translateCastle(fen, (4,5)) should be (move5)
+            testInstance.translateCastle(fen, (60, 61)) should be(move6)
+            testInstance.translateCastle(fen, (0,1)) should be (move7)
         }
 
         "detect a possible promotion" in {

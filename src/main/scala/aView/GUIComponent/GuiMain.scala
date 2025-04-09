@@ -16,7 +16,7 @@ import scalafx.scene.{Node, Scene}
 import scalafx.stage.Stage
 import util.Observer
 
-object GuiMain extends JFXApp3, Observer {
+object GuiMain extends JFXApp3 {
 
     var controller : Option[ControllerTrait] = None
 
@@ -47,36 +47,4 @@ object GuiMain extends JFXApp3, Observer {
     def setController(controller: ControllerTrait): Unit = {
         this.controller = Some(controller)
     }
-
-    def update: Unit = {}
-
-    def specialCase: Unit = {}
-
-    def reverseSpecialCase: Unit = {}
-
-    def errorDisplay: Unit = {
-        val controllerReal : ControllerTrait = controller match {
-            case Some(contr) => contr
-            case None => null
-        }
-        val errorStage = new Stage {
-            title = "Error Message"
-        }
-
-        errorStage.scene = new Scene {
-            root = new VBox {
-                alignment = Pos.Center
-                spacing = 10
-                padding = Insets(20)
-                children = Seq(
-                    new Label(controllerReal.getErrorMessage),
-                    new Button("Close") {
-                        onAction = _ => errorStage.close()
-                    }
-                )
-            }
-        }
-        errorStage.show()
-    }
-    
 }
