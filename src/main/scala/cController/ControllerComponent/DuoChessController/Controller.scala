@@ -118,7 +118,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
                                 deRingObservers
                                 notifyObservers
                             case Failure(err) =>
-                                failureHandle(err.getMessage)
+                                failureHandle(err.getLocalizedMessage)
                         }
                     case None => output = "Kein Bauer kann befördert werden"
                 }

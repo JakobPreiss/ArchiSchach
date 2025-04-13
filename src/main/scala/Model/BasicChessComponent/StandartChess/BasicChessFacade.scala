@@ -38,11 +38,12 @@ object BasicChessFacade extends BasicChessTrait {
 
     def promote(pieceName: String, fen: String, position: Int): Try[String] = {
         for {
-            validFen <- ChessBoard.isValidFen(fen)
             validPos <- ChessBoard.isValidPosition(position)
             validPieceName <- ChessBoard.isValidPieceName(pieceName)
+            validFen <- ChessBoard.isValidFen(fen)
         } yield {
-            ChessBoard.promote(validFen, validPieceName, validPos, PseudoMoves.extractColor(fen.split(" ")(1))._3)
+            val color = PseudoMoves.extractColor(fen.split(" ")(1))._3
+            ChessBoard.promote(validPieceName, validFen, validPos, color)
         }
     }
 

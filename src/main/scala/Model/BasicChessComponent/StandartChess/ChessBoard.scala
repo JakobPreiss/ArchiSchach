@@ -250,12 +250,18 @@ object ChessBoard {
             case "r" => Piece(PieceType.ROOK, color)
         }
         ChessBoard.boardToFen(board.updated(position, pieceFactory(pieceName, color))) + " " + fensplit(1) + " " + fensplit(2) + " " + fensplit (3) + " " + fensplit(4) + " " + fensplit(5);
-
-
     }
 
     def makeMove(fen: String, move: (Int, Int)): String = {
         val fenSplit = fen.split(" ")
+        val enPassantSquare = fenSplit(3) match {
+            case "-" => 66
+            case _ => coordinatesToIndex(fenSplit(3))
+        }
+        val enPassantAdder = fenSplit(1) match {
+            case "b" => -8
+            case _ => 8
+        }
         val board = ChessBoard.fenToBoard(fen);
         val newBoard = move match {
             case (-1, -1) => {
@@ -273,6 +279,11 @@ object ChessBoard {
             case (-4, -1) => {
                 val (e, k, r) = calculateMoveValues(Color.BLACK)
                 board.updated(4, e).updated(2, k).updated(0, e).updated(3, r);
+            }
+            case (_, enPassant) if(enPassant == enPassantSquare) => {
+                val (from, to) = move;
+                val from_piece = board(from);
+                board.updated(from, Piece(PieceType.EMPTY, Color.EMPTY)).updated(to, from_piece).updated(enPassantSquare + enPassantAdder, Piece(PieceType.EMPTY, Color.EMPTY));
             }
             case _ => {
                 val (from, to) = move;
@@ -325,7 +336,6 @@ object ChessBoard {
                     case _ => Failure(new IllegalArgumentException("fen contains unallowed letters"))
                 }
             }
-
             val results: Array[Try[Int]] = fenList.map { fen =>
                 val fenParts: List[String] = fen.toList.map(_.toString)
                 checkCorrectOrder(fenParts, previousWasDigit = false, previousWasPiece = false, numbers, pieces, fieldsum = 0)
