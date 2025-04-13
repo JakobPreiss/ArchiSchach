@@ -2,6 +2,7 @@ package ControllerTests
 
 import cController.ControllerComponent.ControllerTrait
 import _root_.cController.ControllerComponent.Extra.{Command, SetCommand, UndoInvoker}
+import scala.util.Try
 
 class ControllerStub(override var fen : String) extends ControllerTrait {
     val invoker = UndoInvoker
@@ -30,4 +31,6 @@ class ControllerStub(override var fen : String) extends ControllerTrait {
     override def resetBoard(): Unit = ???
 
     def getErrorMessage: String = ???
+
+    def translateMoveStringToInt (fen: String, move: String): Try[(Int, Int)] = ???
 }

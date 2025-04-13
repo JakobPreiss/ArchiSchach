@@ -4,6 +4,7 @@ import Model.BasicChessComponent.StandartChess.{ChessBoard, PseudoMoves}
 import Model.ChessComponent.RealChess.{LegalMoves, Remis}
 import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
+import scala.util.{Try, Success, Failure}
 
 class RemisSpec extends AnyWordSpec {
     "Remis should detect insufficent material correctly" in {
@@ -41,6 +42,15 @@ class RemisSpec extends AnyWordSpec {
     }
 
     "realise a Patt correctly" in {
-        Remis.isPatt("k7/8/1Q6/8/8/8/8/4K3 b - - 0 1", LegalMoves.getAllLegalMoves("k7/8/1Q6/8/8/8/8/4K3 b - - 0 1")) should be (true)
+        val legalMoves : List[(Int, Int)] = LegalMoves.getAllLegalMoves("k7/8/1Q6/8/8/8/8/4K3 b - - 0 1") match {
+            case Failure(exception) => List((0,1))
+            case Success(moves) => moves
+        }
+        val pattValue = Remis.isPatt("k7/8/1Q6/8/8/8/8/4K3 b - - 0 1", legalMoves) match {
+            case Failure(exception) => false
+            case Success(patt) => patt
+        }
+        pattValue should be (true)
+        
     }
 }
