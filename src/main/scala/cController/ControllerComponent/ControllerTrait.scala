@@ -96,6 +96,8 @@ trait ControllerTrait extends Observable {
      * @return ErrorMessage from failure
      */
     def getErrorMessage : String
+
+    def translateMoveStringToInt (fen :String, move : String) : Try[(Int, Int)]
 }
 
 

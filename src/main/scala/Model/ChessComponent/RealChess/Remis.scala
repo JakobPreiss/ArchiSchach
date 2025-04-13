@@ -1,21 +1,29 @@
 package Model.ChessComponent.RealChess
 
-import Model.ChessComponent.BasicChessComponent.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
+import Model.BasicChessComponent.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
 
 import scala.annotation.tailrec
+import scala.util.{Try, Success, Failure}
 
 object Remis {
 
 
-    def isPatt(fen: String, legalMoves: List[(Int, Int)]): Boolean = {
+    def isPatt(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
         if (legalMoves.isEmpty) {
-            val (board, fenSplit, attackColorNum, moveColor, attackColor) = LegalMoves.readyingLegalMoveData(fen)
-                val kingPos: Int = BasicChessFacade.piecePositions(board, Piece(PieceType.KING, moveColor)).head
-            if (!LegalMoves.isPosAttacked(fen, kingPos)) {
-                return true
+            LegalMoves.readyingLegalMoveData(fen) match {
+                case Failure(err) => Failure(err)
+                case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) => BasicChessFacade.piecePositions(board, Piece(PieceType.KING, moveColor)).match {
+                    case Failure(err) => Failure(err)
+                    case Success(kingPos) => LegalMoves.isPosAttacked(fen, kingPos.head) match {
+                        case Failure(err) => Failure(err)
+                        case Success(isAttacked) if (isAttacked) => Success(true)
+                        case Success(isNotAttacked) => Success(false)
+                    }
+                }
             }
+        } else {
+            Success(false)
         }
-        false
     }
     
     
@@ -84,7 +92,10 @@ object Remis {
         searchPieces(fen.split(" ")(0).toList, false, None);
     }
 
-    def isRemis(fen: String, legalMoves: List[(Int, Int)]) : Boolean = {
-        isPatt(fen, legalMoves) || isMaterial(fen)
+    def isRemis(fen: String, legalMoves: List[(Int, Int)]) : Try[Boolean] = {
+        isPatt(fen, legalMoves) match {
+            case Failure(err) => Failure(err)
+            case Success(patt) => Success(patt || isMaterial(fen))
+        }
     }
 }

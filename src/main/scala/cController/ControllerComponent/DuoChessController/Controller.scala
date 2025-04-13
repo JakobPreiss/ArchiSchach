@@ -1,12 +1,13 @@
 package cController.ControllerComponent.RealChessController
 
+import Model.BasicChessComponent.StandartChess.BasicChessFacade
 import Model.ChessComponent.ChessTrait
 import cController.ControllerComponent.ControllerTrait
 import cController.ControllerComponent.Extra.{ChessContext, Event, SetCommand, State, UndoInvoker}
 import cController.ControllerComponent.StateComponent.ApiFileTrait
 import util.Observable
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 class Controller(override var fen : String, var context : ChessContext, var output : String)(using val gameMode : ChessTrait)(using val fileapi: ApiFileTrait) extends Observable with ControllerTrait {
     var activeSquare : Option[Int] = None
@@ -14,7 +15,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
     var errorMessage : String = ""
     
     def boardToString() : String = {
-        gameMode.getBoardString(fen) match {
+        BasicChessFacade.getBoardString(fen) match {
             case Success(value) => value
             case Failure(value) => 
                 failureHandle(value.getMessage)
@@ -49,7 +50,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
                 checkGameState(legalMoves)
                 notifyObservers
             } else {
-                gameMode.makeMove(fen, move) match {
+                BasicChessFacade.makeMove(fen, move) match {
                     case Success(newFen) => UndoInvoker.doStep(new SetCommand(newFen, fen, this))
                         checkPromotion()
                     case Failure(err) => failureHandle(err.getMessage)
@@ -58,15 +59,15 @@ class Controller(override var fen : String, var context : ChessContext, var outp
         }
         
         def checkPromotion(): Unit = {
-            val canPromote = gameMode.canPromote(fen) match {
+            val canPromote = BasicChessFacade.canPromote(fen) match {
                 case Success(value) => value
                 case Failure(err) =>
                     failureHandle(err.getMessage)
                     return
             }
             if (canPromote.isDefined) {
-                ringObservers
                 output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
+                ringObservers
             } else {
                 output = boardToString()
                 gameMode.getAllLegalMoves(fen) match {
@@ -106,15 +107,16 @@ class Controller(override var fen : String, var context : ChessContext, var outp
     }
 
     def promotePawn(pieceKind: String): Unit = {
-        gameMode.canPromote(fen) match {
+        BasicChessFacade.canPromote(fen) match {
             case Success(position : Option[Int]) =>
                 position match {
                     case Some(pos : Int) =>
-                        gameMode.promote(pieceKind, fen, pos) match {
+                        BasicChessFacade.promote(pieceKind, fen, pos) match {
                             case Success(updatedFen : String) =>
                                 fen = updatedFen
                                 output = boardToString()
                                 deRingObservers
+                                notifyObservers
                             case Failure(err) =>
                                 failureHandle(err.getMessage)
                         }
@@ -151,7 +153,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
     def squareClicked(clickedSquare: Try[Int]) : Unit = {
         clickedSquare match {
             case Success(square : Int) =>
-                val colorPiece = gameMode.isColorPiece(fen, square) match {
+                val colorPiece = BasicChessFacade.isColorPiece(fen, square) match {
                     case Success(value) => value
                     case Failure(err) =>
                         failureHandle(err.getMessage)
@@ -162,7 +164,7 @@ class Controller(override var fen : String, var context : ChessContext, var outp
                 } else if (!colorPiece && activeSquare.isDefined) {
                     activeSquare match {
                         case Some(newSquare : Int) => 
-                            play(gameMode.translateCastle(fen, (newSquare, square)))
+                            play(BasicChessFacade.translateCastleFromFen(fen, (newSquare, square)))
                             activeSquare = None
                         case None => None
                 }
@@ -185,11 +187,9 @@ class Controller(override var fen : String, var context : ChessContext, var outp
     def getErrorMessage : String = {
         errorMessage
     }
-    //give error an UI
-    //notifyMyAss
-    //-> Tui und Gui geben Error aus
-
-    //Dominik macht Model
-    //Jakob macht Controller Failure und Controller Methode und TUI/GUI Methoden
+    
+    def translateMoveStringToInt (fen :String, move : String) : Try[(Int, Int)] = {
+        BasicChessFacade.translateMoveStringToInt(fen, move)
+    }
 }
 

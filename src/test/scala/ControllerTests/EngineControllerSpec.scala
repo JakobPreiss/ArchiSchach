@@ -1,6 +1,6 @@
 package ControllerTests
 
-import Model.ChessComponent.BasicChessComponent.StandartChess.{ChessBoard, Piece}
+import Model.BasicChessComponent.StandartChess.{ChessBoard, Piece}
 import cController.ControllerComponent.SoloChessController.EngineController
 import Model.ChessComponent.ChessTrait
 import Model.ChessComponent.RealChess.RealChessFacade

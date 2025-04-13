@@ -1,5 +1,4 @@
-import Model.ChessComponent.BasicChessComponent.StandartChess.ChessBoard
-
+import Model.BasicChessComponent.StandartChess.ChessBoard
 import scala.io.StdIn.readLine
 import Model.ChessComponent.ChessTrait
 import aView.GUIComponent.GuiMain

@@ -1,12 +1,12 @@
-package Model.ChessComponent.BasicChessComponent.StandartChess
+package Model.BasicChessComponent.StandartChess
 
 import Model.ChessComponent.*
-import Model.ChessComponent.BasicChessComponent.StandartChess.Color.EMPTY
-import Model.ChessComponent.BasicChessComponent.StandartChess.{Color, Piece, PieceType, PseudoMoves}
+import Color.{BLACK, EMPTY, WHITE}
+import Model.BasicChessComponent.StandartChess.PieceType.PAWN
 import Model.ChessComponent.RealChess.LegalMoves
 
 import scala.annotation.tailrec
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 object ChessBoard {
 
@@ -236,11 +236,9 @@ object ChessBoard {
         None
     }
 
-    def promote(pieceName: String, fen : String, position : Int) : String = {
+    def promote(pieceName: String, fen : String, position : Int, color : Color) : String = {
         val board = ChessBoard.fenToBoard(fen)
         val fensplit = fen.split(" ")
-        val colors = PseudoMoves.extractColor(fensplit(1))
-
         def pieceFactory(pieceName1: String, color: Color) = pieceName1 match {
             case "Q" => Piece(PieceType.QUEEN, color)
             case "q" => Piece(PieceType.QUEEN, color)
@@ -251,7 +249,42 @@ object ChessBoard {
             case "R" => Piece(PieceType.ROOK, color)
             case "r" => Piece(PieceType.ROOK, color)
         }
-        ChessBoard.boardToFen(board.updated(position, pieceFactory(pieceName, colors._3))) + " " + fensplit(1) + " " + fensplit(2) + " " + fensplit (3) + " " + fensplit(4) + " " + fensplit(5);
+        ChessBoard.boardToFen(board.updated(position, pieceFactory(pieceName, color))) + " " + fensplit(1) + " " + fensplit(2) + " " + fensplit (3) + " " + fensplit(4) + " " + fensplit(5);
+
+
+    }
+
+    def makeMove(fen: String, move: (Int, Int)): String = {
+        val fenSplit = fen.split(" ")
+        val board = ChessBoard.fenToBoard(fen);
+        val newBoard = move match {
+            case (-1, -1) => {
+                val (e, k, r) = calculateMoveValues(Color.WHITE)
+                board.updated(60, e).updated(62, k).updated(63, e).updated(61, r);
+            }
+            case (-2, -1) => {
+                val (e, k, r) = calculateMoveValues(Color.WHITE)
+                board.updated(60, e).updated(58, k).updated(56, e).updated(59, r);
+            }
+            case (-3, -1) => {
+                val (e, k, r) = calculateMoveValues(Color.BLACK)
+                board.updated(4, e).updated(6, k).updated(7, e).updated(5, r);
+            }
+            case (-4, -1) => {
+                val (e, k, r) = calculateMoveValues(Color.BLACK)
+                board.updated(4, e).updated(2, k).updated(0, e).updated(3, r);
+            }
+            case _ => {
+                val (from, to) = move;
+                val from_piece = board(from);
+                board.updated(from, Piece(PieceType.EMPTY, Color.EMPTY)).updated(to, from_piece);
+            }
+        }
+        if (fenSplit(1) == "w") {
+            boardToFen(newBoard) + " b " + updateCastleing(fenSplit(2), move) + " " + updateEnpassant(fen, move) + " " + fenSplit(4) + " " + fenSplit(5)
+        } else {
+            boardToFen(newBoard) + " w " + updateCastleing(fenSplit(2), move) + " " + updateEnpassant(fen, move) + " " + fenSplit(4) + " " + (fenSplit(5).toInt + 1).toString
+        }
     }
     
     def colorDetection(fen : String, position : Int) : Color = {
@@ -320,7 +353,7 @@ object ChessBoard {
         }
     }
 
-    def isValidPosition(fen: String, position: Int): Try[Int] = {
+    def isValidPosition(position: Int): Try[Int] = {
         if (position >= 0 && position < 64) {
             Success(position)
         } else {
@@ -340,6 +373,34 @@ object ChessBoard {
         val e = Piece(PieceType.EMPTY, Color.EMPTY)
         val K = Piece(PieceType.KING, color)
         val R = Piece(PieceType.ROOK, color)
-        (e, K, R)
+        (e,K,R)
+    }
+
+    def isValidBoardVector(board : Vector[Piece]) : Try[Vector[Piece]] = {
+        def isPawn(piece: Piece): Boolean = {
+            piece.pieceType == PAWN
+        }
+
+        if (board.length == 64 && (board.count(isPawn) < 17)) {
+            Success(board)
+        } else {
+            Failure(new IllegalArgumentException("Invalid boardVector"))
+        }
+    }
+
+    def isValidCastleString(castleString : String) : Try[String] = {
+        if (castleString.matches("^(?:K?Q?k?q?|-)$")) {
+            Success(castleString)
+        } else {
+            Failure(new IllegalArgumentException("Invalid piece name. Expected one of K, Q, R, B, N, P, k, q, r, b, n, p."))
+        }
+    }
+
+    def checkValidPieceColor(color : Color) : Try[Color] = {
+        color match {
+            case WHITE => Success(WHITE)
+            case BLACK => Success(BLACK)
+            case _ => Failure(new IllegalArgumentException("incorrect Color for pieces"))
+        }
     }
 }

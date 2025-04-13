@@ -1,12 +1,11 @@
 package ModelTests.ChessComponentTests
 
-import Model.ChessComponent.BasicChessComponent.StandartChess.{Color, Piece, PieceType}
+import Model.BasicChessComponent.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
 import Model.ChessComponent.DevourChess.{DevourChessFacade, Remis}
 import Model.ChessComponent.RealChess.RealChessFacade
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
-import Model.ChessComponent.BasicChessComponent.StandartChess.BasicChessFacade
 
 import scala.util.Success
 

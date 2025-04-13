@@ -1,6 +1,6 @@
 package aView.TUIComponent
 
-import Model.ChessComponent.BasicChessComponent.StandartChess.ChessBoard
+import Model.BasicChessComponent.StandartChess.ChessBoard
 import cController.ControllerComponent.ControllerTrait
 import util.Observer
 
@@ -17,7 +17,7 @@ class Tui(controller: ControllerTrait) extends Observer {
                 case "undo" => controller.undo()
                 case "redo" => controller.redo()
                 case "reset" => controller.resetBoard()
-                case move /*if move.matches("(([a-h][1-8][a-h][1-8])|undo|redo)")*/ => controller.play(Success(ChessBoard.translateMoveStringToInt(controller.fen, move)))
+                case move /*if move.matches("(([a-h][1-8][a-h][1-8])|undo|redo)")*/ => controller.play((controller.translateMoveStringToInt(controller.fen, move)))
                 case _ => println("Denk nochmal nach Bro")
             }
         } else {
@@ -37,6 +37,7 @@ class Tui(controller: ControllerTrait) extends Observer {
 
     override def specialCase: Unit = {
         readMode = "promotion"
+        println(controller.createOutput())
     }
 
     override def reverseSpecialCase : Unit = {

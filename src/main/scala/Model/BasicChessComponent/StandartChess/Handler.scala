@@ -1,7 +1,6 @@
-package Model.ChessComponent.BasicChessComponent.StandartChess
+package Model.BasicChessComponent.StandartChess
 
-import Model.ChessComponent.*
-import Model.ChessComponent.BasicChessComponent.*
+import Model.BasicChessComponent.*
 
 trait Handler {
     def handle(request : (Int, Int, Int, Vector[Piece], Color)) : Boolean
