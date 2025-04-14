@@ -4,19 +4,31 @@ ThisBuild / scalaVersion := "3.6.1"
 
 lazy val sharedResources = (project in file("SharedResources"))
   .settings(
-    name := "SharedResources"
+    name := "SharedResources",
+    libraryDependencies ++= Seq(
+      "org.scalactic" %% "scalactic" % "3.2.14",
+      "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+    ),
   )
 
 lazy val basicChess = (project in file("BasicChess"))
   .dependsOn(sharedResources)
   .settings(
-    name := "BasicChess"
+    name := "BasicChess",
+    libraryDependencies ++= Seq(
+      "org.scalactic" %% "scalactic" % "3.2.14",
+      "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+    ),
   )
 
 lazy val devourChess = (project in file("DevourChess"))
   .dependsOn(basicChess, sharedResources)
   .settings(
-    name := "DevourChess"
+    name := "DevourChess",
+      libraryDependencies ++= Seq(
+      "org.scalactic" %% "scalactic" % "3.2.14",
+      "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+    ),
   )
 
 lazy val realChess = (project in file("RealChess"))
@@ -48,7 +60,11 @@ lazy val controller = (project in file("Controller"))
 lazy val tui = (project in file("TUI"))
   .dependsOn(controller)
   .settings(
-    name := "TUI"
+    name := "TUI",
+    libraryDependencies ++= Seq(
+      "org.scalactic" %% "scalactic" % "3.2.14",
+      "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+    ),
   )
 
 lazy val gui = (project in file("GUI"))
