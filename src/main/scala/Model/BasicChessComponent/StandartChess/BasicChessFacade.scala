@@ -1,7 +1,8 @@
 package Model.BasicChessComponent.StandartChess
 
 import Model.BasicChessComponent.BasicChessTrait
-import scala.util.Try
+
+import scala.util.{Failure, Try}
 
 object BasicChessFacade extends BasicChessTrait {
     def getBoardString(fen : String): Try[String] = {
@@ -45,6 +46,7 @@ object BasicChessFacade extends BasicChessTrait {
             val color = PseudoMoves.extractColor(fen.split(" ")(1))._3
             ChessBoard.promote(validPieceName, validFen, validPos, color)
         }
+        //Failure(new IllegalArgumentException("testfailure which should be quite long. At least long enough to cover more than 1 row in the gui so that i can test the padding. Maybe this is enough"))
     }
 
     def isColorPiece(fen: String, position: Int): Try[Boolean] = {

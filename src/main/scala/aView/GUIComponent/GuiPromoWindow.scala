@@ -59,6 +59,7 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
     override def update: Unit = ()
     override def errorDisplay: Unit = {
         val errMsg = new Text(controller.getErrorMessage)
+        errMsg.wrappingWidth <== this.width - 30
         children = Seq(errMsg)
     }
 
