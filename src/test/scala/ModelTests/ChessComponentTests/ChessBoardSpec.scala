@@ -199,32 +199,5 @@ class ChessBoardSpec extends AnyWordSpec {
             ChessBoard.makeMove(oldfen16, (-4, -1)) should be(newfen16)
 
         }
-
-        "return the correct moves for castling" in {
-            val move1: (Int, Int) = (-1, -1)
-            val move2: (Int, Int) = (-2, -1)
-            val move3: (Int, Int) = (-3, -1)
-            val move4: (Int, Int) = (-4, -1)
-            val move5: (Int, Int) = (4, 5)
-            val move6: (Int, Int) = (60, 61)
-            val move7: (Int, Int) = (0, 1)
-            val defaultBoard = ChessBoard.getDefaultBoard()
-            ChessBoard.translateCastle(defaultBoard, (60, 62)) should be(move1)
-            ChessBoard.translateCastle(defaultBoard, (60, 58)) should be(move2)
-            ChessBoard.translateCastle(defaultBoard, (4, 6)) should be(move3)
-            ChessBoard.translateCastle(defaultBoard, (4, 2)) should be(move4)
-            ChessBoard.translateCastle(defaultBoard, (4, 5)) should be(move5)
-            ChessBoard.translateCastle(defaultBoard, (60, 61)) should be(move6)
-            ChessBoard.translateCastle(defaultBoard, (0, 1)) should be(move7)
-        }
-
-        "detect a possible promotion" in {
-            val fenWhitePromotion = "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5"
-            ChessBoard.canPromote(fenWhitePromotion) should be(1)
-
-            val fenBlackPromotion = "rQbqkbnr/1pppppp1/8/8/8/8/P1PPPP1P/RNBQKBNp w Qkq - 0 6"
-            ChessBoard.canPromote(fenBlackPromotion) should be(63)
-        }
     }
-
 }

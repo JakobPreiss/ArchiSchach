@@ -147,7 +147,7 @@ object LegalMoves {
         }
 
         readyingLegalMoveData(fen) match {
-            case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) => BasicChessFacade.pieceMoves(List(KNIGHT)) match {
+            case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) => BasicChessFacade.pieceMoves(List(KING)) match {
                 case Success(attackList) => checkKingAttack(board, moveColor, attackList)
                 case Failure(err) => Failure(err)
             }
