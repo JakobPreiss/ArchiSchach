@@ -1,8 +1,8 @@
 package ControllerTests
 
-import Model.ChessComponent.ChessTrait
-import Model.ChessComponent.RealChess.RealChessFacade
-import cController.ControllerComponent.Extra.ChessContext
+import Controller.Extra.ChessContext
+import SharedResources.ChessTrait
+import RealChess.RealChessFacade
 import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
 import scala.util.{Try, Success, Failure}

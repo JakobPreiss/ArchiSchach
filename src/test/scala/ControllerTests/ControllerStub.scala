@@ -1,7 +1,7 @@
 package ControllerTests
 
-import cController.ControllerComponent.ControllerTrait
-import _root_.cController.ControllerComponent.Extra.{Command, SetCommand, UndoInvoker}
+import Controller.ControllerTrait
+import Controller.Extra.{Command, SetCommand, UndoInvoker}
 import scala.util.Try
 
 class ControllerStub(override var fen : String) extends ControllerTrait {
@@ -24,9 +24,9 @@ class ControllerStub(override var fen : String) extends ControllerTrait {
 
     def nextTheme(): Unit = {}
 
-    def context: cController. ControllerComponent. Extra. ChessContext = ???
+    def context: Controller. Extra. ChessContext = ???
     
-    def context_=(value: cController. ControllerComponent. Extra. ChessContext): Unit = ???
+    def context_=(value: Controller. Extra. ChessContext): Unit = ???
 
     override def resetBoard(): Unit = ???
 

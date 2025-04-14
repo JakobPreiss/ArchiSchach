@@ -1,6 +1,6 @@
 package ModelTests.ChessComponentTests
 
-import Model.ChessComponent.DevourChess.{DevourChessFacade, Remis}
+import DevourChess.{DevourChessFacade, Remis}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers.*
 import scala.util.{Try, Success, Failure}

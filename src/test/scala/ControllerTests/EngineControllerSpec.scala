@@ -1,16 +1,16 @@
 package ControllerTests
 
-import Model.BasicChessComponent.StandartChess.{ChessBoard, Piece}
-import cController.ControllerComponent.SoloChessController.EngineController
-import Model.ChessComponent.ChessTrait
-import Model.ChessComponent.RealChess.RealChessFacade
-import cController.ControllerComponent.Extra.{ChessContext, Event, State}
-import cController.ControllerComponent.RealChessController.Controller
-import cController.ControllerComponent.StateComponent.{ApiFileTrait, DataWrapper}
-import cController.ControllerComponent.StateComponent.xmlSolution.XMLApi
+import BasicChess.StandartChess.ChessBoard
+import Controller.SoloChessController.EngineController
+import Controller.DuoChessController.RealController
+import Controller.Extra.{ChessContext, Event, State}
+import Controller.StateComponent.xmlSolution.XMLApi
+import Controller.StateComponent.{ApiFileTrait, DataWrapper}
+import RealChess.RealChessFacade
+import SharedResources.ChessTrait
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers.*
-import util.Observer
+import SharedResources.util.Observer
 
 import scala.util.Success
 import scala.xml.XML

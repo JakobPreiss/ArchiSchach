@@ -1,7 +1,7 @@
 package ModelTests.ChessComponentTests
 
-import Model.BasicChessComponent.StandartChess.Color.{BLACK, WHITE}
-import Model.BasicChessComponent.StandartChess.{ChessBoard, Color, Piece, PieceType}
+import BasicChess.StandartChess.Color.{BLACK, WHITE}
+import BasicChess.StandartChess.{ChessBoard, Color, Piece, PieceType}
 import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
 

@@ -1,8 +1,8 @@
 package ModelTests.ChessComponentTests
 
-import Model.BasicChessComponent.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
-import Model.ChessComponent.DevourChess.{DevourChessFacade, Remis}
-import Model.ChessComponent.RealChess.RealChessFacade
+import BasicChess.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
+import DevourChess.{DevourChessFacade, Remis}
+import RealChess.RealChessFacade
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec

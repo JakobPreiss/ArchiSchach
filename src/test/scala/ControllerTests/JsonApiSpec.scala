@@ -2,9 +2,9 @@ package ControllerTests
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import cController.ControllerComponent.StateComponent.jsonSolution.JSONApi
-import cController.ControllerComponent.Extra.{ChessContext, State}
-import cController.ControllerComponent.Extra.State.whitePlayingState
+import Controller.Extra.{ChessContext, State}
+import Controller.Extra.State.whitePlayingState
+import Controller.StateComponent.jsonSolution.JSONApi
 
 class JsonApiSpec extends AnyWordSpec with Matchers {
     val instance = new JSONApi

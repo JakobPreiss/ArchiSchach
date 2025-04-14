@@ -1,8 +1,9 @@
 package ControllerTests
 
-import cController.ControllerComponent.StateComponent.DataWrapper
+import Controller.StateComponent.DataWrapper
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+
 import scala.xml.Node
 import play.api.libs.json.*
 

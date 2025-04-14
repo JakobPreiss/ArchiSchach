@@ -1,7 +1,7 @@
 package ModelTests.ChessComponentTests
 
-import Model.BasicChessComponent.StandartChess.{ChessBoard, PseudoMoves}
-import Model.ChessComponent.RealChess.{LegalMoves, Remis}
+import BasicChess.StandartChess.{ChessBoard, PseudoMoves}
+import RealChess.{LegalMoves, Remis}
 import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
 import scala.util.{Try, Success, Failure}
