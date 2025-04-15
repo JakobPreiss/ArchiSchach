@@ -1,8 +1,9 @@
 package ControllerTests
 
-import cController.ControllerComponent.StateComponent.DataWrapper
+import Controller.StateComponent.DataWrapper
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+
 import scala.xml.Node
 import play.api.libs.json.*
 
@@ -17,7 +18,7 @@ class DataWrapperSpec extends AnyWordSpec with Matchers {
             testxml.getNode().label should be ("testNode")
 
             val testxml2 = DataWrapper(None, None)
-            testxml2.getNode().label should be ("fail")
+            testxml2.getNode().label should be ("box")
         }
 
         "return a json Value if a json is saved" in {

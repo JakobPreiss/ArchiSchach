@@ -1,19 +1,15 @@
-import Model.ChessComponent.BasicChessComponent.StandartChess.ChessBoard
+import RealChess.RealChessFacade
 
 import scala.io.StdIn.readLine
-import Model.ChessComponent.ChessTrait
-import aView.GUIComponent.GuiMain
-import aView.TUIComponent.Tui
-import Model.ChessComponent.RealChess.RealChessFacade
-import cController.ControllerComponent.Extra.ChessContext
-import cController.ControllerComponent.RealChessController.Controller
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import TUI.Tui
+import GUI.GuiMain
+import SharedResources.ChessTrait
 
 object Chess {
     given ChessTrait = RealChessFacade()
-    val controller = ChessModule.provideDuoChessXML()
+    val controller = ChessModule.provideDuoChessJSON()
     val tui = new Tui(controller)
     controller.notifyObservers
 

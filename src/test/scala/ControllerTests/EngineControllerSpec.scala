@@ -1,17 +1,18 @@
 package ControllerTests
 
-import Model.ChessComponent.BasicChessComponent.StandartChess.{ChessBoard, Piece}
-import cController.ControllerComponent.SoloChessController.EngineController
-import Model.ChessComponent.ChessTrait
-import Model.ChessComponent.RealChess.RealChessFacade
-import cController.ControllerComponent.Extra.{ChessContext, Event, State}
-import cController.ControllerComponent.RealChessController.Controller
-import cController.ControllerComponent.StateComponent.{ApiFileTrait, DataWrapper}
-import cController.ControllerComponent.StateComponent.xmlSolution.XMLApi
+import BasicChess.StandartChess.ChessBoard
+import Controller.SoloChessController.EngineController
+import Controller.DuoChessController.RealController
+import Controller.Extra.{ChessContext, Event, State}
+import Controller.StateComponent.xmlSolution.XMLApi
+import Controller.StateComponent.{ApiFileTrait, DataWrapper}
+import RealChess.RealChessFacade
+import SharedResources.ChessTrait
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers.*
-import util.Observer
+import SharedResources.util.Observer
 
+import scala.util.Success
 import scala.xml.XML
 
 class EngineControllerSpec extends AnyWordSpec {
@@ -49,12 +50,12 @@ class EngineControllerSpec extends AnyWordSpec {
 
         "play Test" in {
             ec.resetBoard()
-            ec.play(ChessBoard.translateMoveStringToInt(ec.fen, "e2e4"))
+            ec.play(Success(ChessBoard.translateMoveStringToInt(ec.fen, "e2e4")))
             ec.fen should be ("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2")
         }
 
         "checkGameState Test" in {
-            ec.checkGameState(List()) should be (true)
+            ec.checkGameState(List()) should be (false)
         }
 
 
@@ -67,7 +68,7 @@ class EngineControllerSpec extends AnyWordSpec {
 
         "do redo and undo correctly" in {
             ec.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            ec.play(ChessBoard.moveToIndex("e2","e4"))
+            ec.play(Success(ChessBoard.moveToIndex("e2","e4")))
             val save = ec.fen
             ec.undo()
             ec.undo()
@@ -80,11 +81,11 @@ class EngineControllerSpec extends AnyWordSpec {
 
         "implement squareClicked correctly" in {
             ec.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            ec.squareClicked(7)
-            ec.activeSquare should be(-5)
+            ec.squareClicked(Success(7))
+            ec.activeSquare should be(None)
 
-            ec.squareClicked(60)
-            ec.activeSquare should be(60)
+            ec.squareClicked(Success(60))
+            ec.activeSquare should be(Some(60))
 
         }
 

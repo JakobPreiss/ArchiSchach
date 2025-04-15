@@ -1,13 +1,14 @@
 package ControllerTests
 
-import cController.ControllerComponent.ControllerTrait
-import _root_.cController.ControllerComponent.Extra.{Command, SetCommand, UndoInvoker}
+import Controller.ControllerTrait
+import Controller.Extra.{Command, SetCommand, UndoInvoker}
+import scala.util.Try
 
 class ControllerStub(override var fen : String) extends ControllerTrait {
     val invoker = UndoInvoker
     override var current_theme: Int = 0
 
-    def play(move: (Int, Int)): Unit = {invoker.doStep(new SetCommand(move.productIterator.mkString("-"), fen, this))}
+    def play(move: scala. util. Try[(Int, Int)]): Unit = {invoker.doStep(new SetCommand(move.get.productIterator.mkString("-"), fen, this))}
 
     def undo() : Unit = {invoker.undoStep()}
 
@@ -19,13 +20,17 @@ class ControllerStub(override var fen : String) extends ControllerTrait {
 
     def promotePawn(pieceKind: String): Unit = {}
 
-    def squareClicked(clickedSquare: Int): Unit = {}
+    def squareClicked(clickedSquare: scala. util. Try[Int]): Unit = {}
 
     def nextTheme(): Unit = {}
 
-    def context: cController. ControllerComponent. Extra. ChessContext = ???
+    def context: Controller. Extra. ChessContext = ???
     
-    def context_=(value: cController. ControllerComponent. Extra. ChessContext): Unit = ???
+    def context_=(value: Controller. Extra. ChessContext): Unit = ???
 
     override def resetBoard(): Unit = ???
+
+    def getErrorMessage: String = ???
+
+    def translateMoveStringToInt (fen: String, move: String): Try[(Int, Int)] = ???
 }
