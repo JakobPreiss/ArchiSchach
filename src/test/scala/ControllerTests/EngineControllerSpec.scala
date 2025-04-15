@@ -55,7 +55,7 @@ class EngineControllerSpec extends AnyWordSpec {
         }
 
         "checkGameState Test" in {
-            ec.checkGameState(List()) should be (true)
+            ec.checkGameState(List()) should be (false)
         }
 
 

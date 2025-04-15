@@ -16,8 +16,8 @@ object Remis {
                     case Failure(err) => Failure(err)
                     case Success(kingPos) => LegalMoves.isPosAttacked(fen, kingPos.head) match {
                         case Failure(err) => Failure(err)
-                        case Success(isAttacked) if (isAttacked) => Success(true)
-                        case Success(isNotAttacked) => Success(false)
+                        case Success(isAttacked) if (isAttacked) => Success(false)
+                        case Success(isNotAttacked) => Success(true)
                     }
                 }
             }

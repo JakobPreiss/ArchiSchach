@@ -9,7 +9,7 @@ import SharedResources.ChessTrait
 
 object Chess {
     given ChessTrait = RealChessFacade()
-    val controller = ChessModule.provideDuoChessXML()
+    val controller = ChessModule.provideDuoChessJSON()
     val tui = new Tui(controller)
     controller.notifyObservers
 

@@ -87,36 +87,36 @@ class LegalMovesSpec extends AnyWordSpec {
                 case Success(legalMoves) => legalMoves.sorted should be(expected9)
             }
 
-            val expected10: List[(Int, Int)] = List((10, 3), (17, 1), (17, 11), (17, 25), (17, 33), (17, 41), (17, 49), (17, 57), (17, 61), (17, 59), (17, 58), (18, 11), (18, 25), (18, 27), (18, 34), (18, 41), (18, 48), (18, 32), (18, 44)).sorted
-            val fen10 = "r1bqkbnr/pp1ppppp/2n5/2p5/8/2NP4/PPP2PPP/R1BQKBNR w KQkq - 2 4"
+            val expected10: List[(Int, Int)] = List((7, 13), (7, 22), (3, 4), (3, 2), (3, 12), (3, 11), (3, 10), (9, 2), (9, 0), (9, 18), (9, 27), (19, 5), (19, 1), (19, 12), (19, 11), (19, 10), (19, 18), (19, 17), (19, 28), (19, 27), (19, 26), (19, 37), (19, 35), (19, 33), (19, 46), (19, 43), (19, 55), (19, 51), (19, 59), (21, 29), (20, 28), (16, 24)).sorted
+            val fen10 = "3k3n/1b6/p2qpp1p/7P/1R2p2R/4N2K/8/8 b - - 2 59"
             LegalMoves.getAllLegalMoves(fen10) match {
                 case Failure(e) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected10)
             }
 
-            val expected11: List[(Int, Int)] = List((0, 8), (0, 16), (0, 24), (0, 32), (1, 11), (1, 18), (1, 9), (1, 16), (3, 4), (3, 2), (3, 10), (4, 12), (4, 13), (6, 21), (7, 15), (8, 16), (8, 24), (9, 17), (10, 18), (11, 4), (11, 2), (11, 19), (11, 18), (13, 21), (13, 29), (14, 22), (14, 30), (20, 13), (20, 29), (20, 27), (20, 34), (20, 41), (20, 48), (26, 34), (40, 49), (47, 55), (49, 33), (49, 41), (50, 43), (50, 41), (50, 57), (50, 59), (51, 58), (53, 61), (62, 45), (62, 52), (63, 53), (63, 54)).sorted
-            val fen11 = "rn1q1bnr/1ppkp1p1/4b2p/2p2P1P/5P2/p2P4/PP3NP1/RNBQKB1R b KQ - 0 10"
+            val expected11: List[(Int, Int)] = List((25, 10), (25, 8), (25, 19), (25, 35), (25, 42), (54, 36), (54, 47), (54, 45), (62, 47), (62, 45), (61, 60), (59, 60), (58, 49), (56, 48), (56, 57), (46, 39), (40, 33), (46, 38), (40, 32), (55, 47), (53, 45), (52, 44), (51, 43), (50, 42), (53, 37), (51, 35), (50, 34)).sorted
+            val fen11 = "rnb1k1nr/pppp2pp/8/1N3p2/1b2p2q/P5P1/2PPPPBP/R1BQ1KNR w kq - 3 8"
             LegalMoves.getAllLegalMoves(fen11) match {
                 case Failure(e) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected11)
             }
 
-            val expected12: List[(Int, Int)] = List((5, 13), (5, 14), (5, 12), (10, 2), (10, 15), (10, 14), (10, 13), (10, 12), (10, 11), (10, 9), (10, 18), (10, 26), (10, 34), (10, 42), (10, 50), (10, 58), (47, 55), (62, 45), (62, 52)).sorted
-            val fen12 = "2B2k2/1Rr5/5N2/p7/p3P3/P5Kp/8/4R1n1 b - - 6 76"
+            val expected12: List[(Int, Int)] = List((4, 7), (4, 6), (4, 5), (4, 3), (4, 2), (4, 1), (4, 0), (4, 12), (4, 20), (4, 28), (4, 36), (4, 44), (4, 52), (4, 60), (18, 3), (18, 1), (18, 12), (18, 8), (18, 28), (18, 24), (18, 35), (18, 33), (45, 38), (45, 36), (45, 46), (45, 54), (45, 53), (45, 52)).sorted
+            val fen12 = "R3r3/8/2n2p2/5P2/8/5k2/3B4/1K1R4 b - - 6 130"
             LegalMoves.getAllLegalMoves(fen12) match {
                 case Failure(e) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected12)
             }
 
-            val expected13: List[(Int, Int)] = List((27, 19), (42, 47), (42, 46), (42, 45), (42, 44), (42, 43), (42, 41), (42, 50), (42, 58), (40, 25), (40, 50), (40, 57), (62, 47), (62, 45), (62, 52), (28, 20)).sorted
-            val fen13 = "r4n2/b2p1p2/n7/P1pKPk2/2P5/N1R5/P7/5bN1 w - - 0 66"
+            val expected13: List[(Int, Int)] = List((5, 14), (3, 4), (3, 2), (3, 1), (3, 0), (12, 4), (12, 19), (11, 4), (11, 2), (10, 4), (10, 0), (10, 27), (10, 25), (8, 0), (8, 9), (23, 7), (23, 15), (20, 27), (18, 27), (13, 21), (22, 30), (20, 28), (18, 26), (17, 25), (16, 24), (31, 39), (13, 29)).sorted
+            val fen13 = "3q1b2/r1nbkp2/ppp1p1pr/3P3p/PP2P3/3PK1PP/1B1NP1B1/R2Q2NR b - - 2 24"
             LegalMoves.getAllLegalMoves(fen13) match {
                 case Failure(e) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected13)
             }
 
-            val expected14: List[(Int, Int)] = List((2, 12), (2, 8), (2, 19), (2, 17), (43, 15), (43, 22), (43, 16), (43, 29), (43, 27), (43, 25), (43, 36), (43, 35), (43, 34), (43, 47), (43, 46), (43, 45), (43, 44), (43, 42), (43, 41), (43, 40), (43, 50), (55, 15), (55, 23), (55, 31), (55, 39), (55, 47), (55, 63), (52, 44), (52, 53), (52, 61), (52, 60), (49, 7), (49, 14), (49, 21), (49, 28), (49, 35), (49, 42), (49, 40), (49, 58), (59, 32), (59, 41), (59, 50), (57, 42), (57, 40), (20, 11), (20, 12), (54, 46), (48, 40), (54, 38), (48, 32)).sorted
-            val fen14 = "2N1k1n1/1r1n3r/1p2P3/3b2p1/1b6/3Q4/PB1PK1PR/RN1B4 w - - 5 36"
+            val expected14: List[(Int, Int)] = List((1, 0), (1, 9), (1, 8), (37, 5), (37, 13), (37, 21), (37, 29), (37, 39), (37, 38), (37, 36), (37, 35), (37, 34), (37, 33), (37, 32), (37, 45), (18, 27), (31, 39), (55, 63), (55, 63), (55, 63), (55, 63)).sorted.distinct
+            val fen14 = "1k6/3P2B1/2p5/2KN2Pp/B4r2/5P2/P6p/5R2 b - - 3 57"
             LegalMoves.getAllLegalMoves(fen14) match {
                 case Failure(e) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected14)
@@ -228,36 +228,36 @@ class LegalMovesSpec extends AnyWordSpec {
                 case Success(legalMoves) => legalMoves.sorted should be(expected29)
             }
 
-            val expected30: List[(Int, Int)] = List((56, 48), (56, 40), (56, 32), (56, 24), (56, 16), (56, 8), (56, 0), (56, 57), (56, 58), (56, 59), (56, 60), (56, 61), (56, 62), (56, 63)).sorted
-            val fen30 = "4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1"
+            val expected30: List[(Int, Int)] = List((2, 11), (2, 9), (2, 20), (2, 16), (2, 29), (45, 30), (45, 28), (45, 39), (45, 51), (45, 62), (45, 60), (43, 16), (43, 25), (43, 36), (43, 34), (43, 44), (43, 42), (43, 41), (43, 52), (43, 51), (43, 50), (43, 61), (43, 59), (43, 57), (49, 41), (49, 54), (49, 53), (49, 52), (49, 51), (49, 50), (49, 48), (49, 57), (58, 59), (58, 57), (38, 31), (37, 30), (37, 28), (35, 28), (37, 29), (55, 47), (55, 39)).sorted
+            val fen30 = "1nB5/4br2/7k/p2pp1pp/p2PbPP1/1p1QpN2/1R5P/2K5 w - - 6 66"
             LegalMoves.getAllLegalMoves(fen30) match {
                 case Failure(_) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected30)
             }
 
-            val expected31: List[(Int, Int)] = List((36, 44), (36, 52), (36, 60), (36, 28), (36, 20), (36, 12), (36, 4), (36, 35), (36, 34), (36, 33), (36, 32), (36, 37), (36, 38), (36, 39), (36, 40)).sorted
-            val fen31 = "8/8/8/8/8/8/8/1k6 w - - 0 1"
+            val expected31: List[(Int, Int)] = List((8, 1), (8, 0), (8, 9), (8, 17), (8, 16), (50, 2), (50, 10), (50, 18), (50, 26), (50, 34), (50, 42), (50, 52), (50, 51), (50, 49), (50, 48), (50, 58), (62, 54), (62, 63), (62, 61), (62, 60), (62, 59), (62, 58), (62, 57), (62, 56), (28, 36), (40, 48)).sorted;
+            val fen31 = "8/k7/8/3Pp2p/7K/pP6/2r1R1P1/6r1 b - - 3 70";
             LegalMoves.getAllLegalMoves(fen31) match {
                 case Failure(_) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected31)
             }
 
-            val expected32: List[(Int, Int)] = List((4, 12), (4, 20), (4, 28), (4, 36), (4, 44), (4, 52), (4, 60), (4, 3), (4, 2), (4, 1), (4, 0), (4, 5), (4, 6), (4, 7)).sorted
-            val fen32 = "8/8/8/8/8/8/8/1K6 w - - 0 1"
+            val expected32: List[(Int, Int)] = List((59, 52), (59, 50), (59, 60), (59, 58)).sorted;
+            val fen32 = "8/6R1/6P1/8/3K4/8/8/2Bk4 b - - 22 164";
             LegalMoves.getAllLegalMoves(fen32) match {
                 case Failure(_) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected32)
             }
 
-            val expected33: List[(Int, Int)] = List((4, 12), (4, 20), (4, 28), (4, 36), (4, 44), (4, 52), (4, 60), (4, 3), (4, 2), (4, 1), (4, 0), (4, 5), (4, 6), (4, 7)).sorted
-            val fen33 = "8/8/8/8/8/8/8/1K6 w - - 0 1"
+            val expected33: List[(Int, Int)] = List((34, 6), (34, 13), (34, 20), (34, 27), (34, 25), (34, 43), (34, 52), (34, 61), (33, 18), (33, 27), (33, 43), (33, 50), (33, 48), (45, 5), (45, 13), (45, 21), (45, 29), (45, 37), (45, 47), (45, 46), (45, 44), (45, 43), (45, 42), (45, 53), (45, 61), (49, 40), (49, 50), (49, 48), (49, 56), (58, 37), (58, 44), (58, 51), (57, 56), (23, 14), (16, 9), (23, 15)).sorted;
+            val fen33 = "3r4/pb1p2r1/P1n3PP/4k1P1/1NBp4/1P3R2/1K6/1RB3b1 w - - 3 47";
             LegalMoves.getAllLegalMoves(fen33) match {
                 case Failure(_) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected33)
             }
 
-            val expected34: List[(Int, Int)] = List((12, 4), (12, 20), (12, 28), (12, 36), (12, 44), (12, 52), (12, 60), (12, 11), (12, 10), (12, 9), (12, 8), (12, 13), (12, 14), (12, 15)).sorted
-            val fen34 = "8/8/8/8/8/8/8/R1K5 w Q - 0 1"
+            val expected34: List[(Int, Int)] = List((7, 15), (7, 23), (6, 12), (6, 23), (6, 21), (1, 18), (13, 5), (13, 4), (13, 14), (13, 12), (13, 22), (13, 21), (13, 20), (19, 5), (19, 12), (19, 10), (19, 23), (19, 22), (19, 21), (19, 20), (19, 18), (19, 17), (19, 27), (19, 35), (19, 43), (19, 51), (19, 59), (16, 0), (16, 8), (16, 17), (28, 14), (28, 21), (28, 37), (28, 35), (28, 42), (29, 36), (38, 47), (31, 39), (26, 34), (25, 33), (24, 32)).sorted;
+            val fen34 = "1n4nr/3p1k2/rN1q4/ppp1bp1p/4PPp1/2Q3PB/PPP1K2P/R1BN3R b - - 5 21";
             LegalMoves.getAllLegalMoves(fen34) match {
                 case Failure(_) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected34)

@@ -9,8 +9,8 @@ import scala.util.Success
 
 class DevourChessSpec extends AnyWordSpec {
     val testObject = DevourChessFacade()
-    "DevourChess" should {
-       /* "getAllLegalMoves Test" in {
+    "DevourChess(Facade)" should {
+       "getAllLegalMoves Test" in {
             val fen = "rnbqkbnr/ppppppp1/8/7p/4P3/8/PPPP1PPP/RNBQKBNR w KQkq h6 0 1"
 
 
@@ -43,10 +43,10 @@ class DevourChessSpec extends AnyWordSpec {
         }
 
         "getBestMove Test" in {
-            testObject.getBestMove("", 0) should be(Success(""))
-        } */
-        "do nothing right now" in {
-            true should be (true)
+            testObject.getBestMove("", 0) match {
+                case Failure(err) => err.getMessage should be ("No Stockfish for DevourChess")
+                case Success(value) => value should be ("this shouldn't be reachable")
+            }
         }
     }
 }

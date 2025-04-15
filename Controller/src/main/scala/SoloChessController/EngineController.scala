@@ -46,65 +46,63 @@ class EngineController (override var fen : String, var context : ChessContext, v
                 return
         }
 
-        def tryMove(move: (Int, Int), legalMoves: List[(Int, Int)]): Unit = {
-            if (!legalMoves.contains(move)) {
-                output = "Das kannste nicht machen Bro (kein legaler Zug)"
-                checkGameState(legalMoves)
-            } else {
-                BasicChessFacade.makeMove(fen, move) match {
-                    case Success(newFen : String) => UndoInvoker.doStep(new SetCommand(newFen, fen, this))
-                    case Failure(err) => failureHandle(err.getMessage)
-                }
-            }
-        }
-
-        def checkPromotion(): Unit = {
-            val canPromote = BasicChessFacade.canPromote(fen) match {
-                case Success(value) => value
-                case Failure(err) =>
-                    failureHandle(err.getMessage)
-                    return
-            }
-            if (canPromote.isDefined) {
-                output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
-                ringObservers
-            } else {
-                output = boardToString()
-                gameMode.getAllLegalMoves(fen) match {
-                    case Success(legalMoves : List[(Int, Int)]) => 
-                        val state = checkGameState(legalMoves)
-                        fileapi.printTo(context, fen)
-                        notifyObservers
-                    case Failure(value) => failureHandle(value.getMessage)
-                        return
-                }
-            }
-        }
-        
-        def engineMove(state : Boolean) : Unit = {
-            if (state) {
-                return
-            }
-            gameMode.getBestMove(fen, depth) match {
-                case Success(engineMoveString : String) =>
-                    BasicChessFacade.translateMoveStringToInt(fen, engineMoveString) match {
-                        case Success(engineMoveInt : (Int, Int)) =>
-                            gameMode.getAllLegalMoves(fen) match {
-                                case Success(legalMoves2 : List[(Int, Int)]) =>
-                                    tryMove(engineMoveInt, legalMoves2)
-                                case Failure(err) => failureHandle(err.getMessage)
-                            }
-                        case Failure(err) => failureHandle(err.getMessage)
-                    }
-                case Failure(err) => failureHandle(err.getMessage)
-            }
-        }    
-
         gameMode.getAllLegalMoves(fen) match {
-            case Success(legalMoves : List[(Int, Int)]) => tryMove(move, legalMoves)
+            case Success(legalMoves : List[(Int, Int)]) => tryMove(move, legalMoves, false)
             case Failure(value) => failureHandle(value.getMessage)
         }
         
+    }
+
+    def tryMove(move: (Int, Int), legalMoves: List[(Int, Int)], thisIsEngineMove : Boolean): Unit = {
+        if (!legalMoves.contains(move)) {
+            output = "Das kannste nicht machen Bro (kein legaler Zug)"
+            checkGameState(legalMoves)
+            notifyObservers
+        } else {
+            BasicChessFacade.makeMove(fen, move) match {
+                case Success(newFen: String) => UndoInvoker.doStep(new SetCommand(newFen, fen, this))
+                    checkPromotion(thisIsEngineMove)
+                case Failure(err) => failureHandle(err.getMessage)
+            }
+        }
+    }
+
+    def checkPromotion(thisIsEngineMove : Boolean): Unit = {
+        val canPromote = BasicChessFacade.canPromote(fen) match {
+            case Success(value) => value
+            case Failure(err) => failureHandle(err.getMessage)
+                return
+        }
+        if (canPromote.isDefined) {
+            output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
+            ringObservers
+        } else {
+            output = boardToString()
+            gameMode.getAllLegalMoves(fen) match {
+                case Success(legalMoves: List[(Int, Int)]) => val state = checkGameState(legalMoves)
+                    fileapi.printTo(context, fen)
+                    notifyObservers
+                    if(!thisIsEngineMove) {engineMove()}
+                case Failure(value) => failureHandle(value.getMessage)
+                    return
+            }
+        }
+    }
+
+    def engineMove(): Unit = {
+        if (context.state.ordinal > 1) {
+            return
+        }
+        gameMode.getBestMove(fen, depth) match {
+            case Success(engineMoveString: String) => BasicChessFacade.translateMoveStringToInt(fen, engineMoveString) match {
+                case Success(engineMoveInt: (Int, Int)) => gameMode.getAllLegalMoves(fen) match {
+                    case Success(legalMoves2: List[(Int, Int)]) => tryMove(engineMoveInt, legalMoves2, true)
+                    case Failure(err) => failureHandle(err.getMessage)
+                }
+                case Failure(err) => failureHandle(err.getMessage)
+            }
+            case Failure(err) => failureHandle(err.getMessage)
+        }
     }
 
     def checkGameState(legalMoves: List[(Int, Int)]): Boolean = {
@@ -138,6 +136,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
                                 output = boardToString()
                                 deRingObservers
                                 notifyObservers
+                                engineMove()
                             case Failure(err) =>
                                 failureHandle(err.getMessage)
                         }
