@@ -1,11 +1,10 @@
 package GUI
 
 import BasicChess.StandartChess.ChessBoard
-import SharedResources.ChessTrait
+import SharedResources.{ChessTrait, State}
 import RealChess.RealChessFacade
 import Controller.ControllerTrait
 import Controller.DuoChessController.RealController
-import Controller.Extra.{ChessContext, State}
 import javafx.stage.Screen
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control.{Button, Label}

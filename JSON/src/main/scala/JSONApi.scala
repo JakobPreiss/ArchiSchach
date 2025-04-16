@@ -1,7 +1,6 @@
-package Controller.StateComponent.jsonSolution
+package JSON;
 
-import Controller.Extra.{ChessContext, State}
-import Controller.StateComponent.{ApiFileTrait, DataWrapper}
+import SharedResources.{ApiFileTrait, ChessContext, DataWrapper, State}
 import play.api.libs.json.{JsValue, Json}
 
 import java.io.{File, PrintWriter}

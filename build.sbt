@@ -8,6 +8,8 @@ lazy val sharedResources = (project in file("SharedResources"))
     libraryDependencies ++= Seq(
       "org.scalactic" %% "scalactic" % "3.2.14",
       "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+      "org.scala-lang.modules" %% "scala-xml" % "2.3.0",
+      "org.playframework" %% "play-json" % "3.0.4"
     ),
   )
 
@@ -78,9 +80,31 @@ lazy val gui = (project in file("GUI"))
     ),
   )
 
+lazy val xml = (project in file("XML"))
+  .dependsOn(sharedResources)
+  .settings(
+    name := "XML",
+    libraryDependencies ++= Seq(
+      "org.scalactic" %% "scalactic" % "3.2.14",
+      "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+      "org.scala-lang.modules" %% "scala-xml" % "2.3.0",
+    ),
+  )
+
+lazy val json = (project in file("JSON"))
+  .dependsOn(sharedResources)
+  .settings(
+    name := "JSON",
+    libraryDependencies ++= Seq(
+      "org.scalactic" %% "scalactic" % "3.2.14",
+      "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+      "org.playframework" %% "play-json" % "3.0.4",
+    ),
+  )
+
 lazy val root = (project in file("."))
-  .aggregate(tui, gui, controller, devourChess, basicChess, realChess, sharedResources)
-  .dependsOn(tui, gui, controller, devourChess, basicChess, realChess, sharedResources)
+  .aggregate(tui, gui, controller, devourChess, basicChess, realChess, sharedResources, xml, json)
+  .dependsOn(tui, gui, controller, devourChess, basicChess, realChess, sharedResources, xml, json)
   .settings(
     name := "JP_Morgan_Chess",
 

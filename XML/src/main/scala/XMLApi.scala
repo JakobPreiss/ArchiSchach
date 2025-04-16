@@ -1,8 +1,4 @@
-package Controller.StateComponent.xmlSolution
-
-import Controller.ControllerTrait
-import Controller.Extra.{ChessContext, State}
-import Controller.StateComponent.{ApiFileTrait, DataWrapper}
+import SharedResources.{ApiFileTrait, ChessContext, DataWrapper, State}
 
 import java.io.*
 

@@ -4,7 +4,6 @@ import SharedResources.ChessTrait
 import RealChess.RealChessFacade
 import Controller.ControllerTrait
 import Controller.DuoChessController.RealController
-import Controller.Extra.ChessContext
 import javafx.stage.Screen
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent

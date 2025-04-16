@@ -1,6 +1,5 @@
 package ControllerTests
 
-import Controller.Extra.ChessContext
 import SharedResources.ChessTrait
 import RealChess.RealChessFacade
 import org.scalatest.matchers.should.Matchers.*

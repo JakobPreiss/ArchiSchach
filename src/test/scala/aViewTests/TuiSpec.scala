@@ -4,9 +4,6 @@ import scala.language.reflectiveCalls
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import Controller.DuoChessController.RealController
-import Controller.Extra.ChessContext
-import Controller.StateComponent.ApiFileTrait
-import Controller.StateComponent.xmlSolution.XMLApi
 import RealChess.RealChessFacade
 import SharedResources.ChessTrait
 import TUI.Tui

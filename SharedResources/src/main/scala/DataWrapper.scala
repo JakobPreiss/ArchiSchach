@@ -1,4 +1,4 @@
-package Controller.StateComponent
+package SharedResources
 
 import play.api.libs.json.{JsValue, Json}
 

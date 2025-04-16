@@ -2,7 +2,7 @@ package GUI
 
 import Controller.ControllerTrait
 import Controller.Extra
-import Extra.State
+import SharedResources.State
 import javafx.stage.Screen
 import scalafx.scene.control.Button
 import scalafx.scene.effect.DropShadow
@@ -74,7 +74,7 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
                 "/pieces/black-knight.png",
                 "/pieces/black-bishop.png",
                 "/pieces/black-queen.png")
-            case Extra.State.whitePlayingState => List("/pieces/white-rook.png",
+            case State.whitePlayingState => List("/pieces/white-rook.png",
                 "/pieces/white-knight.png",
                 "/pieces/white-bishop.png",
                 "/pieces/white-queen.png")

@@ -1,10 +1,9 @@
 package Controller.SoloChessController
 
 import BasicChess.StandartChess.BasicChessFacade
-import SharedResources.ChessTrait
+import SharedResources.{ApiFileTrait, ChessContext, ChessTrait, Event, State}
 import Controller.ControllerTrait
-import Controller.Extra.{ChessContext, Event, SetCommand, State, UndoInvoker}
-import Controller.StateComponent.ApiFileTrait
+import Controller.Extra.{SetCommand, UndoInvoker}
 import com.google.inject.Inject
 import SharedResources.util.Observable
 
