@@ -1,4 +1,4 @@
-import BasicChess.StandartChess.ChessBoard
+import BasicChess.StandartChess.{BasicChessFacade, ChessBoard}
 import Controller.ControllerTrait
 import Controller.DuoChessController.RealController
 import Controller.SoloChessController.EngineController
@@ -61,7 +61,13 @@ object ChessModule {
         val wrapper: DataWrapper = DataWrapper(None, Some(json))
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
+        val arg3 = BasicChessFacade.getBoardString(arg1) match {
+            case Success(value) => value
+            case Failure(err) => BasicChessFacade.getBoardString(BasicChessFacade.getDefaultFen()) match {
+                case Success(a) => a
+                case Failure => "hat nicht geklappt (JSON)"
+            }
+        }
         new RealController(arg1, arg2, arg3)
     }
 

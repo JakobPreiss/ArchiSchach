@@ -1,8 +1,9 @@
 package BasicChess.StandartChess
 
-import SharedResources.{Piece, Color, PieceType}
+import SharedResources.{Color, Piece, PieceType}
 import BasicChess.BasicChessTrait
-import scala.util.Try
+
+import scala.util.{Failure, Try}
 
 object BasicChessFacade extends BasicChessTrait {
     def getBoardString(fen : String): Try[String] = {
