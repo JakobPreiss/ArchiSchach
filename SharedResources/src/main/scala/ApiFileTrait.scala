@@ -1,6 +1,4 @@
-package Controller.StateComponent
-
-import Controller.Extra.{ChessContext, State}
+package SharedResources
 
 trait ApiFileTrait {
     /**

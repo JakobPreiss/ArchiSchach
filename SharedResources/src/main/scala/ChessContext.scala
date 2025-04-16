@@ -1,6 +1,4 @@
-package Controller.Extra
-
-import SharedResources.util.Observable;
+package SharedResources
 
 enum State:
     case whitePlayingState, blackPlayingState, whiteWonState, blackWonState, remisState

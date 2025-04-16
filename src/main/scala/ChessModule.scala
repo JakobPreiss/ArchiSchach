@@ -1,13 +1,10 @@
 import BasicChess.StandartChess.ChessBoard
 import Controller.ControllerTrait
 import Controller.DuoChessController.RealController
-import Controller.Extra.{ChessContext, State}
 import Controller.SoloChessController.EngineController
-import Controller.StateComponent.jsonSolution.JSONApi
-import Controller.StateComponent.xmlSolution.XMLApi
-import Controller.StateComponent.{ApiFileTrait, DataWrapper}
+import JSON.JSONApi
 import RealChess.RealChessFacade
-import SharedResources.ChessTrait
+import SharedResources.{ApiFileTrait, ChessContext, ChessTrait, DataWrapper, State}
 import com.google.inject.{AbstractModule, Provides}
 import com.google.inject.name.{Named, Names}
 import play.api.libs.json.*

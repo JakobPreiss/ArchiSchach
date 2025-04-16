@@ -1,8 +1,5 @@
 package ControllerTests
 
-import Controller.Extra.State.whitePlayingState
-import Controller.Extra.{ChessContext, State}
-import Controller.StateComponent.xmlSolution.XMLApi
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

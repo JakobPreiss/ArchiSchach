@@ -1,6 +1,6 @@
 package Controller
 
-import Extra.ChessContext
+import SharedResources.ChessContext
 import SharedResources.util.{Observable, Observer}
 
 import scala.util.Try

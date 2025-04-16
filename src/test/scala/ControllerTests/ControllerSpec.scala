@@ -3,10 +3,6 @@ package ControllerTests
 import BasicChess.StandartChess.ChessBoard
 import SharedResources.util.Observer
 import Controller.DuoChessController.RealController
-import Controller.Extra.{ChessContext, State}
-import Controller.StateComponent.ApiFileTrait
-import Controller.StateComponent.jsonSolution.JSONApi
-import Controller.StateComponent.xmlSolution.XMLApi
 import RealChess.RealChessFacade
 import SharedResources.ChessTrait
 
