@@ -1,9 +1,10 @@
 package RealChess
 
-import BasicChess.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
+import BasicChess.StandartChess.BasicChessFacade
+import SharedResources.{Piece, PieceType}
 
 import scala.annotation.tailrec
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 object Remis {
 

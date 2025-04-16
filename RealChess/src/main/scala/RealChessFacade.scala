@@ -1,6 +1,7 @@
 package RealChess
 
-import BasicChess.StandartChess.{BasicChessFacade, Piece}
+import BasicChess.StandartChess.{BasicChessFacade}
+import SharedResources.Piece
 import SharedResources.ChessTrait
 
 import scala.util.{Try, Success, Failure}

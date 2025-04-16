@@ -1,8 +1,8 @@
 package BasicChess.StandartChess
 
-import Color.{BLACK, EMPTY, WHITE}
-import BasicChess.StandartChess.PieceType.PAWN
-//import Model.ChessComponent.RealChess.LegalMoves
+import SharedResources.Color.{BLACK, EMPTY, WHITE}
+import SharedResources.PieceType.PAWN
+import SharedResources.{Color, Piece, PieceType}
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}

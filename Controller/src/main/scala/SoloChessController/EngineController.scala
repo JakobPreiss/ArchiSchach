@@ -37,7 +37,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
         this.notifyObservers
     }
     
-    def createOutput() : String = output
+    def createOutput() : Try[String] = Success(output)
 
     def play(moveRaw: Try[(Int, Int)]): Unit = {
         val move = moveRaw match {
@@ -205,8 +205,8 @@ class EngineController (override var fen : String, var context : ChessContext, v
         tellErrorToObservers
     }
 
-    def getErrorMessage: String = {
-        errorMessage
+    def getErrorMessage: Try[String] = {
+        Success(errorMessage)
     }
 
     def translateMoveStringToInt(fen: String, move: String): Try[(Int, Int)] = {

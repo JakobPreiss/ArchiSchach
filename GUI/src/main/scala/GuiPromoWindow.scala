@@ -14,6 +14,7 @@ import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.text.Text
 import SharedResources.util.Observer
 
+import scala.util.{Try, Success, Failure}
 import scala.annotation.tailrec
 
 class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, Observer {
@@ -59,7 +60,11 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
     }
     override def update: Unit = ()
     override def errorDisplay: Unit = {
-        val errMsg = new Text(controller.getErrorMessage)
+        val msg : String = controller.getErrorMessage match {
+            case Success(m) => m
+            case Failure(err) => "Could not read error message" 
+        }
+        val errMsg = new Text(msg)
         children = Seq(errMsg)
     }
 

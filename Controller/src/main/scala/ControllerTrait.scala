@@ -67,7 +67,7 @@ trait ControllerTrait extends Observable {
      * createOutput returns the String output of the Tui
      * @return String output of the Tui
      */
-    def createOutput() : String
+    def createOutput() : Try[String]
 
     /**
      * promotePawn gets a pieceKind represented with one Letter from the Tui and changes the Board state accordingly (making the promotion)
@@ -96,7 +96,7 @@ trait ControllerTrait extends Observable {
      * get ErrorMessage returns the error message to the UI
      * @return ErrorMessage from failure
      */
-    def getErrorMessage : String
+    def getErrorMessage : Try[String]
 
     def translateMoveStringToInt (fen :String, move : String) : Try[(Int, Int)]
 }

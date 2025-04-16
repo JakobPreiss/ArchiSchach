@@ -1,6 +1,7 @@
 package DevourChess
 
-import BasicChess.StandartChess.{BasicChessFacade, ChessBoard, Piece}
+import BasicChess.StandartChess.{BasicChessFacade}
+import SharedResources.Piece.*
 import SharedResources.ChessTrait
 
 import scala.util.{Failure, Success, Try}

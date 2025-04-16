@@ -1,5 +1,7 @@
 package BasicChess.StandartChess
 
+import SharedResources.{Piece, Color, PieceType}
+
 trait Handler {
     def handle(request : (Int, Int, Int, Vector[Piece], Color)) : Boolean
 }

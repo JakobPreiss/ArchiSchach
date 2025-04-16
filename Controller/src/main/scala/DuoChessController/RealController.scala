@@ -24,7 +24,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
         }
     }
 
-    def createOutput() : String = {output}
+    def createOutput() : Try[String] = {Success(output)}
 
     def resetBoard(): Unit = {
         fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -185,8 +185,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
         tellErrorToObservers
     }
 
-    def getErrorMessage : String = {
-        errorMessage
+    def getErrorMessage : Try[String] = {
+        Success(errorMessage)
     }
     
     def translateMoveStringToInt (fen :String, move : String) : Try[(Int, Int)] = {

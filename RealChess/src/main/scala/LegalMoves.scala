@@ -1,10 +1,11 @@
 package RealChess
 
-import BasicChess.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
-import BasicChess.StandartChess.PieceType.{BISHOP, KING, KNIGHT, QUEEN, ROOK}
+import BasicChess.StandartChess.BasicChessFacade
+import SharedResources.PieceType.{BISHOP, KING, KNIGHT, QUEEN, ROOK}
+import SharedResources.{Color, Piece, PieceType}
 
 import scala.annotation.tailrec
-import scala.util.{Success, Try, Failure}
+import scala.util.{Failure, Success, Try}
 
 object LegalMoves {
 

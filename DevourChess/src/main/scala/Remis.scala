@@ -1,9 +1,11 @@
 package DevourChess
 
-import BasicChess.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
-import BasicChess.StandartChess.Color.{BLACK, WHITE}
-import BasicChess.StandartChess.PieceType.{KING, KNIGHT, PAWN, QUEEN, ROOK}
-import scala.util.{Try, Success, Failure}
+import BasicChess.StandartChess.BasicChessFacade
+import SharedResources.PieceType.{BISHOP, KING, KNIGHT, PAWN, QUEEN, ROOK}
+import SharedResources.Color.{BLACK, EMPTY, WHITE}
+import SharedResources.{Color, Piece, PieceType}
+
+import scala.util.{Failure, Success, Try}
 
 object Remis {
     //für den Fall, dass 2 pieces sich nicht gegenseitig schlagen können (also eig. nur bei 2 Läufern auf unterschiedlichen Farben

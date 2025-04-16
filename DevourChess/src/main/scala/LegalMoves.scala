@@ -1,8 +1,6 @@
 package DevourChess
 
-import BasicChess.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
-import BasicChess.StandartChess.Color.EMPTY
-
+import BasicChess.StandartChess.{BasicChessFacade}
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 

@@ -1,6 +1,5 @@
 package GUI
 
-import BasicChess.StandartChess.{ChessBoard, Piece}
 import SharedResources.ChessTrait
 import RealChess.RealChessFacade
 import Controller.ControllerTrait
@@ -92,11 +91,11 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
         )
 
         @tailrec
-        def loopChildren(piecePositions: List[(Piece, Int)], accumulator: List[Node]): List[Node] = {
+        def loopChildren(piecePositions: List[(String, Int)], accumulator: List[Node]): List[Node] = {
             piecePositions match {
                 case Nil => accumulator
                 case h :: t => h match {
-                    case (piece: Piece, i: Int) => {
+                    case (piece: String, i: Int) => {
                         val stack: StackPane = new StackPane {
                             val rect_bg = new Rectangle() {
                                 if ((i + (i / 8)) % 2 == 0) {
@@ -121,10 +120,10 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
                             button1.setPrefSize(varHeight * 0.1, varHeight * 0.1)
 
 
-                            if (piece.toString() == ".") {
+                            if (piece == ".") {
                                 children = Seq(rect_bg, button1)
                             } else {
-                                val path = "/pieces/" + pieceMap(piece.toString()) + ".png"
+                                val path = "/pieces/" + pieceMap(piece) + ".png"
                                 val img = new ImageView {
                                     //padding = Insets(vh * 0.2, 0, 0, 0)
                                     image = new Image(path)
@@ -151,7 +150,7 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
             }
         }
 
-        val new_children = loopChildren(ChessBoard.fenToBoard(controller.fen).toList.reverse.zipWithIndex, List())
+        val new_children = loopChildren(fenToList(controller.fen).reverse.zipWithIndex, List())
 
 
         @tailrec
@@ -173,6 +172,25 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
         addAllToGrid(new_children.zipWithIndex)
         val backgroundColor = color_pallets(controller.current_theme)._1
         this.style = s"-fx-background-color:$backgroundColor"
+    }
+    
+    def fenToList(fen : String) : List[String] = {
+        
+        def checkChars(charList: List[String], accumulator : List[String]) : List[String] = {
+            charList match {
+                case Nil => accumulator
+                case h :: t => h match {
+                    case "/" => checkChars(t, accumulator)
+                    case h if(h.matches("(Q|R|P|B|N|K|k|q|r|p|n|b)")) => checkChars(t, accumulator :+ h)
+                    case h if(h.matches("(1|2|3|4|5|6|7|8)")) =>
+                        val tempInt = h.toInt
+                        checkChars(t, accumulator ++ List.fill(tempInt)("."))
+                    case _ => List()
+                }
+            }
+        } 
+        val chars : List[String] = fen.split(" ")(0).map(_.toString).toList 
+        checkChars(chars, List())
     }
 
     //gridBoard.setPrefSize(screenBounds.getHeight, screenBounds.getHeight)

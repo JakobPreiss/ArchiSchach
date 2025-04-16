@@ -1,4 +1,4 @@
-package BasicChess.StandartChess
+package SharedResources
 
 enum Color:
     case BLACK, WHITE, EMPTY

@@ -1,6 +1,6 @@
 package BasicChess
 
-import BasicChess.StandartChess.{Color, Piece, PieceType}
+import SharedResources.{Piece, Color, PieceType}
 
 import scala.util.Try
 
