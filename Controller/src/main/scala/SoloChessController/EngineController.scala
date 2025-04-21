@@ -150,11 +150,11 @@ class EngineController (override var fen : String, var context : ChessContext, v
             case Success(remis : Boolean) => val event: Event = Event(legalMoves.isEmpty, fen, remis)
                 context.handle(event)
                 context.state match {
-                    case State.remisState => output += "\n \nRemis"
+                    case State.Remis => output += "\n \nRemis"
                         false
-                    case State.whiteWonState => output += "\n \nSchwarz wurde vernichtend geschlagen"
+                    case State.WhiteWon => output += "\n \nSchwarz wurde vernichtend geschlagen"
                         false
-                    case State.blackWonState => output += "\n \nWeiß wurde vernichtend geschlagen"
+                    case State.BlackWon => output += "\n \nWeiß wurde vernichtend geschlagen"
                         false
                     case _ => true
                 }
