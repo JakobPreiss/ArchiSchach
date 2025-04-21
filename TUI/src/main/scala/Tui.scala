@@ -1,8 +1,9 @@
 package TUI
 
-import BasicChess.StandartChess.ChessBoard
 import Controller.ControllerTrait
 import SharedResources.util.Observer
+
+import SharedResources.GenericHttpClient.ec
 
 import scala.io.StdIn.readLine
 import scala.util.{Failure, Success, Try}
@@ -17,7 +18,14 @@ class Tui(controller: ControllerTrait) extends Observer {
                 case "undo" => controller.undo()
                 case "redo" => controller.redo()
                 case "reset" => controller.resetBoard()
-                case move if move.matches("(([a-h][1-8][a-h][1-8])|undo|redo)") => controller.play((controller.translateMoveStringToInt(controller.fen, move)))
+                case move if move.matches("(([a-h][1-8][a-h][1-8])|undo|redo)") =>
+                    controller.translateMoveStringToInt(controller.fen, move).onComplete {
+                        case Success(result) =>
+                            controller.play(result)
+                        case Failure(err) =>
+                            println("Error: " + err.getMessage)
+                    }
+                    
                 case _ => println("Denk nochmal nach Bro")
             }
         } else {

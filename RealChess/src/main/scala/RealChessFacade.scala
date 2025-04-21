@@ -1,36 +1,58 @@
 package RealChess
 
-import BasicChess.StandartChess.{BasicChessFacade}
-import SharedResources.Piece
-import SharedResources.ChessTrait
+import SharedResources.{ChessTrait, GenericHttpClient, JsonResult, Piece}
 
-import scala.util.{Try, Success, Failure}
+import SharedResources.GenericHttpClient.StringJsonFormat
+import SharedResources.GenericHttpClient.ec
+
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 class RealChessFacade extends ChessTrait {
 
     def getAllLegalMoves(fen: String): Try[List[(Int, Int)]] = {
-        BasicChessFacade.isValidFen(fen) match {
-            case Failure(exception) => Failure(exception)
+        val translation: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/isValidFen",
+            queryParams = Map("fen" -> fen)
+        )
+        translation.onComplete {
             case Success(validFen) =>
-                LegalMoves.getAllLegalMoves(validFen)
+                return LegalMoves.getAllLegalMoves(validFen.result)
+            case Failure(err) =>
+                return Failure(err)
         }
+        Failure(new Exception("Failed to get legal moves"))
     }
 
     def isRemis(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
-        BasicChessFacade.isValidFen(fen) match {
-            case Failure(exception) => Failure(exception)
+        val translation: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/isValidFen",
+            queryParams = Map("fen" -> fen)
+        )
+        translation.onComplete {
             case Success(validFen) =>
-                Remis.isRemis(validFen, legalMoves)
+                return Remis.isRemis(validFen.result, legalMoves)
+            case Failure(err) =>
+                return Failure(err)
         }
+        Failure(new Exception("Failed to get remis"))
     }
 
     // Special case because getBestMove returns a Try[String] instead of a String
     def getBestMove(fen: String, depth: Int): Try[String] = {
-        val validFen = BasicChessFacade.isValidFen(fen) match {
-            case Success(validFen) => validFen
-            case Failure(exception) =>
-                return Failure(exception)
+        val translation: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/isValidFen",
+            queryParams = Map("fen" -> fen)
+        )
+        translation.onComplete {
+            case Success(validFen) =>
+                return ChessApiClient.getBestMove(validFen.result, depth)
+            case Failure(err) =>
+                return Failure(err)
         }
-        ChessApiClient.getBestMove(validFen, depth)
+        Failure(new Exception("Failed to get remis"))
     }
 }

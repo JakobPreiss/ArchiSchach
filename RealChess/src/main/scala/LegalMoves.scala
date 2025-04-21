@@ -1,38 +1,59 @@
 package RealChess
 
-import BasicChess.StandartChess.BasicChessFacade
+import Requests.{Move, MoveRequest}
 import SharedResources.PieceType.{BISHOP, KING, KNIGHT, QUEEN, ROOK}
-import SharedResources.{Color, Piece, PieceType}
+import SharedResources.{Color, GenericHttpClient, JsonResult, Piece, PieceType}
+import SharedResources.GenericHttpClient.ec
+import SharedResources.GenericHttpClient.BooleanJsonFormat
+import SharedResources.GenericHttpClient.vectorFormat
+import SharedResources.PieceJsonProtocol.pieceFormat
+import SharedResources.Requests.{PieceMovesRequest, PiecePositionRequest}
+import SharedResources.GenericHttpClient.tuple2Format
+import SharedResources.GenericHttpClient.listFormat
+import SharedResources.GenericHttpClient.IntJsonFormat
+import SharedResources.GenericHttpClient.StringJsonFormat
 
 import scala.annotation.tailrec
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 object LegalMoves {
 
 
     def isAttacker(board: Vector[Piece], attacker: Piece, position: Int, row: Int, colum: Int): Try[Boolean] = {
-        BasicChessFacade.onBoard(position, row, colum) match {
+        val translation: Future[JsonResult[Boolean]] = GenericHttpClient.get[JsonResult[Boolean]](
+            baseUrl = "http://localhost:5001",
+            route = "/onBoard",
+            queryParams = Map("position" -> position.toString, "row" -> row.toString, "colum" -> colum.toString),
+        )
+        translation.onComplete {
             case Success(onBoard) =>
-                Success(onBoard && board(position + 8 * row + colum) == attacker)
-            case Failure(err) => Failure(err)
+                return Success(onBoard.result && board(position + 8 * row + colum) == attacker)
+            case Failure(err) =>
+                return Failure(err)
         }
-
+        Failure(new Exception("Should not be here"))
     }
 
     def readyingLegalMoveData(fen: String): Try[(Vector[Piece], List[String], Int, Color, Color)] = {
-        BasicChessFacade.fenToBoard(fen) match {
-            case Success(board) =>
+        val translation: Future[JsonResult[Vector[Piece]]] = GenericHttpClient.get[JsonResult[Vector[Piece]]](
+            baseUrl = "http://localhost:5001",
+            route = "/fenToBoard",
+            queryParams = Map("fen" -> fen),
+        )
+        translation.onComplete {
+            case Success(onBoard) =>
                 val fenSplit: List[String] = fen.split(" ").toList
                 extractColor(fenSplit(1)) match {
                     case Success((attackColorNum, moveColor, attackColor)) =>
-                        Success((board, fenSplit, attackColorNum, moveColor, attackColor))
-                    case Failure(exception) => Failure(exception)
+                        return Success((onBoard.result, fenSplit, attackColorNum, moveColor, attackColor))
+                    case Failure(exception) => return Failure(exception)
                 }
-            case Failure(exception) => Failure(exception)
-
-
+            case Failure(err) =>
+                return Failure(err)
         }
 
+        Failure(new Exception("Should not be here"))
     }
     
     def pawnAttack(fen: String, position: Int): Try[Boolean] = {
@@ -75,61 +96,116 @@ object LegalMoves {
 
         readyingLegalMoveData(fen) match {
             case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) =>
-                BasicChessFacade.pieceMoves(List(KNIGHT)) match {
-                    case Success(attackList) => checkKnightAttack(board, moveColor, attackList)
-                    case Failure(err) => Failure(err)
+                val payload = PieceMovesRequest(
+                    types = List(KNIGHT),
+                )
+                val pieceMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.post[PieceMovesRequest, JsonResult[List[(Int, Int)]]](
+                    baseUrl = "http://localhost:5001",
+                    route = "/pieceMoves",
+                    payload = payload
+                )
+                pieceMoves.onComplete {
+                    case Success(attackList) => return checkKnightAttack(board, moveColor, attackList.result)
+                    case Failure(err) => return Failure(err)
                 }
             case Failure(err) => Failure(err)
         }
+
+        Failure(new Exception("Should not be here"))
     }
 
-    def checkSpacesInDirection(currentRow: Int, currentColum: Int, position: Int, pieces: List[Piece], board: Vector[Piece]): Try[Boolean] = {
-        @tailrec
-        def checkSpaceInDirection(currentRow: Int, currentColum: Int, position: Int, pieces: List[Piece], board: Vector[Piece]): Try[Boolean] = {
-            BasicChessFacade.onBoard(position, currentRow, currentColum) match {
-                case Failure(err) => Failure(err)
-                case Success(value) if (!value) => Success(false)
-                case Success(value) => board(position + 8 * currentRow + currentColum) match {
-                    case piece if piece.equals(pieces.head) || piece.equals(pieces(1)) => Success(true)
-                    case piece if (piece.pieceType == PieceType.EMPTY && piece.color == Color.EMPTY) => checkSpaceInDirection(currentRow, currentColum, position + 8 * currentRow + currentColum, pieces, board);
-                    case _ => Success(false);
+    def checkSpacesInDirection(currentRow: Int, currentColumn: Int, position: Int, pieces: List[Piece], board: Vector[Piece]): Future[Boolean] = {
+
+        def checkSpace(currentRow: Int, currentColumn: Int, position: Int): Future[Boolean] = {
+            GenericHttpClient.get[JsonResult[Boolean]](
+                baseUrl = "http://localhost:5001",
+                route = "/onBoard",
+                queryParams = Map(
+                    "position" -> position.toString,
+                    "row" -> currentRow.toString,
+                    "colum" -> currentColumn.toString
+                )
+            ).flatMap { result =>
+                if (!result.result) Future.successful(false)
+                else board.lift(position + 8 * currentRow + currentColumn) match {
+                    case Some(piece) if piece == pieces.head || piece == pieces(1) =>
+                        Future.successful(true)
+
+                    case Some(piece) if piece.pieceType == PieceType.EMPTY && piece.color == Color.EMPTY =>
+                        checkSpace(currentRow, currentColumn, position + 8 * currentRow + currentColumn) // Recursive call (async style)
+
+                    case _ =>
+                        Future.successful(false)
                 }
+            }.recoverWith {
+                case ex => Future.failed(ex)
             }
         }
-        checkSpaceInDirection(currentRow, currentColum, position, pieces, board)
+
+        checkSpace(currentRow, currentColumn, position)
     }
 
-    @tailrec
-    def checkDirections(moves: List[(Int, Int)], board: Vector[Piece], position: Int, pieces: List[Piece]): Try[Boolean] = {
+    def checkDirections(moves: List[(Int, Int)], board: Vector[Piece], position: Int, pieces: List[Piece]): Future[Boolean] = {
         moves match {
-            case Nil => Success(false);
-            case (rowDirection, columDirection) :: t => {
-                checkSpacesInDirection(rowDirection, columDirection, position, pieces, board) match {
-                    case Failure(exception) => Failure(exception)
-                    case Success(value) if (value) => Success(true)
-                    case Success(value) => checkDirections(t, board, position, pieces)
+            case Nil => Future.successful(false)
+            case (rowDirection, colDirection) :: tail =>
+                checkSpacesInDirection(rowDirection, colDirection, position, pieces, board).flatMap {
+                    case true => Future.successful(true)
+                    case false => checkDirections(tail, board, position, pieces)
+                }.recoverWith {
+                    case ex => Future.failed(ex)
                 }
-            }
         }
     }
 
     def horizontalAttack(fen: String, position: Int): Try[Boolean] = {
         readyingLegalMoveData(fen) match {
             case Failure(exception) => Failure(exception)
-            case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) => BasicChessFacade.pieceMoves(List(ROOK, QUEEN)) match {
-                case Failure(exception) => Failure(exception)
-                case Success(attacks) => checkDirections(attacks, board, position, List(Piece(ROOK, moveColor), Piece(QUEEN, moveColor)))
-            }
+            case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) =>
+                val payload = PieceMovesRequest(
+                    types = List(ROOK, QUEEN),
+                )
+                val pieceMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.post[PieceMovesRequest, JsonResult[List[(Int, Int)]]](
+                    baseUrl = "http://localhost:5001",
+                    route = "/pieceMoves",
+                    payload = payload
+                )
+                pieceMoves.onComplete {
+                    case Success(attackList) =>
+                        checkDirections(attackList.result, board, position, List(Piece(ROOK, moveColor), Piece(QUEEN, moveColor))).onComplete {
+                            case Success(value) => return Success(value)
+                            case Failure(err) => return Failure(err)
+                        }
+                    case Failure(err) => return Failure(err)
+                }
+
+                Failure(new Exception("Should not be here"))
         }
     }
 
     def verticalAttack(fen: String, position: Int): Try[Boolean] = {
         readyingLegalMoveData(fen) match {
             case Failure(exception) => Failure(exception)
-            case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) => BasicChessFacade.pieceMoves(List(BISHOP, QUEEN)) match {
-                case Failure(exception) => Failure(exception)
-                case Success(attacks) => checkDirections(attacks, board, position, List(Piece(BISHOP, moveColor), Piece(QUEEN, moveColor)))
-            }
+            case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) =>
+                val payload = PieceMovesRequest(
+                    types = List(ROOK, QUEEN),
+                )
+                val pieceMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.post[PieceMovesRequest, JsonResult[List[(Int, Int)]]](
+                    baseUrl = "http://localhost:5001",
+                    route = "/pieceMoves",
+                    payload = payload
+                )
+                pieceMoves.onComplete {
+                    case Success(attackList) =>
+                        checkDirections(attackList.result, board, position, List(Piece(BISHOP, moveColor), Piece(QUEEN, moveColor))).onComplete {
+                            case Success(value) => return Success(value)
+                            case Failure(err) => return Failure(err)
+                        }
+                    case Failure(err) => return Failure(err)
+                }
+
+                Failure(new Exception("Should not be here"))
+
         }
     }
 
@@ -148,10 +224,22 @@ object LegalMoves {
         }
 
         readyingLegalMoveData(fen) match {
-            case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) => BasicChessFacade.pieceMoves(List(KING)) match {
-                case Success(attackList) => checkKingAttack(board, moveColor, attackList)
-                case Failure(err) => Failure(err)
-            }
+
+            case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) =>
+                val payload = PieceMovesRequest(
+                    types = List(KING),
+                )
+                val pieceMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.post[PieceMovesRequest, JsonResult[List[(Int, Int)]]](
+                    baseUrl = "http://localhost:5001",
+                    route = "/pieceMoves",
+                    payload = payload
+                )
+                pieceMoves.onComplete {
+                    case Success(attackList) => return checkKingAttack(board, moveColor, attackList.result)
+                    case Failure(err) => return Failure(err)
+                }
+
+                Failure(new Exception("Should not be here"))
             case Failure(err) => Failure(err)
         }
     }
@@ -186,24 +274,47 @@ object LegalMoves {
         readyingLegalMoveData(fen) match {
             case Failure(err) => Failure(err)
             case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) =>
-                val (from, to) = move;
-                BasicChessFacade.piecePositions(board, Piece(PieceType.KING, moveColor)) match {
+                val (from, to) = move
+                val payload = PiecePositionRequest(
+                    board = board,
+                    piece = Piece(PieceType.KING, moveColor),
+                )
+                val promote: Future[JsonResult[List[Int]]] = GenericHttpClient.post[PiecePositionRequest, JsonResult[List[Int]]](
+                    baseUrl = "http://localhost:5001",
+                    route = "/piecePositions",
+                    payload = payload
+                )
+                promote.onComplete {
+                    case Failure(err) =>
+                        println(s"Error: $err")
+                        return Failure(err)
                     case Success(kingPos) =>
-                        BasicChessFacade.makeMove(fen, move) match {
-                            case Success(moveFen) if (from == kingPos.head) =>
-                                isPosAttacked(moveFen, to) match {
-                                    case Failure(err) => Failure(err)
-                                    case Success(isAttacked) => Success(!isAttacked)}
+                        val payload = MoveRequest(
+                            fen  = fen,
+                            move = Move(from = kingPos.result(0), to = kingPos.result(1))
+                        )
+                        val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[MoveRequest, JsonResult[String]](
+                            baseUrl = "http://localhost:5001",
+                            route = "/makeMove",
+                            payload = payload
+                        )
+                        makeMove.onComplete {
+                            case Success(moveFen) if (from == kingPos.result.head) =>
+                            isPosAttacked(moveFen.result, to) match {
+                                case Failure(err) => Failure(err)
+                                case Success(isAttacked) => Success(!isAttacked)
+                            }
                             case Success(moveFen) =>
-                                isPosAttacked(moveFen, kingPos.head) match {
-                                    case Failure(err) => Failure(err)
-                                    case Success(isAttacked) => Success(!isAttacked)
-                                }
+                            isPosAttacked(moveFen.result, kingPos.result.head) match {
+                                case Failure(err) => Failure(err)
+                                case Success(isAttacked) => Success(!isAttacked)
+                            }
                             case Failure(exception) => Failure(exception)
                         }
-                    case Failure(exception) => Failure(exception)
+                }
+                Failure(new Exception("Should not be here"))
             }
-        }
+
     }
 
     def getAllLegalMoves(fen: String): Try[List[(Int, Int)]] = {
@@ -220,10 +331,22 @@ object LegalMoves {
             }
         }
 
-        BasicChessFacade.getAllPseudoLegalMoves(fen) match {
-            case Failure(err) => Failure(err)
-            case Success(pseudoMoves) => filterLegal(List(), pseudoMoves)
+        val allPseudoLegalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
+            baseUrl = "http://localhost:5001",
+            route = "/allPseudoLegalMoves",
+            queryParams = Map("fen" -> fen)
+        )
+        allPseudoLegalMoves.onComplete {
+            case Success(moves) =>
+                filterLegal(List(), moves.result) match {
+                    case Failure(err) => return Failure(err)
+                    case Success(legalMoves) => return Success(legalMoves)
+                }
+            case Failure(err) =>
+                return Failure(err)
         }
+
+        Failure(new Exception("Failed to getAllLegalMoves"))
     }
 
     def isValidMove(move: (Int, Int), fen: String): Try[(Int, Int)] = {

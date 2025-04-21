@@ -3,6 +3,7 @@ package Controller
 import SharedResources.ChessContext
 import SharedResources.util.{Observable, Observer}
 
+import scala.concurrent.Future
 import scala.util.Try
 
 trait ControllerTrait extends Observable {
@@ -98,7 +99,7 @@ trait ControllerTrait extends Observable {
      */
     def getErrorMessage : Try[String]
 
-    def translateMoveStringToInt (fen :String, move : String) : Try[(Int, Int)]
+    def translateMoveStringToInt (fen :String, move : String) : Future[Try[(Int, Int)]]
 }
 
 

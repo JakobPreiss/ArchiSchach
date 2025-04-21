@@ -1,14 +1,17 @@
-import BasicChess.StandartChess.ChessBoard
 import Controller.ControllerTrait
 import Controller.DuoChessController.RealController
 import Controller.SoloChessController.EngineController
 import JSON.JSONApi
-import RealChess.RealChessFacade
-import SharedResources.{ApiFileTrait, ChessContext, ChessTrait, DataWrapper, State}
+import RealChess.{ChessApiClient, RealChessFacade}
+import SharedResources.{ApiFileTrait, ChessContext, ChessTrait, DataWrapper, GenericHttpClient, JsonResult, State}
 import com.google.inject.{AbstractModule, Provides}
 import com.google.inject.name.{Named, Names}
 import play.api.libs.json.*
 
+import SharedResources.GenericHttpClient.StringJsonFormat
+import SharedResources.GenericHttpClient.ec
+
+import scala.concurrent.Future
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
@@ -22,10 +25,19 @@ object ChessModule {
             case State.whiteWonState => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             case State.blackWonState => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             case _ =>
-                ChessBoard.isValidFen(data._1) match {
-                    case Success(newFen) => newFen
-                    case Failure(error) => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+                val translation: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                    baseUrl = "http://localhost:5001",
+                    route = "/isValidFen",
+                    queryParams = Map("fen" -> data._1)
+                )
+                translation.onComplete {
+                    case Success(validFen) =>
+                        return validFen.result
+                    case Failure(err) =>
+                        return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
                 }
+                
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         }
     } 
 
@@ -41,7 +53,23 @@ object ChessModule {
         }
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ChessBoard.getBoardString(ChessBoard.fenToBoard(arg1))
+
+        val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/boardString",
+            queryParams = Map("fen" -> arg1)
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                val arg3 = value.result
+                return new RealController(arg1, arg2, arg3)
+            case Failure(err) =>
+                println(s"Error: ${err.getMessage}")
+                val arg3 = ""
+                return new RealController(arg1, arg2, arg3)
+        }
+        
+        val arg3 = ""
         new RealController(arg1, arg2, arg3)
     }
 
@@ -61,7 +89,23 @@ object ChessModule {
         val wrapper: DataWrapper = DataWrapper(None, Some(json))
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
+
+        val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/boardString",
+            queryParams = Map("fen" -> arg1)
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                val arg3 = value.result
+                return new RealController(arg1, arg2, arg3)
+            case Failure(err) =>
+                println(s"Error: ${err.getMessage}")
+                val arg3 = ""
+                return new RealController(arg1, arg2, arg3)
+        }
+
+        val arg3 = ""
         new RealController(arg1, arg2, arg3)
     }
 
@@ -74,7 +118,23 @@ object ChessModule {
         val wrapper: DataWrapper = DataWrapper(Some(xmlContent), None)
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
+
+        val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/boardString",
+            queryParams = Map("fen" -> arg1)
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                val arg3 = value.result
+                return new RealController(arg1, arg2, arg3)
+            case Failure(err) =>
+                println(s"Error: ${err.getMessage}")
+                val arg3 = ""
+                return new RealController(arg1, arg2, arg3)
+        }
+
+        val arg3 = ""
         new EngineController(arg1, arg2, arg3, 10)
     }
 
@@ -90,7 +150,23 @@ object ChessModule {
         val wrapper: DataWrapper = DataWrapper(None, Some(json))
         val arg1 = unpackToFen(wrapper, fileApi)
         val arg2 = new ChessContext
-        val arg3 = ChessBoard.getBoardString(ChessBoard.getDefaultBoard())
+
+        val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/boardString",
+            queryParams = Map("fen" -> arg1)
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                val arg3 = value.result
+                return new RealController(arg1, arg2, arg3)
+            case Failure(err) =>
+                println(s"Error: ${err.getMessage}")
+                val arg3 = ""
+                return new RealController(arg1, arg2, arg3)
+        }
+
+        val arg3 = ""
         new EngineController(arg1, arg2, arg3, 15)
     }
 

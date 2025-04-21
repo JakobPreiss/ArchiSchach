@@ -1,7 +1,15 @@
 package DevourChess
 
-import BasicChess.StandartChess.{BasicChessFacade}
+import SharedResources.{GenericHttpClient, JsonResult}
+
+import SharedResources.GenericHttpClient.BooleanJsonFormat
+import SharedResources.GenericHttpClient.ec
+import SharedResources.GenericHttpClient.listFormat
+import SharedResources.GenericHttpClient.IntJsonFormat
+import SharedResources.GenericHttpClient.tuple2Format
+
 import scala.annotation.tailrec
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 object LegalMoves {
@@ -38,19 +46,38 @@ object LegalMoves {
             }
         }
 
-        BasicChessFacade.getAllPseudoLegalMoves(fen) match {
-            case Failure(err) => Failure(err)
-            case Success(pseudoMoves) =>
-                filterLegalWithoutTake(List(), pseudoMoves) match {
-                    case Failure(err) => Failure(err)
-                    case Success(legalMoves) => Success(legalMoves)
+        val allPseudoLegalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
+            baseUrl = "http://localhost:5001",
+            route = "/allPseudoLegalMoves",
+            queryParams = Map("fen" -> fen)
+        )
+        allPseudoLegalMoves.onComplete {
+            case Success(moves) =>
+                filterLegalWithoutTake(List(), moves.result) match {
+                    case Failure(err) => return Failure(err)
+                    case Success(legalMoves) => return Success(legalMoves)
                 }
+            case Failure(err) =>
+                return Failure(err)
         }
 
+        Failure(new Exception("Failed to getAllLegalMoves"))
     }
 
     def isTakingMove(fen : String, attackedPosition : Int) : Try[Boolean] = {
-        BasicChessFacade.isDifferentColorPiece(fen, attackedPosition)
+        val isDifferentColorPiece: Future[JsonResult[Boolean]] = GenericHttpClient.get[JsonResult[Boolean]](
+            baseUrl = "http://localhost:5001",
+            route = "/isDifferentColorPiece",
+            queryParams = Map("fen" -> fen, "position" -> attackedPosition.toString)
+        )
+        isDifferentColorPiece.onComplete {
+            case Success(value) =>
+                return Success(value.result)
+            case Failure(err) =>
+                return Failure(err)
+        }
+
+        Failure(new Exception("Failed to get isDifferentColorPiece"))
     }
 
     def isValidMove(move: (Int, Int), fen: String): Try[(Int, Int)] = {

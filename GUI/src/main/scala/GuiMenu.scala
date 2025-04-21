@@ -1,6 +1,5 @@
 package GUI
 
-import BasicChess.StandartChess.ChessBoard
 import SharedResources.{ChessTrait, State}
 import RealChess.RealChessFacade
 import Controller.ControllerTrait

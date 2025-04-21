@@ -1,0 +1,189 @@
+package Controller
+
+import SharedResources.{ChessContext, JsonResult}
+import SharedResources.util.{Observable, Observer}
+import spray.json.*
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.Directives.*
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
+import akka.http.scaladsl.server.Directives._
+import SharedResources._
+import SharedResources.ChessJsonProtocol._
+
+import spray.json.DefaultJsonProtocol._ // brings in all the standard JsonFormat implicits
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._ // brings in the ToEntityMarshaller implicits
+
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
+
+// JSON formats for domain types
+object JsonProtocols extends DefaultJsonProtocol {
+  case class Move(from: Int, to: Int)
+  implicit val moveFormat: RootJsonFormat[Move] = jsonFormat2(Move)
+}
+
+import JsonProtocols._
+
+class ControllerRoutes(controller: ControllerTrait)(implicit system: ActorSystem) {
+  import system.dispatcher
+
+  val routes: Route =
+    pathPrefix("controller") {
+      concat(
+        // GET /controller/fen
+        path("fen") {
+          get {
+            complete(JsonResult(controller.fen))
+          } ~
+            post {
+              parameter("value") { value =>
+                controller.fen = value
+                complete(StatusCodes.OK)
+              }
+            }
+        },
+
+        // GET /controller/resetBoard
+        path("resetBoard") {
+          post {
+            controller.resetBoard()
+            complete(StatusCodes.OK)
+          }
+        },
+
+        // GET /controller/context
+        path("context") {
+          get {
+            complete(JsonResult(controller.context))
+          } ~
+            post {
+              entity(as[JsValue]) { js =>
+                val ctx = js.convertTo[ChessContext]
+                controller.context = ctx
+                complete(StatusCodes.OK)
+              }
+            }
+        },
+
+        // GET /controller/currentTheme
+        path("currentTheme") {
+          get {
+            complete(JsonResult(controller.current_theme))
+          } ~
+            post {
+              parameter("value".as[Int]) { v =>
+                controller.current_theme = v
+                complete(StatusCodes.OK)
+              }
+            }
+        },
+
+        // POST /controller/play
+        path("play") {
+          post {
+            entity(as[Move]) { moveJson =>
+              controller.play(Try((moveJson.from, moveJson.to)))
+              complete(StatusCodes.OK)
+            }
+          }
+        },
+
+        // POST /controller/undo
+        path("undo") {
+          post {
+            controller.undo()
+            complete(StatusCodes.OK)
+          }
+        },
+
+        // POST /controller/redo
+        path("redo") {
+          post {
+            controller.redo()
+            complete(StatusCodes.OK)
+          }
+        },
+
+        // GET /controller/createOutput
+        path("createOutput") {
+          get {
+            onComplete(Future.fromTry(controller.createOutput())) {
+              case Success(o) => complete(JsonResult(o))
+              case Failure(ex) => complete(StatusCodes.BadRequest, ex.getMessage)
+            }
+          }
+        },
+
+        // POST /controller/promotePawn
+        path("promotePawn") {
+          post {
+            entity(as[JsValue]) { js =>
+              val piece = js.asJsObject.fields("pieceKind").convertTo[String]
+              controller.promotePawn(piece)
+              complete(StatusCodes.OK)
+            }
+          }
+        },
+
+        // POST /controller/squareClicked
+        path("squareClicked") {
+          post {
+            entity(as[JsValue]) { js =>
+              val pos = js.asJsObject.fields("square").convertTo[Int]
+              controller.squareClicked(Try(pos))
+              complete(StatusCodes.OK)
+            }
+          }
+        },
+
+        // POST /controller/nextTheme
+        path("nextTheme") {
+          post {
+            controller.nextTheme()
+            complete(StatusCodes.OK)
+          }
+        },
+
+        // GET /controller/errorMessage
+        path("errorMessage") {
+          get {
+            onComplete(Future.fromTry(controller.getErrorMessage)) {
+              case Success(msg) => complete(JsonResult(msg))
+              case Failure(ex)  => complete(StatusCodes.BadRequest, ex.getMessage)
+            }
+          }
+        },
+
+        // GET /controller/translateMoveStringToInt
+        path("translateMoveStringToInt") {
+          get {
+            parameters("fen", "move") { (fen, mv) =>
+              onComplete(controller.translateMoveStringToInt(fen, mv)) {
+                case Success(res) => res match {
+                  case Success((from, to)) =>
+                    complete(JsonResult(Move(from, to)))
+                  case Failure(ex) =>
+                    complete(StatusCodes.BadRequest, ex.getMessage)
+                }
+                case Failure(ex)  => complete(StatusCodes.BadRequest, ex.getMessage)
+              }
+            }
+          }
+        }
+      )
+    }
+}
+
+object ControllerServer extends App {
+  implicit val system: ActorSystem = ActorSystem("ControllerSystem")
+
+  // Your implementation of ControllerTrait
+  val controllerImpl: ControllerTrait = ???
+
+  val routes = new ControllerRoutes(controllerImpl).routes
+  Http().newServerAt("0.0.0.0", 5002).bind(routes)
+  println("Controller REST API running at http://localhost:5002/")
+}

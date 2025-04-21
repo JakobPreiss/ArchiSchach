@@ -1,27 +1,46 @@
 package RealChess
 
-import BasicChess.StandartChess.BasicChessFacade
-import SharedResources.{Piece, PieceType}
+import SharedResources.Requests.PiecePositionRequest
+import SharedResources.{GenericHttpClient, JsonResult, Piece, PieceType}
 
 import scala.annotation.tailrec
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
+import SharedResources.GenericHttpClient.StringJsonFormat
+import SharedResources.GenericHttpClient.listFormat
+import SharedResources.GenericHttpClient.IntJsonFormat
+import SharedResources.GenericHttpClient.ec
+
 object Remis {
-
-
     def isPatt(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
         if (legalMoves.isEmpty) {
             LegalMoves.readyingLegalMoveData(fen) match {
                 case Failure(err) => Failure(err)
-                case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) => BasicChessFacade.piecePositions(board, Piece(PieceType.KING, moveColor)).match {
-                    case Failure(err) => Failure(err)
-                    case Success(kingPos) => LegalMoves.isPosAttacked(fen, kingPos.head) match {
-                        case Failure(err) => Failure(err)
-                        case Success(isAttacked) if (isAttacked) => Success(false)
-                        case Success(isNotAttacked) => Success(true)
+                case Success((board, fenSplit, attackColorNum, moveColor, attackColor)) =>
+                    val payload = PiecePositionRequest (
+                        board = board,
+                        piece = Piece(PieceType.KING, moveColor),
+                    )
+                    val promote: Future[JsonResult[List[Int]]] = GenericHttpClient.post[PiecePositionRequest, JsonResult[List[Int]]](
+                        baseUrl = "http://localhost:5001",
+                        route = "/piecePositions",
+                        payload = payload
+                    )
+                    promote.onComplete {
+                        case Failure(err) => 
+                            println(s"Error: $err")
+                            return Failure(err)
+                        case Success(kingPos) =>
+                            LegalMoves.isPosAttacked(fen, kingPos.result.head) match {
+                                case Failure(err) => Failure(err)
+                                case Success(isAttacked) if (isAttacked) => return Success(false)
+                                case Success(isNotAttacked) => return Success(true)
+                            }
+                            
                     }
+                    Success(false)
                 }
-            }
         } else {
             Success(false)
         }

@@ -1,28 +1,46 @@
 package DevourChess
 
-import BasicChess.StandartChess.{BasicChessFacade}
-import SharedResources.Piece.*
-import SharedResources.ChessTrait
+import SharedResources.{ChessTrait, GenericHttpClient, JsonResult}
 
+import SharedResources.GenericHttpClient.ec
+import SharedResources.GenericHttpClient.StringJsonFormat
+
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 class DevourChessFacade extends ChessTrait {
 
     def getAllLegalMoves(fen: String): Try[List[(Int, Int)]] = {
-        BasicChessFacade.isValidFen(fen) match {
-            case Failure(err) => Failure(err)
+        val isDifferentColorPiece: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/isValidFen",
+            queryParams = Map("fen" -> fen)
+        )
+        isDifferentColorPiece.onComplete {
             case Success(validFen) =>
-                LegalMoves.getAllLegalMoves(validFen)
+                return LegalMoves.getAllLegalMoves(validFen.result)
+            case Failure(err) =>
+                return Failure(err)
         }
+
+        Failure(new Exception("Failed to get isDifferentColorPiece"))
     }
 
 
     def isRemis(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
-        BasicChessFacade.isValidFen(fen) match {
-            case Failure(err) => Failure(err)
+        val isDifferentColorPiece: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://localhost:5001",
+            route = "/isValidFen",
+            queryParams = Map("fen" -> fen)
+        )
+        isDifferentColorPiece.onComplete {
             case Success(validFen) =>
-                Remis.isRemis(validFen)
+                return Remis.isRemis(validFen.result)
+            case Failure(err) =>
+                return Failure(err)
         }
+
+        Failure(new Exception("Failed to get isDifferentColorPiece"))
     }
 
     def getBestMove(fen: String, depth: Int): Try[String] = {
