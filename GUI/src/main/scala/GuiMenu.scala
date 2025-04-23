@@ -25,21 +25,21 @@ class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer
 
     override def update: Unit = {
         controller.context.state match {
-            case State.remisState => {
+            case State.Remis => {
                 val infoLabel = new Label("Remis") {
                     style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
                     wrapText = true
                 }
                 children = Seq(theme_button, undo_button, redo_button, reset_button, infoLabel)
             }
-            case State.whiteWonState => {
+            case State.WhiteWon => {
                 val infoLabel = new Label("Schwarz wurde vernichtend geschlagen") {
                     style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
                     wrapText = true
                 }
                 children = Seq(theme_button, undo_button, redo_button, reset_button, infoLabel)
             }
-            case State.blackWonState => {
+            case State.BlackWon => {
                 val infoLabel = new Label("Weiß wurde vernichtend geschlagen") {
                     style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
                     wrapText = true

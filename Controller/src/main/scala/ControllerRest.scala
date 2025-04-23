@@ -1,5 +1,6 @@
 package Controller
 
+import Controller.ControllerServer.{deRingObservers, notifyObservers, observers, ringObservers, tellErrorToObservers}
 import SharedResources.{ChessContext, JsonResult}
 import SharedResources.util.{Observable, Observer}
 import spray.json.*
@@ -7,15 +8,16 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.*
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
-import akka.http.scaladsl.server.Directives._
-import SharedResources._
-import SharedResources.ChessJsonProtocol._
+import akka.http.scaladsl.server.Directives.*
+import SharedResources.*
+import SharedResources.ChessJsonProtocol.*
+import spray.json.DefaultJsonProtocol.*
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
+import akka.http.scaladsl.model.HttpMethods.POST
 
-import spray.json.DefaultJsonProtocol._ // brings in all the standard JsonFormat implicits
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._ // brings in the ToEntityMarshaller implicits
-
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
@@ -172,7 +174,39 @@ class ControllerRoutes(controller: ControllerTrait)(implicit system: ActorSystem
               }
             }
           }
-        }
+        },
+
+        path("register") {
+          parameter("url") { url =>
+            observers += url
+            complete(s"Registered observer at $url")
+          }
+        } ~
+            path("notify") {
+              post {
+                notifyObservers()
+                complete("Observers notified")
+              }
+            } ~
+            path("ring") {
+              post {
+                ringObservers()
+                complete("Special case triggered on observers")
+              }
+            } ~
+            path("dering") {
+              post {
+                deRingObservers()
+                complete("Reverse special case triggered")
+              }
+            } ~
+            path("error") {
+              post {
+                tellErrorToObservers()
+                complete("Error told to observers")
+              }
+            }
+
       )
     }
 }
@@ -184,6 +218,25 @@ object ControllerServer extends App {
   val controllerImpl: ControllerTrait = ???
 
   val routes = new ControllerRoutes(controllerImpl).routes
+
+  var observers: ListBuffer[String] = ListBuffer() // stores base URLs like "http://localhost:8081"
+
+  def notifyObservers(): Unit = observers.foreach { url =>
+    Http().singleRequest(HttpRequest(POST, uri = s"$url/update"))
+  }
+
+  def ringObservers(): Unit = observers.foreach { url =>
+    Http().singleRequest(HttpRequest(POST, uri = s"$url/special"))
+  }
+
+  def deRingObservers(): Unit = observers.foreach { url =>
+    Http().singleRequest(HttpRequest(POST, uri = s"$url/reverse"))
+  }
+
+  def tellErrorToObservers(): Unit = observers.foreach { url =>
+    Http().singleRequest(HttpRequest(POST, uri = s"$url/error"))
+  }
+
   Http().newServerAt("0.0.0.0", 5002).bind(routes)
   println("Controller REST API running at http://localhost:5002/")
 }

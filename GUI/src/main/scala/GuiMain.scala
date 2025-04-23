@@ -19,6 +19,9 @@ import SharedResources.util.Observer
 object GuiMain extends JFXApp3 {
 
     var controller : Option[ControllerTrait] = None
+    var board : Option[GuiBoard] = None
+    var menu : Option[GuiMenu] = None
+    var promoWindow : Option[GuiPromoWindow] = None
 
     
     
@@ -33,9 +36,21 @@ object GuiMain extends JFXApp3 {
 
                     //padding
                     style = "-fx-background-color:BLACK"
-                    left  = new GuiBoard(controller)
-                    center = new GuiPromoWindow(controller)
-                    right = new GuiMenu(controller)
+                    board match {
+                        case None =>
+                        case Some(b) =>
+                            promoWindow match {
+                                case None =>
+                                case Some(w) =>
+                                    menu match {
+                                        case None =>
+                                        case Some(m) =>
+                                            left = b
+                                            center = w
+                                            right = m
+                                    }
+                            }
+                    }
                     style = "-fx-background-color: #F5F5DC;"
                     
                 }
@@ -46,5 +61,11 @@ object GuiMain extends JFXApp3 {
 
     def setController(controller: ControllerTrait): Unit = {
         this.controller = Some(controller)
+    }
+
+    def setComponents(board: GuiBoard, menu: GuiMenu, promoWindow: GuiPromoWindow): Unit = {
+        this.board = Some(board)
+        this.menu = Some(menu)
+        this.promoWindow = Some(promoWindow)
     }
 }

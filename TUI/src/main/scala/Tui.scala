@@ -2,9 +2,16 @@ package TUI
 
 import Controller.ControllerTrait
 import SharedResources.util.Observer
-
 import SharedResources.GenericHttpClient.ec
+import SharedResources.{GenericHttpClient, JsonResult}
+import SharedResources.JsonResult.tuple2Format
+import SharedResources.ChessJsonProtocol.tuple2Format
+import SharedResources.GenericHttpClient.tuple2Format
+import SharedResources.JsonProtocols.tuple2Format
+import Controller.JsonProtocols.tuple2Format
+import SharedResources.PieceJsonProtocol.tuple2Format
 
+import scala.concurrent.Future
 import scala.io.StdIn.readLine
 import scala.util.{Failure, Success, Try}
 
@@ -19,6 +26,11 @@ class Tui(controller: ControllerTrait) extends Observer {
                 case "redo" => controller.redo()
                 case "reset" => controller.resetBoard()
                 case move if move.matches("(([a-h][1-8][a-h][1-8])|undo|redo)") =>
+                    val translateMoveStringToInt: Future[JsonResult[(Int, Int)]] = GenericHttpClient.get[JsonResult[(Int, Int)]](
+                        baseUrl = "http://localhost:5002",
+                        route = "/translateCastleFromFen",
+                        queryParams = Map("move" -> move)
+                    )
                     controller.translateMoveStringToInt(controller.fen, move).onComplete {
                         case Success(result) =>
                             controller.play(result)
@@ -55,4 +67,14 @@ class Tui(controller: ControllerTrait) extends Observer {
     override def errorDisplay : Unit = {
         println("Error: " + controller.getErrorMessage)
     }
+}
+
+
+translateCastleFromFen.onComplete {
+    case Success(value) =>
+        play(Success(value.result))
+        activeSquare = None
+    case Failure(err) =>
+        failureHandle(err.getMessage)
+        return
 }

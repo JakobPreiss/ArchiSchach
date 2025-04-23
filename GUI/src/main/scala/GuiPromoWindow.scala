@@ -70,11 +70,11 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
 
     def showPieces(): Unit = {
         val paths : List[String] = controller.context.state match {
-            case State.blackPlayingState => List("/pieces/black-rook.png",
+            case State.BlackPlaying => List("/pieces/black-rook.png",
                 "/pieces/black-knight.png",
                 "/pieces/black-bishop.png",
                 "/pieces/black-queen.png")
-            case State.whitePlayingState => List("/pieces/white-rook.png",
+            case State.WhitePlaying => List("/pieces/white-rook.png",
                 "/pieces/white-knight.png",
                 "/pieces/white-bishop.png",
                 "/pieces/white-queen.png")

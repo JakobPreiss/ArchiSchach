@@ -104,7 +104,7 @@ lazy val tui = (project in file("TUI"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
     ),
   )
 
