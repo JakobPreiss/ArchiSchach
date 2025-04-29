@@ -234,31 +234,31 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
         path("register") {
           parameter("url") { url =>
             observers += url
-            complete(s"Registered observer at $url")
+            complete(JsonResult(s"Registered observer at $url"))
           }
         } ~
             path("notify") {
               post {
                 notifyObservers()
-                complete("Observers notified")
+                complete(JsonResult("Observers notified"))
               }
             } ~
             path("ring") {
               post {
                 ringObservers()
-                complete("Special case triggered on observers")
+                complete(JsonResult("Special case triggered on observers"))
               }
             } ~
             path("dering") {
               post {
                 deRingObservers()
-                complete("Reverse special case triggered")
+                complete(JsonResult("Reverse special case triggered"))
               }
             } ~
             path("error") {
               post {
                 tellErrorToObservers()
-                complete("Error told to observers")
+                complete(JsonResult("Error told to observers"))
               }
             }
 
