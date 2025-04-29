@@ -1,8 +1,6 @@
 package GUI
 
 import GUI.{GuiBoard, GuiMenu}
-import Controller.ControllerTrait
-import Controller.DuoChessController.RealController
 import scalafx.application.JFXApp3
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control.{Button, Label}
@@ -18,12 +16,9 @@ import SharedResources.util.Observer
 
 object GuiMain extends JFXApp3 {
 
-    var controller : Option[ControllerTrait] = None
     var board : Option[GuiBoard] = None
     var menu : Option[GuiMenu] = None
     var promoWindow : Option[GuiPromoWindow] = None
-
-    
     
     def start(): Unit = {
 
@@ -57,10 +52,6 @@ object GuiMain extends JFXApp3 {
             }
             fullScreen = true
         }
-    }
-
-    def setController(controller: ControllerTrait): Unit = {
-        this.controller = Some(controller)
     }
 
     def setComponents(board: GuiBoard, menu: GuiMenu, promoWindow: GuiPromoWindow): Unit = {

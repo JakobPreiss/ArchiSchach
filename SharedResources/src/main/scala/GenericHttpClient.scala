@@ -21,7 +21,7 @@ object GenericHttpClient extends DefaultJsonProtocol {
 
   /**
    * Perform a GET request to the specified URL and route with query parameters.
-   * @param baseUrl the base URL, e.g., "http://localhost:5001"
+   * @param baseUrl the base URL, e.g., "http://localhost:8080"
    * @param route the API route, e.g., "/getBoardString"
    * @param queryParams map of query parameters
    * @tparam T the type to unmarshal the JSON response into (requires JsonFormat)
@@ -45,7 +45,7 @@ object GenericHttpClient extends DefaultJsonProtocol {
 
   /**
    * Perform a POST request to the specified URL and route with a JSON payload.
-   * @param baseUrl the base URL, e.g., "http://localhost:5001"
+   * @param baseUrl the base URL, e.g., "http://localhost:8080"
    * @param route the API route, e.g., "/updateEnpassant"
    * @param payload the object to marshal into JSON
    * @tparam Req the request payload type (requires JsonFormat)

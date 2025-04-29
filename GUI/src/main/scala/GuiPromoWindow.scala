@@ -1,8 +1,6 @@
 package GUI
 
-import Controller.ControllerTrait
-import Controller.Extra
-import SharedResources.State
+import SharedResources.{ChessContext, GenericHttpClient, JsonResult, State}
 import javafx.stage.Screen
 import scalafx.scene.control.Button
 import scalafx.scene.effect.DropShadow
@@ -13,19 +11,18 @@ import scalafx.scene.paint.Color
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.text.Text
 import SharedResources.util.Observer
+import SharedResources.GenericHttpClient.ec
+import SharedResources.GenericHttpClient.IntJsonFormat
+import SharedResources.GenericHttpClient.UnitJsonFormat
+import SharedResources.GenericHttpClient.StringJsonFormat
+import SharedResources.ChessJsonProtocol.chessContextFormat
+import SharedResources.Requests.PromotePawnRequest
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
+import scala.concurrent.Future
 
-class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, Observer {
-
-    val controller: ControllerTrait = option_controller match {
-        case Some(a) => a
-        case _ => null
-    }
-
-    controller.add(this)
-
+class GuiPromoWindow extends VBox, Observer {
     val screenBounds = Screen.getPrimary.getVisualBounds
     val varWidth = screenBounds.getWidth
     val varHeight = screenBounds.getHeight
@@ -58,27 +55,81 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
     override def specialCase: Unit = {
         showPieces()
     }
+
+    def currentTheme: Int = {
+        val boardFuture: Future[JsonResult[Int]] = GenericHttpClient.get[JsonResult[Int]](
+            baseUrl = "http://controller:8080",
+            route = "/controller/currentTheme",
+            queryParams = Map()
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                return value.result
+            case Failure(err) =>
+                println("Error fetching current theme: ")
+                return 0
+        }
+
+        0
+    }
+
+    def promotePawn(pieceKind: String): Unit = {
+        val payload = PromotePawnRequest(
+            pieceKind = pieceKind
+        )
+
+        val boardFuture: Future[JsonResult[Int]] = GenericHttpClient.post[Unit, JsonResult[Int]](
+            baseUrl = "http://controller:8080",
+            route = "/controller/promotePawn",
+            payload = payload
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                println("Pawn promoted to: " + value.result)
+            case Failure(err) =>
+                println("Error promoting pawn: " + err.getMessage)
+        }
+    }
+
     override def update: Unit = ()
     override def errorDisplay: Unit = {
-        val msg : String = controller.getErrorMessage match {
-            case Success(m) => m
-            case Failure(err) => "Could not read error message" 
+        val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://controller:8080",
+            route = "/controller/errorMessage",
+            queryParams = Map()
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                val errMsg = new Text(value.result)
+                children = Seq(errMsg)
+            case Failure(err) =>
+                val errMsg = new Text("Could not read error message")
+                children = Seq(errMsg)
         }
-        val errMsg = new Text(msg)
-        children = Seq(errMsg)
     }
 
     def showPieces(): Unit = {
-        val paths : List[String] = controller.context.state match {
-            case State.BlackPlaying => List("/pieces/black-rook.png",
-                "/pieces/black-knight.png",
-                "/pieces/black-bishop.png",
-                "/pieces/black-queen.png")
-            case State.WhitePlaying => List("/pieces/white-rook.png",
-                "/pieces/white-knight.png",
-                "/pieces/white-bishop.png",
-                "/pieces/white-queen.png")
-            case _ => List() //2 rail implementieren
+        val boardFuture: Future[JsonResult[ChessContext]] = GenericHttpClient.get[JsonResult[ChessContext]](
+            baseUrl = "http://controller:8080",
+            route = "/controller/context",
+            queryParams = Map()
+        )
+        val pathsFuture: Future[List[String]] = boardFuture.map { value =>
+            value.result.state match {
+                case State.BlackPlaying => List(
+                    "/pieces/black-rook.png",
+                    "/pieces/black-knight.png",
+                    "/pieces/black-bishop.png",
+                    "/pieces/black-queen.png"
+                )
+                case State.WhitePlaying => List(
+                    "/pieces/white-rook.png",
+                    "/pieces/white-knight.png",
+                    "/pieces/white-bishop.png",
+                    "/pieces/white-queen.png"
+                )
+                case _ => List()
+            }
         }
 
         def getImage(path: String) : ImageView = {
@@ -87,7 +138,7 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
                 fitWidth = varHeight * 0.07
                 preserveRatio = true
                 //alignmentInParent = Center
-                val lcol3 = color_pallets(controller.current_theme)._1
+                val lcol3 = color_pallets(currentTheme)._1
                 style = s"-fx-effect: dropshadow(gaussian, $lcol3, 10, 0.8, 0, 0);"
                 effect = new DropShadow {
                     color = Color.Black
@@ -100,7 +151,7 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
         def getButton(pieceKind: String) : Button = {
              val button = new Button() {
                 style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
-                onAction = (_ => controller.promotePawn(pieceKind))
+                onAction = _ => promotePawn(pieceKind)
                 //focusWithin.apply()
             }
                 button.setPrefSize(varHeight * 0.1, varHeight * 0.1)
@@ -126,7 +177,11 @@ class GuiPromoWindow(option_controller: Option[ControllerTrait]) extends VBox, O
             buildStackPaneRecursive(imageList, buttonList, List())
         }
 
-        children = getPieceList(paths)
+        pathsFuture.onComplete {
+            case Success(paths) =>
+                val pieceList = getPieceList(paths)
+                children = pieceList
+        }
     }
 
     alignment = Pos.Center

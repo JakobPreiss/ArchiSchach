@@ -374,7 +374,7 @@ object BasicChessServer extends App {
   private val routes = new BasicChessRoutes(chessService).routes
 
   // Bind the routes to an HTTP server
-  val bindingFuture = Http().newServerAt("localhost", 5001).bind(routes)
+  val bindingFuture = Http().newServerAt("0.0.0.0", 8080).bind(routes)
 
-  println("Basic Chess Rest API at http://localhost:5001/")
+  println("Basic Chess Rest API at http://0.0.0.0:8080/")
 }

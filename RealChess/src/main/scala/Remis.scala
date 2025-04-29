@@ -23,8 +23,8 @@ object Remis {
                         piece = Piece(PieceType.KING, moveColor),
                     )
                     val promote: Future[JsonResult[List[Int]]] = GenericHttpClient.post[PiecePositionRequest, JsonResult[List[Int]]](
-                        baseUrl = "http://localhost:5001",
-                        route = "/piecePositions",
+                        baseUrl = "http://basic-chess:8080",
+                        route = "/chess/piecePositions",
                         payload = payload
                     )
                     promote.onComplete {

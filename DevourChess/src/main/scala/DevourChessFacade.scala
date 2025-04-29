@@ -12,8 +12,8 @@ class DevourChessFacade extends ChessTrait {
 
     def getAllLegalMoves(fen: String): Try[List[(Int, Int)]] = {
         val isDifferentColorPiece: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-            baseUrl = "http://localhost:5001",
-            route = "/isValidFen",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isValidFen",
             queryParams = Map("fen" -> fen)
         )
         isDifferentColorPiece.onComplete {
@@ -29,8 +29,8 @@ class DevourChessFacade extends ChessTrait {
 
     def isRemis(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
         val isDifferentColorPiece: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-            baseUrl = "http://localhost:5001",
-            route = "/isValidFen",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isValidFen",
             queryParams = Map("fen" -> fen)
         )
         isDifferentColorPiece.onComplete {

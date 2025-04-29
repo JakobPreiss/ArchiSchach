@@ -3,7 +3,7 @@ package Controller.DuoChessController
 import SharedResources.{ApiFileTrait, ChessContext, ChessTrait, Event, GenericHttpClient, JsonResult, State}
 import Controller.ControllerTrait
 import Controller.Extra.{SetCommand, UndoInvoker}
-import Controller.Requests.PromoteRequest
+import Controller.Requests.{PromoteRequest, RemisRequest, SaveRequest}
 import Requests.{Move, MoveRequest}
 import SharedResources.util.Observable
 import SharedResources.GenericHttpClient.StringJsonFormat
@@ -12,19 +12,36 @@ import SharedResources.GenericHttpClient.optionFormat
 import SharedResources.GenericHttpClient.IntJsonFormat
 import SharedResources.GenericHttpClient.tuple2Format
 import SharedResources.GenericHttpClient.BooleanJsonFormat
+import SharedResources.GenericHttpClient.listFormat
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-class RealController(override var fen : String, var context : ChessContext, var output : String)(using val gameMode : ChessTrait)(using val fileapi: ApiFileTrait) extends Observable with ControllerTrait {
+class RealController(override var fen : String, var context : ChessContext, var output : String, val gameMode: String, val saveApi: String) extends Observable with ControllerTrait {
     var activeSquare : Option[Int] = None
     var current_theme: Int = 0
     var errorMessage : String = ""
 
+    def printTo(context: ChessContext, fen: String) = {
+        val payload = SaveRequest(
+            fen  = fen
+        )
+        val saveFuture: Future[JsonResult[String]] = GenericHttpClient.post[SaveRequest, JsonResult[String]](
+            baseUrl = saveApi,
+            route = "/apifile/printTo",
+            payload = payload
+        )
+        saveFuture.onComplete {
+            case Success(newFen: JsonResult[String]) =>
+            case Failure(err) =>
+                failureHandle(err.getMessage)
+        }
+    }
+
     def boardToString(): Unit = {
         val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-            baseUrl = "http://localhost:5001",
-            route = "/boardString",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/boardString",
             queryParams = Map("fen" -> fen)
         )
         boardFuture.onComplete {
@@ -40,15 +57,20 @@ class RealController(override var fen : String, var context : ChessContext, var 
 
     def resetBoard(): Unit = {
         fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-        val legalMoves = gameMode.getAllLegalMoves(fen) match {
-            case Success(legalMoves) => checkGameState(legalMoves)
-            case Failure(err) =>
-                failureHandle(err.getMessage)
-                return
+
+        val legalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
+            baseUrl = gameMode,
+            route = "/chess/getAllLegalMoves",
+            queryParams = Map("fen" -> fen)
+        )
+        legalMoves.onComplete {
+            case Success(legalMoves) =>
+                checkGameState(legalMoves.result)
+                printTo(context, fen)
+                boardToString()
+                deRingObservers
+            case Failure(value) => failureHandle(value.getMessage)
         }
-        fileapi.printTo(context, fen)
-        notifyObservers
-        deRingObservers
     }
 
     def play(moveRaw : Try[(Int, Int)]) : Unit = {
@@ -68,8 +90,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
                     move = Move(from = move(0), to = move(1))
                 )
                 val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[MoveRequest, JsonResult[String]](
-                    baseUrl = "http://localhost:5001",
-                    route = "/makeMove",
+                    baseUrl = "http://basic-chess:8080",
+                    route = "/chess/makeMove",
                     payload = payload
                 )
                 makeMove.onComplete {
@@ -84,8 +106,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
 
         def checkPromotion(): Unit = {
             val promote: Future[JsonResult[Option[Int]]] = GenericHttpClient.get[JsonResult[Option[Int]]](
-                baseUrl = "http://localhost:5001",
-                route = "/canPromote",
+                baseUrl = "http://basic-chess:8080",
+                route = "/chess/canPromote",
                 queryParams = Map("fen" -> fen)
             )
             promote.onComplete {
@@ -96,49 +118,68 @@ class RealController(override var fen : String, var context : ChessContext, var 
                             ringObservers
                         case None =>
                             boardToString()
-                            gameMode.getAllLegalMoves(fen) match {
+
+                            val legalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
+                                baseUrl = gameMode,
+                                route = "/chess/getAllLegalMoves",
+                                queryParams = Map("fen" -> fen)
+                            )
+                            legalMoves.onComplete {
                                 case Success(legalMoves) =>
-                                    val state = checkGameState(legalMoves)
-                                    fileapi.printTo(context, fen)
+                                    val state = checkGameState(legalMoves.result)
+                                    printTo(context, fen)
                                     notifyObservers
-                                case Failure(err) =>
-                                    failureHandle(err.getMessage)
+                                case Failure(value) => failureHandle(value.getMessage)
                             }
                     }
                 case Failure(err) => failureHandle(err.getMessage)
             }
         }
 
-        gameMode.getAllLegalMoves(fen) match {
-            case Success(legalMoves) => tryMove(move, legalMoves)
+        val legalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
+            baseUrl = gameMode,
+            route = "/chess/getAllLegalMoves",
+            queryParams = Map("fen" -> fen)
+        )
+        legalMoves.onComplete {
+            case Success(legalMoves) => tryMove(move, legalMoves.result)
             case Failure(value) => failureHandle(value.getMessage)
         }
     }
 
     def checkGameState(legalMoves: List[(Int, Int)]): Boolean = {
-        gameMode.isRemis(fen, legalMoves) match {
-            case Success(remis : Boolean) => val event: Event = Event(legalMoves.isEmpty, fen, remis)
+        val payload = RemisRequest(
+            fen = fen,
+            legalMoves = legalMoves
+        )
+        val remisFuture: Future[JsonResult[Boolean]] = GenericHttpClient.post[RemisRequest, JsonResult[Boolean]](
+            baseUrl = gameMode,
+            route = "/chess/promote",
+            payload = payload
+        )
+        remisFuture.onComplete {
+            case Success(remis) => val event: Event = Event(legalMoves.isEmpty, fen, remis.result)
                 context.handle(event)
                 context.state match {
                     case State.Remis => output += "\n \nRemis"
-                        false
+                        return false
                     case State.WhiteWon => output += "\n \nSchwarz wurde vernichtend geschlagen"
-                        false
+                        return false
                     case State.BlackWon => output += "\n \nWeiß wurde vernichtend geschlagen"
-                        false
-                    case _ => true
+                        return false
+                    case _ => return true
                 }
             case Failure(err) =>
                 failureHandle(err.getMessage)
-                false
+                return false
         }
-        
+        false
     }
 
     def promotePawn(pieceKind: String): Unit = {
         val canPromote: Future[JsonResult[Option[Int]]] = GenericHttpClient.get[JsonResult[Option[Int]]](
-            baseUrl = "http://localhost:5001",
-            route = "/canPromote",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/canPromote",
             queryParams = Map("fen" -> fen)
         )
         canPromote.onComplete {
@@ -151,8 +192,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
                             position = pos
                         )
                         val promote: Future[JsonResult[String]] = GenericHttpClient.post[PromoteRequest, JsonResult[String]](
-                            baseUrl = "http://localhost:5001",
-                            route = "/promote",
+                            baseUrl = "http://basic-chess:8080",
+                            route = "/chess/promote",
                             payload = payload
                         )
                         promote.onComplete {
@@ -160,14 +201,19 @@ class RealController(override var fen : String, var context : ChessContext, var 
                                 UndoInvoker.doStep(new SetCommand(updatedFen.result, fen, this))
                                 fen = updatedFen.result
                                 boardToString()
-                                gameMode.getAllLegalMoves(fen) match {
+
+                                val legalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
+                                    baseUrl = gameMode,
+                                    route = "/chess/getAllLegalMoves",
+                                    queryParams = Map("fen" -> fen)
+                                )
+                                legalMoves.onComplete {
                                     case Success(legalMoves) =>
-                                        val state = checkGameState(legalMoves)
-                                        fileapi.printTo(context, fen)
+                                        val state = checkGameState(legalMoves.result)
+                                        printTo(context, fen)
                                         deRingObservers
                                         notifyObservers
-                                    case Failure(err) =>
-                                        failureHandle(err.getMessage)
+                                    case Failure(value) => failureHandle(value.getMessage)
                                 }
                             case Failure(err) =>
                                 failureHandle(err.getMessage)
@@ -181,24 +227,36 @@ class RealController(override var fen : String, var context : ChessContext, var 
 
     def undo(): Unit = {
         UndoInvoker.undoStep()
-        gameMode.getAllLegalMoves(fen) match {
-            case Success(legalMoves : List[(Int, Int)]) => 
-                checkGameState(legalMoves)
-                fileapi.printTo(context, fen)
+
+        val legalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
+            baseUrl = gameMode,
+            route = "/chess/getAllLegalMoves",
+            queryParams = Map("fen" -> fen)
+        )
+        legalMoves.onComplete {
+            case Success(legalMoves) =>
+                checkGameState(legalMoves.result)
+                printTo(context, fen)
                 boardToString()
                 notifyObservers
-            case Failure(err) => failureHandle(err.getMessage)
+            case Failure(value) => failureHandle(value.getMessage)
         }
     }
 
     def redo() : Unit = {
         UndoInvoker.redoStep()
-        gameMode.getAllLegalMoves(fen) match {
-            case Success(legalMoves : List[(Int, Int)]) => checkGameState(legalMoves)
-                fileapi.printTo(context, fen)
+        val legalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
+            baseUrl = gameMode,
+            route = "/chess/getAllLegalMoves",
+            queryParams = Map("fen" -> fen)
+        )
+        legalMoves.onComplete {
+            case Success(legalMoves) =>
+                checkGameState(legalMoves.result)
+                printTo(context, fen)
                 boardToString()
                 notifyObservers
-            case Failure(err) => failureHandle(err.getMessage)
+            case Failure(value) => failureHandle(value.getMessage)
         }
     }
 
@@ -206,8 +264,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
         clickedSquare match {
             case Success(square : Int) =>
                 val isColorPiece: Future[JsonResult[Boolean]] = GenericHttpClient.get[JsonResult[Boolean]](
-                    baseUrl = "http://localhost:5001",
-                    route = "/isColorPiece",
+                    baseUrl = "http://basic-chess:8080",
+                    route = "/chess/isColorPiece",
                     queryParams = Map("fen" -> fen, "position" -> square.toString)
                 )
                 isColorPiece.onComplete {
@@ -218,8 +276,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
                             activeSquare match {
                                 case Some(newSquare: Int) =>
                                     val translateCastleFromFen: Future[JsonResult[(Int, Int)]] = GenericHttpClient.get[JsonResult[(Int, Int)]](
-                                        baseUrl = "http://localhost:5001",
-                                        route = "/translateCastleFromFen",
+                                        baseUrl = "http://basic-chess:8080",
+                                        route = "/chess/translateCastleFromFen",
                                         queryParams = Map("fen" -> fen, "from" -> newSquare.toString, "to" -> square.toString)
                                     )
                                     translateCastleFromFen.onComplete {
@@ -259,8 +317,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
 
     def translateMoveStringToInt(fen: String, move: String): Future[Try[(Int, Int)]] = {
         val translation: Future[JsonResult[(Int, Int)]] = GenericHttpClient.get[JsonResult[(Int, Int)]](
-            baseUrl = "http://localhost:5001",
-            route = "/translateMoveStringToInt",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/translateMoveStringToInt",
             queryParams = Map("fen" -> fen, "move" -> move)
         )
         translation.map(x => Success(x.result)).recover {

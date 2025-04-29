@@ -1,0 +1,55 @@
+# --- build stage ---
+FROM hseeberger/scala-sbt:17.0.1_1.5.5_2.13.6 as builder
+
+ARG SERVICE_NAME
+
+# Installiere notwendige Pakete für JavaFX und X11-Forwarding
+USER root
+RUN apt-get update && apt-get install -y \
+    libx11-6 \
+    libxext6 \
+    libxxf86vm1 \
+    libxrender1 \
+    libxtst6 \
+    libxi6 \
+    libgl1-mesa-glx \
+    libgtk-3-0 \
+    x11-apps
+
+WORKDIR /app
+
+# 1) copy sbt build definitions and plugin definitions
+COPY build.sbt         ./
+COPY project/build.properties project/
+COPY project/plugins.sbt      project/
+
+# 2) warm up the dependency cache
+RUN sbt update
+
+# 3) copy the rest of your sources and assembly
+COPY . .
+
+# actually compile & package every subproject’s fat-jar
+RUN sbt clean "${SERVICE_NAME}/assembly"
+
+# --- runtime stage ---
+FROM ubuntu:22.04
+
+# install Java and the JavaFX/native libs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      openjdk-21-jre-headless \
+      libx11-6 libxxf86vm1 libxext6 libxrender1 libxtst6 libxi6 \
+      libgl1-mesa-glx libegl1 libgles2-mesa libgtk-3-0 x11-apps && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+ARG SERVICE_NAME
+ARG SERVICE_PORT=8080
+
+COPY --from=builder \
+     /app/target/scala-3.6.1/JP_Morgan_Chess.jar \
+     app.jar
+
+EXPOSE ${SERVICE_PORT}
+ENTRYPOINT ["java", "-jar", "app.jar"]

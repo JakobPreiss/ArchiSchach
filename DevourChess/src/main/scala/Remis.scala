@@ -24,8 +24,8 @@ object Remis {
             Piece(KNIGHT, BLACK))
 
         val fenToBoard: Future[JsonResult[Vector[Piece]]] = GenericHttpClient.get[JsonResult[Vector[Piece]]](
-            baseUrl = "http://localhost:5001",
-            route = "/fenToBoard",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/fenToBoard",
             queryParams = Map("fen" -> fen)
         )
         fenToBoard.onComplete {
@@ -35,8 +35,8 @@ object Remis {
                     piece = OtherPieceList,
                 )
                 val piecePositions: Future[JsonResult[List[Int]]] = GenericHttpClient.post[PiecesPositionRequest, JsonResult[List[Int]]](
-                    baseUrl = "http://localhost:5001",
-                    route = "/piecesPositions",
+                    baseUrl = "http://basic-chess:8080",
+                    route = "/chess/piecesPositions",
                     payload = payload
                 )
                 piecePositions.onComplete {
@@ -50,8 +50,8 @@ object Remis {
                             piece = bishopPieceList,
                         )
                         val bishopPositions: Future[JsonResult[List[Int]]] = GenericHttpClient.post[PiecesPositionRequest, JsonResult[List[Int]]](
-                            baseUrl = "http://localhost:5001",
-                            route = "/piecesPositions",
+                            baseUrl = "http://basic-chess:8080",
+                            route = "/chess/piecesPositions",
                             payload = payload2
                         )
                         bishopPositions.onComplete {

@@ -12,8 +12,8 @@ class RealChessFacade extends ChessTrait {
 
     def getAllLegalMoves(fen: String): Try[List[(Int, Int)]] = {
         val translation: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-            baseUrl = "http://localhost:5001",
-            route = "/isValidFen",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isValidFen",
             queryParams = Map("fen" -> fen)
         )
         translation.onComplete {
@@ -27,8 +27,8 @@ class RealChessFacade extends ChessTrait {
 
     def isRemis(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
         val translation: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-            baseUrl = "http://localhost:5001",
-            route = "/isValidFen",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isValidFen",
             queryParams = Map("fen" -> fen)
         )
         translation.onComplete {
@@ -43,8 +43,8 @@ class RealChessFacade extends ChessTrait {
     // Special case because getBestMove returns a Try[String] instead of a String
     def getBestMove(fen: String, depth: Int): Try[String] = {
         val translation: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-            baseUrl = "http://localhost:5001",
-            route = "/isValidFen",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isValidFen",
             queryParams = Map("fen" -> fen)
         )
         translation.onComplete {

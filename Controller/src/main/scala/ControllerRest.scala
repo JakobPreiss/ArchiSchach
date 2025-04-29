@@ -1,6 +1,8 @@
 package Controller
 
 import Controller.ControllerServer.{deRingObservers, notifyObservers, observers, ringObservers, tellErrorToObservers}
+import Controller.DuoChessController.RealController
+import Controller.SoloChessController.EngineController
 import SharedResources.{ChessContext, JsonResult}
 import SharedResources.util.{Observable, Observer}
 import spray.json.*
@@ -29,12 +31,65 @@ object JsonProtocols extends DefaultJsonProtocol {
 
 import JsonProtocols._
 
-class ControllerRoutes(controller: ControllerTrait)(implicit system: ActorSystem) {
+class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSystem) {
   import system.dispatcher
 
   val routes: Route =
     pathPrefix("controller") {
       concat(
+        // POST /controller/init
+        path("init") {
+          path("engine") {
+            post {
+              parameters("gameMode", "api", "fen", "depth") { (gameMode, api, fen, depth) =>
+                val newContext = new ChessContext()
+
+                val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                  baseUrl = "http://basic-chess:8080",
+                  route = "/chess/boardString",
+                  queryParams = Map("fen" -> fen)
+                )
+                boardFuture.onComplete {
+                  case Success(value) =>
+                    val arg3 = value.result
+
+                    this.controller = new EngineController(fen, newContext, arg3, depth.toInt, gameMode, api)
+                  case Failure(err) =>
+                    println(s"Error: ${err.getMessage}")
+                    val arg3 = ""
+                    this.controller = new EngineController(fen, newContext, arg3, depth.toInt, gameMode, api)
+                }
+
+                complete(s"Initialized new controller with FEN: $fen")
+              }
+            }
+          }
+          path("duo") {
+            post {
+              parameters("gameMode", "api", "fen") { (gameMode, api, fen) =>
+                val newContext = new ChessContext()
+
+                val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                  baseUrl = "http://basic-chess:8080",
+                  route = "/chess/boardString",
+                  queryParams = Map("fen" -> fen)
+                )
+                boardFuture.onComplete {
+                  case Success(value) =>
+                    val arg3 = value.result
+                    this.controller = new RealController(fen, newContext, arg3, gameMode, api)
+                  case Failure(err) =>
+                    println(s"Error: ${err.getMessage}")
+                    val arg3 = ""
+                    this.controller = new RealController(fen, newContext, arg3, gameMode, api)
+                }
+
+                complete(s"Initialized new controller with FEN: $fen")
+              }
+            }
+          }
+        },
+
         // GET /controller/fen
         path("fen") {
           get {
@@ -215,7 +270,8 @@ object ControllerServer extends App {
   implicit val system: ActorSystem = ActorSystem("ControllerSystem")
 
   // Your implementation of ControllerTrait
-  val controllerImpl: ControllerTrait = ???
+  val arg2 = new ChessContext
+  val controllerImpl: ControllerTrait = new RealController("start_fen", arg2, "start_fen", "http://localhost:8080", "http://localhost:8080")
 
   val routes = new ControllerRoutes(controllerImpl).routes
 
@@ -237,6 +293,6 @@ object ControllerServer extends App {
     Http().singleRequest(HttpRequest(POST, uri = s"$url/error"))
   }
 
-  Http().newServerAt("0.0.0.0", 5002).bind(routes)
-  println("Controller REST API running at http://localhost:5002/")
+  Http().newServerAt("0.0.0.0", 8080).bind(routes)
+  println("Controller REST API running at http://0.0.0.0:8080/")
 }

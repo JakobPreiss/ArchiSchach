@@ -1,8 +1,8 @@
-import Controller.ControllerTrait
-import Controller.JsonProtocols.jsonFormat2
+package GUI
+
 import JsonProtocols.*
 import Requests.MoveRequest.jsonFormat2
-import SharedResources.{ChessContext, JsonResult}
+import SharedResources.{ChessContext, GenericHttpClient, JsonResult}
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.POST
@@ -10,9 +10,10 @@ import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
 import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, get, onComplete, parameter, parameters, path, pathPrefix, post}
 import akka.http.scaladsl.server.Route
 import spray.json.{DefaultJsonProtocol, JsValue, RootJsonFormat}
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
+import GUI.{GuiBoard, GuiMain, GuiMenu, GuiPromoWindow}
+import SharedResources.GenericHttpClient.ec
 
-import GUI.{GuiMain, GuiMenu, GuiBoard, GuiPromoWindow}
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -60,20 +61,28 @@ class GuiRoutes(board: GuiBoard, menu: GuiMenu, window: GuiPromoWindow)(implicit
         }
 }
 
-object ControllerServer extends App {
+object GuiServer extends App {
     implicit val system: ActorSystem = ActorSystem("ControllerSystem")
 
     var observers: ListBuffer[String] = ListBuffer() // stores base URLs like "http://localhost:8081"
 
-    val controller: ControllerTrait = ??? // Replace with your controller
-    GuiMain.setController(controller)
-    val board = new GuiBoard(Some(controller))
-    val menu = new GuiMenu(Some(controller))
-    val window = new GuiPromoWindow(Some(controller))
+    val board = new GuiBoard()
+    val menu = new GuiMenu()
+    val window = new GuiPromoWindow()
     GuiMain.setComponents(board, menu, window)
     
     val routes = new GuiRoutes(board, menu, window).routes
 
-    Http().newServerAt("0.0.0.0", 5006).bind(routes)
-    println("Controller REST API running at http://localhost:5006/")
+    val registerNotifier: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+        baseUrl = "http://controller:8080",
+        route = "/controller/controller/register",
+        queryParams = Map("url" -> "http://gui:8080/gui")
+    )
+    registerNotifier.onComplete {
+        case Success(value) => println("Registered successfully")
+        case Failure(exception) => println(s"Failed to register: ${exception.getMessage}")
+    }
+
+    Http().newServerAt("0.0.0.0", 8080).bind(routes)
+    println("Controller REST API running at http://0.0.0.0:8080/")
 }

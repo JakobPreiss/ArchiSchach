@@ -1,4 +1,7 @@
-package SharedResources
+package DevourChess
+
+import DevourChess.DevourChessFacade
+import SharedResources.{ChessTrait, JsonResult}
 
 import scala.util.{Failure, Success, Try}
 import akka.actor.ActorSystem
@@ -73,9 +76,9 @@ object ChessServer extends App {
   implicit val system: ActorSystem = ActorSystem("ChessSystem")
 
   // Provide your implementation of ChessTrait
-  val chessService: ChessTrait = ???
+  val chessService: ChessTrait = DevourChessFacade()
 
   val routes = new ChessRoutes(chessService).routes
-  Http().newServerAt("0.0.0.0", 5004).bind(routes)
-  println("Chess REST API running at http://localhost:5004/")
+  Http().newServerAt("0.0.0.0", 8080).bind(routes)
+  println("Chess REST API running at http://0.0.0.0:8080/")
 }

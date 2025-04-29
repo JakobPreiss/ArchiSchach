@@ -1,9 +1,6 @@
 package GUI
 
-import SharedResources.ChessTrait
-import RealChess.RealChessFacade
-import Controller.ControllerTrait
-import Controller.DuoChessController.RealController
+import SharedResources.{ChessTrait, GenericHttpClient, JsonResult}
 import javafx.stage.Screen
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
@@ -20,28 +17,28 @@ import scalafx.scene.shape.Rectangle
 import scalafx.scene.text.{Font, Text}
 import scalafx.scene.{Node, Scene}
 import scalafx.stage.Stage
-import SharedResources.util.Observer
+
+import SharedResources.GenericHttpClient.StringJsonFormat
+import SharedResources.GenericHttpClient.IntJsonFormat
+import SharedResources.GenericHttpClient.ec
 
 import java.nio.file.Paths
 import java.nio.file.Paths.*
 import scala.annotation.tailrec
-import scala.util.Success
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
-class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Observer{
-    override def update: Unit = {
+class GuiBoard extends GridPane {
+    def update: Unit = {
         updateGrid()
     }
-    override def specialCase: Unit = ()
-    override def reverseSpecialCase: Unit = {
+    def specialCase: Unit = ()
+    def reverseSpecialCase: Unit = {
         updateGrid()
     }
 
-    override def errorDisplay: Unit = {}
-    val controller : ControllerTrait = option_controller match {
-        case Some(a) => a
-        case _ => null
-    }
-    controller.add(this)
+    def errorDisplay: Unit = {}
+
     val screenBounds = Screen.getPrimary.getVisualBounds
     val varWidth = screenBounds.getWidth
     val varHeight = screenBounds.getHeight
@@ -69,6 +66,60 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
     )
 
     updateGrid()
+
+    def currentTheme: Int = {
+        val boardFuture: Future[JsonResult[Int]] = GenericHttpClient.get[JsonResult[Int]](
+            baseUrl = "http://controller:8080",
+            route = "/controller/currentTheme",
+            queryParams = Map()
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                return value.result
+            case Failure(err) =>
+                println("Error fetching current theme: ")
+                return 0
+        }
+
+        0
+    }
+
+    def currentFen: String = {
+        val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://controller:8080",
+            route = "/controller/fen",
+            queryParams = Map()
+        )
+        boardFuture.onComplete {
+            case Success(value) =>
+                return value.result
+            case Failure(err) =>
+                println("Error fetching current theme: ")
+                return ""
+        }
+
+        ""
+    }
+
+    def squareClicked(move: Try[Int]): Unit = {
+         move match {
+            case Success(move) =>
+                val payload = SquareClickedRequest(
+                    clickedSquare = move
+                )
+
+                val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[SquareClickedRequest, JsonResult[String]](
+                    baseUrl = "http://controller:8080",
+                    route = "/controller/squareClicked",
+                    payload = payload
+                )
+                makeMove.onComplete {
+                    case Success(newFen: JsonResult[String]) =>
+                    case Failure(err) =>
+                }
+            case Failure(err) => println("Error: " + err.getMessage)
+        }
+    }
 
     def updateGrid(): Unit = {
 
@@ -98,10 +149,10 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
                         val stack: StackPane = new StackPane {
                             val rect_bg = new Rectangle() {
                                 if ((i + (i / 8)) % 2 == 0) {
-                                    val darkSquareColor = color_pallets(controller.current_theme)._3
+                                    val darkSquareColor = color_pallets(currentTheme)._3
                                     fill = Paint.valueOf(darkSquareColor)
                                 } else {
-                                    val lightSquareColor = color_pallets(controller.current_theme)._2
+                                    val lightSquareColor = color_pallets(currentTheme)._2
                                     fill = Paint.valueOf(lightSquareColor)
                                 }
 
@@ -112,7 +163,7 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
                             }
                             val button1: Button = new Button() {
                                 style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
-                                onAction = (_ => controller.squareClicked(Success(63 - i)))
+                                onAction = _ => squareClicked(Success(63 - i))
                                 focusWithin.apply()
 
                             }
@@ -129,7 +180,7 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
                                     fitWidth = varHeight * 0.07
                                     preserveRatio = true
                                     alignmentInParent = Center
-                                    val lcol3 = color_pallets(controller.current_theme)._1
+                                    val lcol3 = color_pallets(currentTheme)._1
                                     style = s"-fx-effect: dropshadow(gaussian, $lcol3, 10, 0.8, 0, 0);"
                                     effect = new DropShadow {
                                         color = Color.Black
@@ -149,7 +200,7 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
             }
         }
 
-        val new_children = loopChildren(fenToList(controller.fen).reverse.zipWithIndex, List())
+        val new_children = loopChildren(fenToList(currentFen).reverse.zipWithIndex, List())
 
 
         @tailrec
@@ -169,7 +220,7 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
 
         children = Seq()
         addAllToGrid(new_children.zipWithIndex)
-        val backgroundColor = color_pallets(controller.current_theme)._1
+        val backgroundColor = color_pallets(currentTheme)._1
         this.style = s"-fx-background-color:$backgroundColor"
     }
     

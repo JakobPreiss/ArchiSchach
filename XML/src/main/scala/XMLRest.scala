@@ -1,0 +1,61 @@
+package XML
+
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.Directives.*
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.model.StatusCodes
+import spray.json.*
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
+
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
+
+// Bring in your real types
+import SharedResources.{ApiFileTrait, ChessContext, DataWrapper, State}
+import SharedResources.ChessJsonProtocol.chessContextFormat
+
+class ApiFileRoutes(apiFileService: ApiFileTrait)(implicit system: ActorSystem) {
+  import system.dispatcher
+
+  val routes: Route =
+    pathPrefix("apifile") {
+      concat(
+        path("from") {
+          get {
+            onComplete(Future.fromTry(Try(apiFileService.from))) {
+              case Success(data) => complete(StatusCodes.OK, data)
+              case Failure(ex)   => complete(StatusCodes.BadRequest, ex.getMessage)
+            }
+          }
+        },
+
+        // POST /apifile/printTo
+        path("printTo") {
+          post {
+            parameter("fen") { fen =>
+              // Assuming context could also come via JSON; if so, swap to entity(as[...])
+              entity(as[ChessContext]) { ctx =>
+                onComplete(Future.fromTry(Try(apiFileService.printTo(ctx, fen)))) {
+                  case Success(_)  => complete(StatusCodes.OK)
+                  case Failure(ex) => complete(StatusCodes.BadRequest, ex.getMessage)
+                }
+              }
+            }
+          }
+        }
+      )
+    }
+}
+
+object ApiFileServer extends App {
+  implicit val system: ActorSystem = ActorSystem("ApiFileSystem")
+
+  // Provide your real implementation here
+  val apiFileService: ApiFileTrait = new XMLApi
+
+  val routes = new ApiFileRoutes(apiFileService).routes
+
+  Http().newServerAt("0.0.0.0", 8080).bind(routes)
+  println("API-File service running at http://0.0.0.0:8080/")
+}

@@ -14,7 +14,7 @@ trait ApiFileTrait {
      * @param data DataWrapper with json or xml inside
      * @return fen-String and the current Game State
      */
-    def from(data : DataWrapper) : (String, State)
+    def from : String
 
     /**
      * writes the given context.state and the given fen to the xml or json file

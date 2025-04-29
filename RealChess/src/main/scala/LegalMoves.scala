@@ -22,8 +22,8 @@ object LegalMoves {
 
     def isAttacker(board: Vector[Piece], attacker: Piece, position: Int, row: Int, colum: Int): Try[Boolean] = {
         val translation: Future[JsonResult[Boolean]] = GenericHttpClient.get[JsonResult[Boolean]](
-            baseUrl = "http://localhost:5001",
-            route = "/onBoard",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/onBoard",
             queryParams = Map("position" -> position.toString, "row" -> row.toString, "colum" -> colum.toString),
         )
         translation.onComplete {
@@ -37,8 +37,8 @@ object LegalMoves {
 
     def readyingLegalMoveData(fen: String): Try[(Vector[Piece], List[String], Int, Color, Color)] = {
         val translation: Future[JsonResult[Vector[Piece]]] = GenericHttpClient.get[JsonResult[Vector[Piece]]](
-            baseUrl = "http://localhost:5001",
-            route = "/fenToBoard",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/fenToBoard",
             queryParams = Map("fen" -> fen),
         )
         translation.onComplete {
@@ -100,8 +100,8 @@ object LegalMoves {
                     types = List(KNIGHT),
                 )
                 val pieceMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.post[PieceMovesRequest, JsonResult[List[(Int, Int)]]](
-                    baseUrl = "http://localhost:5001",
-                    route = "/pieceMoves",
+                    baseUrl = "http://basic-chess:8080",
+                    route = "/chess/pieceMoves",
                     payload = payload
                 )
                 pieceMoves.onComplete {
@@ -118,8 +118,8 @@ object LegalMoves {
 
         def checkSpace(currentRow: Int, currentColumn: Int, position: Int): Future[Boolean] = {
             GenericHttpClient.get[JsonResult[Boolean]](
-                baseUrl = "http://localhost:5001",
-                route = "/onBoard",
+                baseUrl = "http://basic-chess:8080",
+                route = "/chess/onBoard",
                 queryParams = Map(
                     "position" -> position.toString,
                     "row" -> currentRow.toString,
@@ -166,8 +166,8 @@ object LegalMoves {
                     types = List(ROOK, QUEEN),
                 )
                 val pieceMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.post[PieceMovesRequest, JsonResult[List[(Int, Int)]]](
-                    baseUrl = "http://localhost:5001",
-                    route = "/pieceMoves",
+                    baseUrl = "http://basic-chess:8080",
+                    route = "/chess/pieceMoves",
                     payload = payload
                 )
                 pieceMoves.onComplete {
@@ -191,8 +191,8 @@ object LegalMoves {
                     types = List(ROOK, QUEEN),
                 )
                 val pieceMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.post[PieceMovesRequest, JsonResult[List[(Int, Int)]]](
-                    baseUrl = "http://localhost:5001",
-                    route = "/pieceMoves",
+                    baseUrl = "http://basic-chess:8080",
+                    route = "/chess/pieceMoves",
                     payload = payload
                 )
                 pieceMoves.onComplete {
@@ -230,8 +230,8 @@ object LegalMoves {
                     types = List(KING),
                 )
                 val pieceMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.post[PieceMovesRequest, JsonResult[List[(Int, Int)]]](
-                    baseUrl = "http://localhost:5001",
-                    route = "/pieceMoves",
+                    baseUrl = "http://basic-chess:8080",
+                    route = "/chess/pieceMoves",
                     payload = payload
                 )
                 pieceMoves.onComplete {
@@ -280,8 +280,8 @@ object LegalMoves {
                     piece = Piece(PieceType.KING, moveColor),
                 )
                 val promote: Future[JsonResult[List[Int]]] = GenericHttpClient.post[PiecePositionRequest, JsonResult[List[Int]]](
-                    baseUrl = "http://localhost:5001",
-                    route = "/piecePositions",
+                    baseUrl = "http://basic-chess:8080",
+                    route = "/chess/piecePositions",
                     payload = payload
                 )
                 promote.onComplete {
@@ -294,8 +294,8 @@ object LegalMoves {
                             move = Move(from = kingPos.result(0), to = kingPos.result(1))
                         )
                         val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[MoveRequest, JsonResult[String]](
-                            baseUrl = "http://localhost:5001",
-                            route = "/makeMove",
+                            baseUrl = "http://basic-chess:8080",
+                            route = "/chess/makeMove",
                             payload = payload
                         )
                         makeMove.onComplete {
@@ -332,8 +332,8 @@ object LegalMoves {
         }
 
         val allPseudoLegalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
-            baseUrl = "http://localhost:5001",
-            route = "/allPseudoLegalMoves",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/allPseudoLegalMoves",
             queryParams = Map("fen" -> fen)
         )
         allPseudoLegalMoves.onComplete {

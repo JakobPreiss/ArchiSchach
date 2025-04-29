@@ -47,8 +47,8 @@ object LegalMoves {
         }
 
         val allPseudoLegalMoves: Future[JsonResult[List[(Int, Int)]]] = GenericHttpClient.get[JsonResult[List[(Int, Int)]]](
-            baseUrl = "http://localhost:5001",
-            route = "/allPseudoLegalMoves",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/allPseudoLegalMoves",
             queryParams = Map("fen" -> fen)
         )
         allPseudoLegalMoves.onComplete {
@@ -66,8 +66,8 @@ object LegalMoves {
 
     def isTakingMove(fen : String, attackedPosition : Int) : Try[Boolean] = {
         val isDifferentColorPiece: Future[JsonResult[Boolean]] = GenericHttpClient.get[JsonResult[Boolean]](
-            baseUrl = "http://localhost:5001",
-            route = "/isDifferentColorPiece",
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isDifferentColorPiece",
             queryParams = Map("fen" -> fen, "position" -> attackedPosition.toString)
         )
         isDifferentColorPiece.onComplete {
