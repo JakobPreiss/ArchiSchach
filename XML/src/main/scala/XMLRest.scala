@@ -12,7 +12,10 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 // Bring in your real types
-import SharedResources.{ApiFileTrait, ChessContext, DataWrapper, State}
+import SharedResources.{ApiFileTrait, ChessContext, DataWrapper, State, JsonResult}
+import spray.json.DefaultJsonProtocol._ // brings JsonFormat[String], Int, your ChessContext, etc.
+import SharedResources.JsonResult._ // brings your implicit jsonResultFormat[T]
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import SharedResources.ChessJsonProtocol.chessContextFormat
 
 class ApiFileRoutes(apiFileService: ApiFileTrait)(implicit system: ActorSystem) {
@@ -24,7 +27,7 @@ class ApiFileRoutes(apiFileService: ApiFileTrait)(implicit system: ActorSystem) 
         path("from") {
           get {
             onComplete(Future.fromTry(Try(apiFileService.from))) {
-              case Success(data) => complete(StatusCodes.OK, data)
+              case Success(data) => complete(StatusCodes.OK, JsonResult(data))
               case Failure(ex)   => complete(StatusCodes.BadRequest, ex.getMessage)
             }
           }
