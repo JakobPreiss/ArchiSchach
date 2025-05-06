@@ -1,11 +1,11 @@
 package BasicChess.StandartChess
 
-import Color.WHITE
-import PieceType.{BISHOP, EMPTY, KING, KNIGHT, PAWN, QUEEN, ROOK}
-//import Model.ChessComponent.RealChess.*
+import SharedResources.Color.WHITE
+import SharedResources.PieceType.{BISHOP, KING, KNIGHT, PAWN, QUEEN, ROOK}
+import SharedResources.{Color, Piece, PieceType}
 
 import scala.annotation.tailrec
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 object PseudoMoves {
     

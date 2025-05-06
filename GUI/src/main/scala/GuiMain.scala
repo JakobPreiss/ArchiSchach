@@ -1,8 +1,6 @@
 package GUI
 
 import GUI.{GuiBoard, GuiMenu}
-import Controller.ControllerTrait
-import Controller.DuoChessController.RealController
 import scalafx.application.JFXApp3
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control.{Button, Label}
@@ -18,11 +16,14 @@ import SharedResources.util.Observer
 
 object GuiMain extends JFXApp3 {
 
-    var controller : Option[ControllerTrait] = None
-
-    
+    var board : Option[GuiBoard] = None
+    var menu : Option[GuiMenu] = None
+    var promoWindow : Option[GuiPromoWindow] = None
     
     def start(): Unit = {
+        this.board = Some(new GuiBoard())
+        this.menu = Some(new GuiMenu())
+        this.promoWindow = Some(new GuiPromoWindow())
 
         stage = new JFXApp3.PrimaryStage {
             
@@ -33,18 +34,27 @@ object GuiMain extends JFXApp3 {
 
                     //padding
                     style = "-fx-background-color:BLACK"
-                    left  = new GuiBoard(controller)
-                    center = new GuiPromoWindow(controller)
-                    right = new GuiMenu(controller)
+                    board match {
+                        case None =>
+                        case Some(b) =>
+                            promoWindow match {
+                                case None =>
+                                case Some(w) =>
+                                    menu match {
+                                        case None =>
+                                        case Some(m) =>
+                                            println("Board is not null: " + b)
+                                            left = b
+                                            center = w
+                                            right = m
+                                    }
+                            }
+                    }
                     style = "-fx-background-color: #F5F5DC;"
                     
                 }
             }
             fullScreen = true
         }
-    }
-
-    def setController(controller: ControllerTrait): Unit = {
-        this.controller = Some(controller)
     }
 }

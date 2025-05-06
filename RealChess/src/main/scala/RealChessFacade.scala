@@ -1,35 +1,41 @@
 package RealChess
 
-import BasicChess.StandartChess.{BasicChessFacade, Piece}
-import SharedResources.ChessTrait
+import SharedResources.{ChessTrait, GenericHttpClient, JsonResult, Piece}
+import SharedResources.GenericHttpClient.StringJsonFormat
+import SharedResources.GenericHttpClient.ec
 
-import scala.util.{Try, Success, Failure}
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 class RealChessFacade extends ChessTrait {
 
-    def getAllLegalMoves(fen: String): Try[List[(Int, Int)]] = {
-        BasicChessFacade.isValidFen(fen) match {
-            case Failure(exception) => Failure(exception)
-            case Success(validFen) =>
-                LegalMoves.getAllLegalMoves(validFen)
-        }
+    def getAllLegalMoves(fen: String): Future[Try[List[(Int, Int)]]] = {
+        GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isValidFen",
+            queryParams = Map("fen" -> fen)
+        ).flatMap { validFen =>
+            LegalMoves.getAllLegalMoves(validFen.result)
+        }.recover { case err => Failure(err) }
     }
 
-    def isRemis(fen: String, legalMoves: List[(Int, Int)]): Try[Boolean] = {
-        BasicChessFacade.isValidFen(fen) match {
-            case Failure(exception) => Failure(exception)
-            case Success(validFen) =>
-                Remis.isRemis(validFen, legalMoves)
-        }
+    def isRemis(fen: String, legalMoves: List[(Int, Int)]): Future[Try[Boolean]] = {
+        GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isValidFen",
+            queryParams = Map("fen" -> fen)
+        ).flatMap { validFen =>
+            Remis.isRemis(validFen.result, legalMoves)
+        }.recover { case err => Failure(err) }
     }
 
-    // Special case because getBestMove returns a Try[String] instead of a String
-    def getBestMove(fen: String, depth: Int): Try[String] = {
-        val validFen = BasicChessFacade.isValidFen(fen) match {
-            case Success(validFen) => validFen
-            case Failure(exception) =>
-                return Failure(exception)
-        }
-        ChessApiClient.getBestMove(validFen, depth)
+    def getBestMove(fen: String, depth: Int): Future[Try[String]] = {
+        GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/isValidFen",
+            queryParams = Map("fen" -> fen)
+        ).map { validFen =>
+            ChessApiClient.getBestMove(validFen.result, depth)
+        }.recover { case err => Failure(err) }
     }
 }

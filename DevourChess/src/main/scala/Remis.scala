@@ -1,43 +1,65 @@
 package DevourChess
 
-import BasicChess.StandartChess.{BasicChessFacade, Color, Piece, PieceType}
-import BasicChess.StandartChess.Color.{BLACK, WHITE}
-import BasicChess.StandartChess.PieceType.{KING, KNIGHT, PAWN, QUEEN, ROOK}
-import scala.util.{Try, Success, Failure}
+import SharedResources.PieceType.{BISHOP, KING, KNIGHT, PAWN, QUEEN, ROOK}
+import SharedResources.Color.{BLACK, WHITE}
+import SharedResources.Requests.PiecesPositionRequest
+import SharedResources.{Color, GenericHttpClient, JsonResult, Piece, PieceType}
+import SharedResources.PieceJsonProtocol.pieceFormat
+import SharedResources.GenericHttpClient.{vectorFormat, listFormat, IntJsonFormat, ec}
+
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 object Remis {
-    //für den Fall, dass 2 pieces sich nicht gegenseitig schlagen können (also eig. nur bei 2 Läufern auf unterschiedlichen Farben
-    def isRemis(fen : String) : Try[Boolean] = {
-        val bishopPieceList = List(Piece(PieceType.BISHOP, BLACK), Piece(PieceType.BISHOP, WHITE))
-        val OtherPieceList = List(Piece(PAWN, BLACK), Piece(PAWN, WHITE), Piece(ROOK, BLACK), Piece(ROOK, WHITE),
-            Piece(QUEEN, WHITE), Piece(QUEEN, BLACK), Piece(KING, WHITE), Piece(KING, BLACK), Piece(KNIGHT, WHITE),
-            Piece(KNIGHT, BLACK))
-        BasicChessFacade.fenToBoard(fen) match {
-            case Failure(err) => Failure(err)
-            case Success(board) =>
-                BasicChessFacade.piecesPositions(board, OtherPieceList) match {
-                    case Failure(err) => Failure(err)
-                    case Success(otherPieces) if(otherPieces.nonEmpty) =>
-                        Success(false)
-                    case Success(noOtherPieces) =>
-                        BasicChessFacade.piecesPositions(board, bishopPieceList) match {
-                            case Failure(err) => Failure(err)
-                            case Success(bishopPositions) =>
-                                val Color1 = bishopPositions(0) match {
-                                    case white1 if(bishopPositions(0) / 8) % 2 == 0 && bishopPositions(0) % 2 == 0 => Color.WHITE
-                                    case black1 if(bishopPositions(0) / 8) % 2 == 0 && bishopPositions(0) % 2 == 1 => Color.BLACK
-                                    case black2 if(bishopPositions(0) / 8) % 2 == 1 && bishopPositions(0) % 2 == 0 => Color.BLACK
-                                    case white2 if(bishopPositions(0) / 8) % 2 == 1 && bishopPositions(0) % 2 == 1 => Color.WHITE
-                                }
-                                val Color2 = bishopPositions(1) match {
-                                    case white1 if(bishopPositions(1) / 8) % 2 == 0 && bishopPositions(1) % 2 == 0 => Color.WHITE
-                                    case black1 if(bishopPositions(1) / 8) % 2 == 0 && bishopPositions(1) % 2 == 1 => Color.BLACK
-                                    case black2 if(bishopPositions(1) / 8) % 2 == 1 && bishopPositions(1) % 2 == 0 => Color.BLACK
-                                    case white2 if(bishopPositions(1) / 8) % 2 == 1 && bishopPositions(1) % 2 == 1 => Color.WHITE
-                                }
-                                Success(Color1 != Color2)
+
+    def isRemis(fen: String): Future[Try[Boolean]] = {
+        val bishopPieceList = List(Piece(BISHOP, BLACK), Piece(BISHOP, WHITE))
+        val otherPieceList = List(
+            Piece(PAWN, BLACK), Piece(PAWN, WHITE),
+            Piece(ROOK, BLACK), Piece(ROOK, WHITE),
+            Piece(QUEEN, WHITE), Piece(QUEEN, BLACK),
+            Piece(KING, WHITE), Piece(KING, BLACK),
+            Piece(KNIGHT, WHITE), Piece(KNIGHT, BLACK)
+        )
+
+        // Step 1: Get the board
+        GenericHttpClient.get[JsonResult[Vector[Piece]]](
+            baseUrl = "http://basic-chess:8080",
+            route = "/chess/fenToBoard",
+            queryParams = Map("fen" -> fen)
+        ).flatMap { boardResponse =>
+            val board = boardResponse.result
+
+            // Step 2: Check if there are any other pieces (not bishops)
+            val payloadOther = PiecesPositionRequest(board, otherPieceList)
+            GenericHttpClient.post[PiecesPositionRequest, JsonResult[List[Int]]](
+                baseUrl = "http://basic-chess:8080",
+                route = "/chess/piecesPositions",
+                payload = payloadOther
+            ).flatMap {
+                case JsonResult(otherPositions) if otherPositions.nonEmpty =>
+                    Future.successful(Success(false)) // Not remis if other pieces exist
+
+                case _ => // Step 3: Check bishops' colors
+                    val payloadBishops = PiecesPositionRequest(board, bishopPieceList)
+                    GenericHttpClient.post[PiecesPositionRequest, JsonResult[List[Int]]](
+                        baseUrl = "http://basic-chess:8080",
+                        route = "/chess/piecesPositions",
+                        payload = payloadBishops
+                    ).map { case JsonResult(positions) =>
+                        if (positions.size != 2) return Future.successful(Success(false))
+
+                        def squareColor(pos: Int): Color = {
+                            val rowEven = (pos / 8) % 2 == 0
+                            val colEven = (pos % 2) == 0
+                            if (rowEven == colEven) WHITE else BLACK
                         }
-                }
-        }
+
+                        val c1 = squareColor(positions(0))
+                        val c2 = squareColor(positions(1))
+                        Success(c1 != c2) // Different colors means remis
+                    }
+            }
+        }.recover { case err => Failure(err) }
     }
 }

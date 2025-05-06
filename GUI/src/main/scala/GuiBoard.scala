@@ -1,13 +1,8 @@
 package GUI
 
-import BasicChess.StandartChess.{ChessBoard, Piece}
-import SharedResources.ChessTrait
-import RealChess.RealChessFacade
-import Controller.ControllerTrait
-import Controller.DuoChessController.RealController
-import Controller.Extra.ChessContext
+import SharedResources.{ChessTrait, GenericHttpClient, JsonResult}
 import javafx.stage.Screen
-import scalafx.application.JFXApp3
+import scalafx.application.{JFXApp3, Platform}
 import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos.Center
@@ -22,28 +17,29 @@ import scalafx.scene.shape.Rectangle
 import scalafx.scene.text.{Font, Text}
 import scalafx.scene.{Node, Scene}
 import scalafx.stage.Stage
-import SharedResources.util.Observer
+import SharedResources.GenericHttpClient.StringJsonFormat
+import SharedResources.GenericHttpClient.IntJsonFormat
+import SharedResources.GenericHttpClient.ec
 
 import java.nio.file.Paths
 import java.nio.file.Paths.*
 import scala.annotation.tailrec
-import scala.util.Success
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
-class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Observer{
-    override def update: Unit = {
-        updateGrid()
+class GuiBoard extends GridPane {
+    def update: Unit = {
+        updateGrid().recover { case ex ⇒
+            println(s"Board update failed: ${ex.getMessage}")
+        }
     }
-    override def specialCase: Unit = ()
-    override def reverseSpecialCase: Unit = {
-        updateGrid()
+    def specialCase: Unit = ()
+    def reverseSpecialCase: Unit = {
+        update
     }
 
-    override def errorDisplay: Unit = {}
-    val controller : ControllerTrait = option_controller match {
-        case Some(a) => a
-        case _ => null
-    }
-    controller.add(this)
+    def errorDisplay: Unit = {}
+
     val screenBounds = Screen.getPrimary.getVisualBounds
     val varWidth = screenBounds.getWidth
     val varHeight = screenBounds.getHeight
@@ -70,109 +66,150 @@ class GuiBoard(option_controller: Option[ControllerTrait]) extends GridPane, Obs
         ("#5C5470", "#B9B4C7", "#FAF0E6")
     )
 
-    updateGrid()
+    update
 
-    def updateGrid(): Unit = {
+    def currentTheme(): Future[Int] = {
+        GenericHttpClient.get[JsonResult[Int]](
+            baseUrl = "http://controller:8080",
+            route = "/controller/currentTheme",
+            queryParams = Map()
+        ).map(_.result).recover {
+            case e => println(s"Error: ${e.getMessage}"); 0
+        }
+    }
+
+    def currentFen(): Future[String] = {
+        GenericHttpClient.get[JsonResult[String]](
+            baseUrl = "http://controller:8080",
+            route = "/controller/fen",
+            queryParams = Map()
+        ).map(_.result).recover {
+            case e => println(s"Error: ${e.getMessage}"); ""
+        }
+    }
+
+    def squareClicked(move: Try[Int]): Unit = {
+         move match {
+            case Success(move) =>
+                val payload = SquareClickedRequest(
+                    square = move
+                )
+
+                val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[SquareClickedRequest, JsonResult[String]](
+                    baseUrl = "http://controller:8080",
+                    route = "/controller/squareClicked",
+                    payload = payload
+                )
+                makeMove.onComplete {
+                    case Success(newFen: JsonResult[String]) =>
+                    case Failure(err) => println("Error: (http://controller:8080/controller/squareClicked)" + err.getMessage)
+                }
+            case Failure(err) => println("Error: " + err.getMessage)
+        }
+    }
 
 
-        val pieceMap = Map(
-            "p" -> "black-pawn",
-            "r" -> "black-rook",
-            "n" -> "black-knight",
-            "b" -> "black-bishop",
-            "q" -> "black-queen",
-            "k" -> "black-king",
-            "P" -> "white-pawn",
-            "R" -> "white-rook",
-            "N" -> "white-knight",
-            "B" -> "white-bishop",
-            "Q" -> "white-queen",
-            "K" -> "white-king"
+    private val pieceMap = Map(
+        "p" -> "black-pawn", "r" -> "black-rook", "n" -> "black-knight",
+        "b" -> "black-bishop", "q" -> "black-queen", "k" -> "black-king",
+        "P" -> "white-pawn", "R" -> "white-rook", "N" -> "white-knight",
+        "B" -> "white-bishop", "Q" -> "white-queen", "K" -> "white-king"
+    )
 
-        )
+    def updateGrid(): Future[Unit] = {
+        // kick off both requests in parallel
+        val themeF = currentTheme()
+        val fenF = currentFen()
 
-        @tailrec
-        def loopChildren(piecePositions: List[(Piece, Int)], accumulator: List[Node]): List[Node] = {
-            piecePositions match {
+        // when both arrive, build Nodes and push to UI thread
+        for {
+            themeIdx ← themeF
+            fenStr ← fenF
+        } yield {
+
+            // 1) Prepare a list of (Node, row, col) off the FX thread:
+            val squares: Seq[(Node, Int, Int)] = {
+                val flat = fenToList(fenStr).reverse.zipWithIndex
+                val palette = color_pallets(themeIdx)
+                flat.map { case (piece, idx) =>
+                    val row = idx / 8
+                    val col = idx % 8
+
+                    // background rectangle
+                    val bg = new Rectangle {
+                        val colorHex =
+                            if ((idx + (idx / 8)) % 2 == 0) palette._3
+                            else palette._2
+                        fill = Paint.valueOf(colorHex)
+                        width = varHeight * 0.1
+                        height = varHeight * 0.1
+                        arcWidth = varHeight * 0.02
+                        arcHeight = varHeight * 0.02
+                    }
+
+                    // transparent click‐target
+                    val button1: Button = new Button() {
+                        style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
+                        onAction = _ => squareClicked(Success(63 - idx))
+                        focusWithin.apply()
+
+                    }
+                    button1.setPrefSize(varHeight * 0.1, varHeight * 0.1)
+
+                    // assemble
+                    val cellChildren =
+                        if (piece == ".") Seq(bg, button1)
+                        else {
+                            val img = new ImageView(new Image(s"/pieces/${pieceMap(piece)}.png")) {
+                                fitWidth = varHeight * 0.07
+                                preserveRatio = true
+                                effect = new DropShadow {
+                                    color = Color.Black
+                                    radius = 10
+                                    spread = 0.2
+                                }
+                                style = s"-fx-effect: dropshadow(gaussian, ${palette._1}, 10, 0.8, 0, 0);"
+                            }
+                            Seq(bg, img, button1)
+                        }
+
+                    val stack = new StackPane {
+                        children = cellChildren
+                    }
+                    (stack, row, col)
+                }
+            }
+
+            // 2) Now actually mutate the GridPane on the FX thread:
+            Platform.runLater {
+                this.children.clear()
+                squares.foreach { case (node, r, c) =>
+                    this.add(node, c, r)
+                }
+                // set overall background
+                this.style = s"-fx-background-color:${color_pallets(themeIdx)._1}"
+            }
+        }
+    }
+
+    
+    def fenToList(fen : String) : List[String] = {
+        
+        def checkChars(charList: List[String], accumulator : List[String]) : List[String] = {
+            charList match {
                 case Nil => accumulator
                 case h :: t => h match {
-                    case (piece: Piece, i: Int) => {
-                        val stack: StackPane = new StackPane {
-                            val rect_bg = new Rectangle() {
-                                if ((i + (i / 8)) % 2 == 0) {
-                                    val darkSquareColor = color_pallets(controller.current_theme)._3
-                                    fill = Paint.valueOf(darkSquareColor)
-                                } else {
-                                    val lightSquareColor = color_pallets(controller.current_theme)._2
-                                    fill = Paint.valueOf(lightSquareColor)
-                                }
-
-                                width = varHeight * 0.1
-                                height = varHeight * 0.1
-                                arcWidth = varHeight * 0.02
-                                arcHeight = varHeight * 0.02
-                            }
-                            val button1: Button = new Button() {
-                                style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
-                                onAction = (_ => controller.squareClicked(Success(63 - i)))
-                                focusWithin.apply()
-
-                            }
-                            button1.setPrefSize(varHeight * 0.1, varHeight * 0.1)
-
-
-                            if (piece.toString() == ".") {
-                                children = Seq(rect_bg, button1)
-                            } else {
-                                val path = "/pieces/" + pieceMap(piece.toString()) + ".png"
-                                val img = new ImageView {
-                                    //padding = Insets(vh * 0.2, 0, 0, 0)
-                                    image = new Image(path)
-                                    fitWidth = varHeight * 0.07
-                                    preserveRatio = true
-                                    alignmentInParent = Center
-                                    val lcol3 = color_pallets(controller.current_theme)._1
-                                    style = s"-fx-effect: dropshadow(gaussian, $lcol3, 10, 0.8, 0, 0);"
-                                    effect = new DropShadow {
-                                        color = Color.Black
-                                        radius = 10
-                                        spread = 0.2
-                                    }
-                                }
-                                children = List(rect_bg, img, button1)
-                            }
-
-
-                        }
-                        loopChildren(t, stack :: accumulator)
-                    }
-                    case null => loopChildren(t, accumulator)
+                    case "/" => checkChars(t, accumulator)
+                    case h if(h.matches("(Q|R|P|B|N|K|k|q|r|p|n|b)")) => checkChars(t, accumulator :+ h)
+                    case h if(h.matches("(1|2|3|4|5|6|7|8)")) =>
+                        val tempInt = h.toInt
+                        checkChars(t, accumulator ++ List.fill(tempInt)("."))
+                    case _ => List()
                 }
             }
-        }
-
-        val new_children = loopChildren(ChessBoard.fenToBoard(controller.fen).toList.reverse.zipWithIndex, List())
-
-
-        @tailrec
-        def addAllToGrid(nodeList: List[(Node, Int)]): Unit = {
-            nodeList match {
-                case Nil => ()
-                case h :: t => h match {
-                    case (node: Node, i: Int) =>
-                        val row: Int = i / 8
-                        val colum: Int = i % 8
-                        this.add(node, colum, row)
-                        addAllToGrid(t)
-                    case null => addAllToGrid(t)
-                }
-            }
-        }
-
-        children = Seq()
-        addAllToGrid(new_children.zipWithIndex)
-        val backgroundColor = color_pallets(controller.current_theme)._1
-        this.style = s"-fx-background-color:$backgroundColor"
+        } 
+        val chars : List[String] = fen.split(" ")(0).map(_.toString).toList 
+        checkChars(chars, List())
     }
 
     //gridBoard.setPrefSize(screenBounds.getHeight, screenBounds.getHeight)

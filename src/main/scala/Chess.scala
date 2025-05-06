@@ -8,15 +8,11 @@ import GUI.GuiMain
 import SharedResources.ChessTrait
 
 object Chess {
-    given ChessTrait = RealChessFacade()
-    val controller = ChessModule.provideDuoChessJSON()
-    val tui = new Tui(controller)
-    controller.notifyObservers
-
+    val tui = new Tui()
 
     def main(args: Array[String]): Unit = {
+        ChessModule.provideDuoChessXML()
 
-        GuiMain.setController(controller)
         Future {
             GuiMain.main(args)
         }

@@ -1,5 +1,6 @@
 package BasicChess.StandartChess
 
+import SharedResources.{Piece, Color, PieceType}
 import BasicChess.BasicChessTrait
 import scala.util.Try
 
@@ -71,13 +72,14 @@ object BasicChessFacade extends BasicChessTrait {
             ChessBoard.translateCastle(validBoard, move)
         }
     }
-    
+
 
     def piecePositions(board: Vector[Piece], piece: Piece): Try[List[Int]] = {
         for {
             validBoard <- ChessBoard.isValidBoardVector(board)
         } yield {
-            PseudoMoves.piecePositions(validBoard, piece)
+            val test = PseudoMoves.piecePositions(validBoard, piece)
+            test
         }
     }
 
@@ -85,7 +87,8 @@ object BasicChessFacade extends BasicChessTrait {
         for {
             validBoard <- ChessBoard.isValidBoardVector(board)
         } yield {
-            PseudoMoves.piecesPositions(validBoard, pieces)
+            val test = PseudoMoves.piecesPositions(validBoard, pieces)
+            test
         }
     }
 
@@ -173,7 +176,7 @@ object BasicChessFacade extends BasicChessTrait {
 
     def isCorrectBoardVector(board: Vector[Piece]) : Try[Vector[Piece]] =
         ChessBoard.isValidBoardVector(board)
-    
+
     def isValidMove(move: String): Try[String] = {
         ChessBoard.isValidMove(move)
     }

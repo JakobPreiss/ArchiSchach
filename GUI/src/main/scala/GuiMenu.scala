@@ -1,11 +1,6 @@
 package GUI
 
-import BasicChess.StandartChess.ChessBoard
-import SharedResources.ChessTrait
-import RealChess.RealChessFacade
-import Controller.ControllerTrait
-import Controller.DuoChessController.RealController
-import Controller.Extra.{ChessContext, State}
+import SharedResources.{ChessContext, ChessTrait, GenericHttpClient, JsonResult, State}
 import javafx.stage.Screen
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control.{Button, Label}
@@ -15,40 +10,62 @@ import scalafx.scene.layout.{Background, BackgroundFill, CornerRadii, GridPane, 
 import scalafx.scene.paint.Color
 import scalafx.scene.text.Font
 import SharedResources.util.Observer
+import SharedResources.GenericHttpClient.UnitJsonFormat
+import SharedResources.GenericHttpClient.StringJsonFormat
+import SharedResources.GenericHttpClient.ec
+import SharedResources.ChessJsonProtocol.chessContextFormat
+import scalafx.application.Platform
 
-class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer {
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-    val controller: ControllerTrait = option_controller match {
-        case Some(a) => a
-        case _ => null
-    }
-
-    controller.add(this)
-
+class GuiMenu extends VBox, Observer {
     override def update: Unit = {
-        controller.context.state match {
-            case State.remisState => {
-                val infoLabel = new Label("Remis") {
-                    style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
-                    wrapText = true
+        val boardFuture: Future[JsonResult[ChessContext]] =
+            GenericHttpClient.get[JsonResult[ChessContext]](
+                baseUrl     = "http://controller:8080",
+                route       = "/controller/context",
+                queryParams = Map()
+            )
+
+        boardFuture.onComplete {
+            case Success(value) =>
+                // pick the right children sequence, *off* the FX thread
+                val newKids = value.result.state match {
+                    case State.Remis => {
+                        val infoLabel = new Label("Remis") {
+                            style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
+                            wrapText = true
+                        }
+                        Seq(themeButton, undoButton, redoButton, resetButton, infoLabel)
+                    }
+                    case State.WhiteWon => {
+                        val infoLabel = new Label("Schwarz wurde vernichtend geschlagen") {
+                            style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
+                            wrapText = true
+                        }
+                        Seq(themeButton, undoButton, redoButton, resetButton, infoLabel)
+                    }
+                    case State.BlackWon => {
+                        val infoLabel = new Label("Weiß wurde vernichtend geschlagen") {
+                            style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
+                            wrapText = true
+                        }
+                        Seq(themeButton, undoButton, redoButton, resetButton, infoLabel)
+                    }
+                    case _ => Seq(themeButton, undoButton, redoButton, resetButton)
                 }
-                children = Seq(theme_button, undo_button, redo_button, reset_button, infoLabel)
-            }
-            case State.whiteWonState => {
-                val infoLabel = new Label("Schwarz wurde vernichtend geschlagen") {
-                    style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
-                    wrapText = true
+
+                // now *on* the FX thread, swap them in
+                Platform.runLater {
+                    children = newKids
                 }
-                children = Seq(theme_button, undo_button, redo_button, reset_button, infoLabel)
-            }
-            case State.blackWonState => {
-                val infoLabel = new Label("Weiß wurde vernichtend geschlagen") {
-                    style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
-                    wrapText = true
+
+            case Failure(err) =>
+                // on error, just show the buttons
+                Platform.runLater {
+                    children = Seq(themeButton, undoButton, redoButton, resetButton)
                 }
-                children = Seq(theme_button, undo_button, redo_button, reset_button, infoLabel)
-            }
-            case _ => children = Seq(theme_button, undo_button, redo_button, reset_button)
         }
     }
 
@@ -60,7 +77,7 @@ class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer
     val vw = screenBounds.getWidth
     val vh = screenBounds.getHeight
 
-    val theme_button = new Button("Theme") {
+    val themeButton = new Button("Theme") {
         prefWidth = vh * 0.1
         prefHeight = vh * 0.05
         style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
@@ -73,10 +90,19 @@ class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer
             radius = 5
             spread = 0.2
         }
-        onAction = _ => controller.nextTheme()
+        onAction = _ =>
+            val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[Unit, JsonResult[String]](
+                baseUrl = "http://controller:8080",
+                route = "/controller/nextTheme",
+                payload = {}
+            )
+            makeMove.onComplete {
+                case Success(newFen: JsonResult[String]) =>
+                case Failure(err) =>
+            }
     }
 
-    val undo_button = new Button("Undo") {
+    val undoButton = new Button("Undo") {
         prefWidth = vh * 0.1
         prefHeight = vh * 0.05
         style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
@@ -89,11 +115,20 @@ class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer
             radius = 5
             spread = 0.2
         }
-        onAction = _ => controller.undo()
+        onAction = _ =>
+            val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[Unit, JsonResult[String]](
+                baseUrl = "http://controller:8080",
+                route = "/controller/undo",
+                payload = {}
+            )
+            makeMove.onComplete {
+                case Success(newFen: JsonResult[String]) =>
+                case Failure(err) =>
+            }
 
     }
 
-    val redo_button = new Button("Redo") {
+    val redoButton = new Button("Redo") {
         prefWidth = vh * 0.1
         prefHeight = vh * 0.05
         style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
@@ -106,11 +141,19 @@ class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer
             radius = 5
             spread = 0.2
         }
-        onAction = _ => controller.redo()
-
+        onAction = _ =>
+            val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[Unit, JsonResult[String]](
+                baseUrl = "http://controller:8080",
+                route = "/controller/redo",
+                payload = {}
+            )
+            makeMove.onComplete {
+                case Success(newFen: JsonResult[String]) =>
+                case Failure(err) =>
+            }
     }
 
-    val reset_button = new Button("Reset") {
+    val resetButton = new Button("Reset") {
         prefWidth = vh * 0.1
         prefHeight = vh * 0.05
         style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
@@ -124,11 +167,19 @@ class GuiMenu(option_controller: Option[ControllerTrait]) extends VBox, Observer
             spread = 0.2
         }
         onAction = _ => {
-            controller.resetBoard()
+            val resetBoard: Future[JsonResult[String]] = GenericHttpClient.post[Unit, JsonResult[String]](
+                baseUrl = "http://controller:8080",
+                route = "/controller/resetBoard",
+                payload = {}
+            )
+            resetBoard.onComplete {
+                case Success(newFen: JsonResult[String]) =>
+                case Failure(err) =>
+            }
         }
     }
 
-    children = Seq(theme_button, undo_button, redo_button, reset_button)
+    children = Seq(themeButton, undoButton, redoButton, resetButton)
 
     alignment = Pos.Center
     spacing = vh * 0.05

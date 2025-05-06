@@ -1,8 +1,5 @@
 package SharedResources.util
 
-// TODO: THAT SHOULD BE REMOVED
-//import GUI.{GuiBoard, GuiMenu}
-
 trait Observer {
     def update: Unit
     
@@ -21,14 +18,6 @@ class Observable {
     def remove(s: Observer): Unit = subscribers = subscribers.filterNot(o => o == s)
 
     def notifyObservers: Unit = subscribers.foreach(o =>
-      // Importing something from GUI should not be allowed in the first place
-        /*if (o.isInstanceOf[GuiBoard] || o.isInstanceOf[GuiMenu]) {
-            Platform.runLater(() => {
-                o.update
-            })
-        } else {
-            o.update
-        }*/
         o.update
     )
     

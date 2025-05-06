@@ -1,5 +1,7 @@
 package BasicChess.StandartChess
 
+import SharedResources.{Piece, Color, PieceType}
+
 class BoardMonad[T](board: Vector[Piece]) {
     val state: Vector[Option[Piece]] = board.map {
         case Piece(PieceType.EMPTY, Color.EMPTY) => None

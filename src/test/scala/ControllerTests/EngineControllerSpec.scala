@@ -3,9 +3,7 @@ package ControllerTests
 import BasicChess.StandartChess.ChessBoard
 import Controller.SoloChessController.EngineController
 import Controller.DuoChessController.RealController
-import Controller.Extra.{ChessContext, Event, State}
-import Controller.StateComponent.xmlSolution.XMLApi
-import Controller.StateComponent.{ApiFileTrait, DataWrapper}
+import Controller.StateComponent.ApiFileTrait
 import RealChess.RealChessFacade
 import SharedResources.ChessTrait
 import org.scalatest.wordspec.AnyWordSpec

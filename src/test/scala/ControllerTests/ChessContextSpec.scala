@@ -4,7 +4,6 @@ import BasicChess.StandartChess.{ChessBoard, PseudoMoves}
 import RealChess.LegalMoves
 import SharedResources.util.Observer
 import TUI.Tui
-import Controller.Extra.{ChessContext, Event, State}
 
 import scala.language.reflectiveCalls
 import org.scalatest.matchers.should.Matchers

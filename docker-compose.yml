@@ -1,0 +1,147 @@
+version: "3.8"
+
+services:
+  basic-chess:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: BasicChess
+        SERVICE_PORT: 8080
+    container_name: basic-chess
+    ports:
+      - "5001:8080"
+    networks:
+      - chess-net
+
+  controller:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: Controller
+        SERVICE_PORT: 8080
+    container_name: controller
+    ports:
+      - "5002:8080"
+    networks:
+      - chess-net
+
+  devour-chess:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: DevourChess
+        SERVICE_PORT: 8080
+    container_name: devour-chess
+    ports:
+      - "5004:8080"
+    networks:
+      - chess-net
+
+  real-chess:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: RealChess
+        SERVICE_PORT: 8080
+    container_name: real-chess
+    ports:
+      - "5003:8080"
+    networks:
+      - chess-net
+
+  tui:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: TUI
+        SERVICE_PORT: 8080
+    container_name: tui
+    ports:
+      - "5005:8080"
+    networks:
+      - chess-net
+    stdin_open: true
+    tty: true
+
+  gui:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: GUI
+        SERVICE_PORT: 8080
+    container_name: gui
+    ports:
+      - "5006:8080"
+    networks:
+      - chess-net
+    environment:
+      - DISPLAY=host.docker.internal:0.0
+      - PRISM_ORDER=sw
+      - JAVAFX_USE_VSYNC=false
+      - GDK_BACKEND=x11
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+
+  xml:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: XML
+        SERVICE_PORT: 8080
+    container_name: xml
+    ports:
+      - "5007:8080"
+    networks:
+      - chess-net
+
+  json:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: JSON
+        SERVICE_PORT: 8080
+    container_name: json
+    ports:
+      - "5008:8080"
+    networks:
+      - chess-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: API
+        SERVICE_PORT: 8080
+    container_name: api
+    ports:
+      - "8080:8080"
+    networks:
+      - chess-net
+
+  root:
+    build:
+      context: .
+      dockerfile: Dockerfile.root
+      args:
+        SERVICE_NAME: JP_Morgan_Chess
+        SERVICE_PORT: 8080
+    container_name: jp-morgan-chess-root
+    ports:
+      - "5009:8080"
+    networks:
+      - chess-net
+    stdin_open: true
+    tty: true
+
+networks:
+  chess-net:
+    driver: bridge
