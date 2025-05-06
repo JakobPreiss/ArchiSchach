@@ -1,5 +1,6 @@
 package SharedResources
 
+import scala.concurrent.Future
 import scala.util.Try
 
 trait ChessTrait {
@@ -10,7 +11,7 @@ trait ChessTrait {
      * @param fen current board state as fen-String
      * @return List of Int-Tupels (fromSquare, toSquare)
      */
-    def getAllLegalMoves(fen: String): Try[List[(Int, Int)]]
+    def getAllLegalMoves(fen: String): Future[Try[List[(Int, Int)]]]
     
     /**
      * isRemis checks if the given game state is a remis ending
@@ -18,7 +19,7 @@ trait ChessTrait {
      * @param legalMoves List of possible moves in the current position
      * @return true if it is a remis. Otherwise false
      */
-    def isRemis(fen: String, legalMoves: List[(Int, Int)]) : Try[Boolean]
+    def isRemis(fen: String, legalMoves: List[(Int, Int)]) : Future[Try[Boolean]]
 
     /**
      * getBestMove talks to the ChessApi and returns the best move from the chess engine depending on the depth (how
@@ -27,5 +28,5 @@ trait ChessTrait {
      * @param depth how many moves in advance should be calculated
      * @return best move as a String (fe e2e4)
      */
-    def getBestMove(fen: String, depth: Int): Try[String]
+    def getBestMove(fen: String, depth: Int): Future[Try[String]]
 }

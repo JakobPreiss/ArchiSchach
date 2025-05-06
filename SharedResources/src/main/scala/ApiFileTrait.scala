@@ -7,7 +7,7 @@ trait ApiFileTrait {
      * @param fen current fen Board state
      * @return DataWrapper with xml or Json game state inside
      */
-    def to(context: ChessContext, fen: String): DataWrapper
+    def to(contextStateOrdinal: Int, fen: String): DataWrapper
 
     /**
      * reads from a Data Wrapper and returns the fen-String and the current Game State (from ChessContext)
@@ -21,5 +21,5 @@ trait ApiFileTrait {
      * @param context current ChessContext with it's state
      * @param fen current fen Board state
      */
-    def printTo(context : ChessContext, fen : String) : Unit
+    def printTo(contextStateOrdinal: Int, fen : String) : Unit
 }

@@ -12,8 +12,8 @@ import SharedResources.GenericHttpClient.ec
 import SharedResources.GenericHttpClient.StringJsonFormat
 
 class JSONApi extends ApiFileTrait {
-    def to(context: ChessContext, fen: String): DataWrapper = {
-        val stateNumber = context.state.ordinal
+    def to(contextStateOrdinal: Int, fen: String): DataWrapper = {
+        val stateNumber = contextStateOrdinal
         val jsonData = Json.parse(s"{\"Box\": {\"fen\": \"$fen\", \"state\": $stateNumber}}")
         DataWrapper(None, Some(jsonData))
     }
@@ -63,9 +63,9 @@ class JSONApi extends ApiFileTrait {
         "{\"Box\":{\"fen\":\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\",\"state\":0}}"
     }
 
-    def printTo(context: ChessContext, fen: String) = {
+    def printTo(contextStateOrdinal: Int, fen: String) = {
         val writer = new PrintWriter(new File("src/main/resources/GameState.json"))
-        val data: JsValue  = to(context, fen).getJson()
+        val data: JsValue  = to(contextStateOrdinal, fen).getJson()
         writer.write(Json.stringify(data))
         writer.close()
     }

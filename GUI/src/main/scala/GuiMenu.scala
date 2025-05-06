@@ -13,44 +13,58 @@ import SharedResources.util.Observer
 import SharedResources.GenericHttpClient.UnitJsonFormat
 import SharedResources.GenericHttpClient.StringJsonFormat
 import SharedResources.GenericHttpClient.ec
-
 import SharedResources.ChessJsonProtocol.chessContextFormat
+import scalafx.application.Platform
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class GuiMenu extends VBox, Observer {
     override def update: Unit = {
-        val boardFuture: Future[JsonResult[ChessContext]] = GenericHttpClient.get[JsonResult[ChessContext]](
-            baseUrl = "http://controller:8080",
-            route = "/controller/context",
-            queryParams = Map()
-        )
+        val boardFuture: Future[JsonResult[ChessContext]] =
+            GenericHttpClient.get[JsonResult[ChessContext]](
+                baseUrl     = "http://controller:8080",
+                route       = "/controller/context",
+                queryParams = Map()
+            )
+
         boardFuture.onComplete {
             case Success(value) =>
-                value.result.state match {
+                // pick the right children sequence, *off* the FX thread
+                val newKids = value.result.state match {
                     case State.Remis => {
                         val infoLabel = new Label("Remis") {
                             style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
                             wrapText = true
                         }
-                        children = Seq(theme_button, undo_button, redo_button, reset_button, infoLabel)
+                        Seq(themeButton, undoButton, redoButton, resetButton, infoLabel)
                     }
                     case State.WhiteWon => {
                         val infoLabel = new Label("Schwarz wurde vernichtend geschlagen") {
                             style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
                             wrapText = true
                         }
-                        children = Seq(theme_button, undo_button, redo_button, reset_button, infoLabel)
+                        Seq(themeButton, undoButton, redoButton, resetButton, infoLabel)
                     }
                     case State.BlackWon => {
                         val infoLabel = new Label("Weiß wurde vernichtend geschlagen") {
                             style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
                             wrapText = true
                         }
-                        children = Seq(theme_button, undo_button, redo_button, reset_button, infoLabel)
+                        Seq(themeButton, undoButton, redoButton, resetButton, infoLabel)
                     }
-                    case _ => children = Seq(theme_button, undo_button, redo_button, reset_button)
+                    case _ => Seq(themeButton, undoButton, redoButton, resetButton)
+                }
+
+                // now *on* the FX thread, swap them in
+                Platform.runLater {
+                    children = newKids
+                }
+
+            case Failure(err) =>
+                // on error, just show the buttons
+                Platform.runLater {
+                    children = Seq(themeButton, undoButton, redoButton, resetButton)
                 }
         }
     }
@@ -63,7 +77,7 @@ class GuiMenu extends VBox, Observer {
     val vw = screenBounds.getWidth
     val vh = screenBounds.getHeight
 
-    val theme_button = new Button("Theme") {
+    val themeButton = new Button("Theme") {
         prefWidth = vh * 0.1
         prefHeight = vh * 0.05
         style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
@@ -88,7 +102,7 @@ class GuiMenu extends VBox, Observer {
             }
     }
 
-    val undo_button = new Button("Undo") {
+    val undoButton = new Button("Undo") {
         prefWidth = vh * 0.1
         prefHeight = vh * 0.05
         style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
@@ -114,7 +128,7 @@ class GuiMenu extends VBox, Observer {
 
     }
 
-    val redo_button = new Button("Redo") {
+    val redoButton = new Button("Redo") {
         prefWidth = vh * 0.1
         prefHeight = vh * 0.05
         style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
@@ -139,7 +153,7 @@ class GuiMenu extends VBox, Observer {
             }
     }
 
-    val reset_button = new Button("Reset") {
+    val resetButton = new Button("Reset") {
         prefWidth = vh * 0.1
         prefHeight = vh * 0.05
         style = "-fx-font-size: 16px; -fx-font-family: 'Roboto'; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-color: #F5F5DC;"
@@ -165,7 +179,7 @@ class GuiMenu extends VBox, Observer {
         }
     }
 
-    children = Seq(theme_button, undo_button, redo_button, reset_button)
+    children = Seq(themeButton, undoButton, redoButton, resetButton)
 
     alignment = Pos.Center
     spacing = vh * 0.05

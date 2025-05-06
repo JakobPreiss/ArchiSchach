@@ -38,13 +38,12 @@ class ApiFileRoutes(apiFileService: ApiFileTrait)(implicit system: ActorSystem) 
         // POST /apifile/printTo
         path("printTo") {
           post {
-            parameter("fen") { fen =>
-              // Assuming context could also come via JSON; if so, swap to entity(as[...])
-              entity(as[ChessContext]) { ctx =>
-                onComplete(Future.fromTry(Try(apiFileService.printTo(ctx, fen)))) {
-                  case Success(_)  => complete(StatusCodes.OK)
-                  case Failure(ex) => complete(StatusCodes.BadRequest, ex.getMessage)
-                }
+            entity(as[JsValue]) { json =>
+              val fen = json.asJsObject.fields("fen").convertTo[String]
+              val contextStateOrdinal = json.asJsObject.fields("ctx").convertTo[Int]
+              onComplete(Future.fromTry(Try(apiFileService.printTo(contextStateOrdinal, fen)))) {
+                case Success(_) => complete(StatusCodes.OK, JsonResult("File written successfully"))
+                case Failure(ex) => complete(StatusCodes.BadRequest, ex.getMessage)
               }
             }
           }

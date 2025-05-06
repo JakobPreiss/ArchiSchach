@@ -2,8 +2,8 @@ package Controller.Requests
 
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
-case class SaveRequest(fen: String)
+case class SaveRequest(ctx: Int, fen: String)
 
 object SaveRequest extends DefaultJsonProtocol {
-  implicit val saveRequestFormat: RootJsonFormat[SaveRequest] = jsonFormat1(SaveRequest)
+  implicit val saveRequestFormat: RootJsonFormat[SaveRequest] = jsonFormat2(SaveRequest)
 }

@@ -11,8 +11,8 @@ import SharedResources.ChessJsonProtocol.StringJsonFormat
 import scala.xml.XML
 
 class XMLApi extends ApiFileTrait {
-    def to(context: ChessContext, fen: String): DataWrapper = {
-        val xmldata = <box><fen>{fen}</fen><state>{context.state.ordinal}</state></box>
+    def to(contextStateOrdinal: Int, fen: String): DataWrapper = {
+        val xmldata = <box><fen>{fen}</fen><state>{contextStateOrdinal}</state></box>
         DataWrapper(Some(xmldata), None)
     }
 
@@ -48,9 +48,9 @@ class XMLApi extends ApiFileTrait {
         }
     }
 
-    def printTo(context : ChessContext, fen : String) = {
+    def printTo(contextStateOrdinal: Int, fen : String) = {
         val writer = new PrintWriter(new File("src/main/resources/GameState.xml"))
-        val data = to(context, fen).getNode()
+        val data = to(contextStateOrdinal, fen).getNode()
         writer.write(data.toString())
         writer.close()
     }

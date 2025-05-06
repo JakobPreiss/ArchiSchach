@@ -188,7 +188,7 @@ class BasicChessRoutes(chessService: BasicChessTrait)(implicit system: ActorSyst
               val piece = json.asJsObject.fields("piece").convertTo[Piece]
               onComplete(Future.fromTry(chessService.piecePositions(board, piece))) {
                 case Success(result) => complete(JsonResult(result))
-                case Failure(ex)     => complete(StatusCodes.BadRequest, ex.getMessage)
+                case Failure(ex)     => complete(StatusCodes.BadRequest, "Failure in /chess/piecePositions: " + ex.getMessage)
               }
             }
           }

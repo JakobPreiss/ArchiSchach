@@ -2,7 +2,7 @@ package GUI
 
 import SharedResources.{ChessTrait, GenericHttpClient, JsonResult}
 import javafx.stage.Screen
-import scalafx.application.JFXApp3
+import scalafx.application.{JFXApp3, Platform}
 import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos.Center
@@ -17,7 +17,6 @@ import scalafx.scene.shape.Rectangle
 import scalafx.scene.text.{Font, Text}
 import scalafx.scene.{Node, Scene}
 import scalafx.stage.Stage
-
 import SharedResources.GenericHttpClient.StringJsonFormat
 import SharedResources.GenericHttpClient.IntJsonFormat
 import SharedResources.GenericHttpClient.ec
@@ -30,11 +29,13 @@ import scala.util.{Failure, Success, Try}
 
 class GuiBoard extends GridPane {
     def update: Unit = {
-        updateGrid()
+        updateGrid().recover { case ex ⇒
+            println(s"Board update failed: ${ex.getMessage}")
+        }
     }
     def specialCase: Unit = ()
     def reverseSpecialCase: Unit = {
-        updateGrid()
+        update
     }
 
     def errorDisplay: Unit = {}
@@ -65,47 +66,33 @@ class GuiBoard extends GridPane {
         ("#5C5470", "#B9B4C7", "#FAF0E6")
     )
 
-    updateGrid()
+    update
 
-    def currentTheme: Int = {
-        val boardFuture: Future[JsonResult[Int]] = GenericHttpClient.get[JsonResult[Int]](
+    def currentTheme(): Future[Int] = {
+        GenericHttpClient.get[JsonResult[Int]](
             baseUrl = "http://controller:8080",
             route = "/controller/currentTheme",
             queryParams = Map()
-        )
-        boardFuture.onComplete {
-            case Success(value) =>
-                return value.result
-            case Failure(err) =>
-                println("Error fetching current theme: ")
-                return 0
+        ).map(_.result).recover {
+            case e => println(s"Error: ${e.getMessage}"); 0
         }
-
-        0
     }
 
-    def currentFen: String = {
-        val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+    def currentFen(): Future[String] = {
+        GenericHttpClient.get[JsonResult[String]](
             baseUrl = "http://controller:8080",
             route = "/controller/fen",
             queryParams = Map()
-        )
-        boardFuture.onComplete {
-            case Success(value) =>
-                return value.result
-            case Failure(err) =>
-                println("Error fetching current theme: ")
-                return ""
+        ).map(_.result).recover {
+            case e => println(s"Error: ${e.getMessage}"); ""
         }
-
-        ""
     }
 
     def squareClicked(move: Try[Int]): Unit = {
          move match {
             case Success(move) =>
                 val payload = SquareClickedRequest(
-                    clickedSquare = move
+                    square = move
                 )
 
                 val makeMove: Future[JsonResult[String]] = GenericHttpClient.post[SquareClickedRequest, JsonResult[String]](
@@ -115,114 +102,96 @@ class GuiBoard extends GridPane {
                 )
                 makeMove.onComplete {
                     case Success(newFen: JsonResult[String]) =>
-                    case Failure(err) =>
+                    case Failure(err) => println("Error: (http://controller:8080/controller/squareClicked)" + err.getMessage)
                 }
             case Failure(err) => println("Error: " + err.getMessage)
         }
     }
 
-    def updateGrid(): Unit = {
 
+    private val pieceMap = Map(
+        "p" -> "black-pawn", "r" -> "black-rook", "n" -> "black-knight",
+        "b" -> "black-bishop", "q" -> "black-queen", "k" -> "black-king",
+        "P" -> "white-pawn", "R" -> "white-rook", "N" -> "white-knight",
+        "B" -> "white-bishop", "Q" -> "white-queen", "K" -> "white-king"
+    )
 
-        val pieceMap = Map(
-            "p" -> "black-pawn",
-            "r" -> "black-rook",
-            "n" -> "black-knight",
-            "b" -> "black-bishop",
-            "q" -> "black-queen",
-            "k" -> "black-king",
-            "P" -> "white-pawn",
-            "R" -> "white-rook",
-            "N" -> "white-knight",
-            "B" -> "white-bishop",
-            "Q" -> "white-queen",
-            "K" -> "white-king"
+    def updateGrid(): Future[Unit] = {
+        // kick off both requests in parallel
+        val themeF = currentTheme()
+        val fenF = currentFen()
 
-        )
+        // when both arrive, build Nodes and push to UI thread
+        for {
+            themeIdx ← themeF
+            fenStr ← fenF
+        } yield {
 
-        @tailrec
-        def loopChildren(piecePositions: List[(String, Int)], accumulator: List[Node]): List[Node] = {
-            piecePositions match {
-                case Nil => accumulator
-                case h :: t => h match {
-                    case (piece: String, i: Int) => {
-                        val stack: StackPane = new StackPane {
-                            val rect_bg = new Rectangle() {
-                                if ((i + (i / 8)) % 2 == 0) {
-                                    val darkSquareColor = color_pallets(currentTheme)._3
-                                    fill = Paint.valueOf(darkSquareColor)
-                                } else {
-                                    val lightSquareColor = color_pallets(currentTheme)._2
-                                    fill = Paint.valueOf(lightSquareColor)
-                                }
+            // 1) Prepare a list of (Node, row, col) off the FX thread:
+            val squares: Seq[(Node, Int, Int)] = {
+                val flat = fenToList(fenStr).reverse.zipWithIndex
+                val palette = color_pallets(themeIdx)
+                flat.map { case (piece, idx) =>
+                    val row = idx / 8
+                    val col = idx % 8
 
-                                width = varHeight * 0.1
-                                height = varHeight * 0.1
-                                arcWidth = varHeight * 0.02
-                                arcHeight = varHeight * 0.02
-                            }
-                            val button1: Button = new Button() {
-                                style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
-                                onAction = _ => squareClicked(Success(63 - i))
-                                focusWithin.apply()
-
-                            }
-                            button1.setPrefSize(varHeight * 0.1, varHeight * 0.1)
-
-
-                            if (piece == ".") {
-                                children = Seq(rect_bg, button1)
-                            } else {
-                                val path = "/pieces/" + pieceMap(piece) + ".png"
-                                val img = new ImageView {
-                                    //padding = Insets(vh * 0.2, 0, 0, 0)
-                                    image = new Image(path)
-                                    fitWidth = varHeight * 0.07
-                                    preserveRatio = true
-                                    alignmentInParent = Center
-                                    val lcol3 = color_pallets(currentTheme)._1
-                                    style = s"-fx-effect: dropshadow(gaussian, $lcol3, 10, 0.8, 0, 0);"
-                                    effect = new DropShadow {
-                                        color = Color.Black
-                                        radius = 10
-                                        spread = 0.2
-                                    }
-                                }
-                                children = List(rect_bg, img, button1)
-                            }
-
-
-                        }
-                        loopChildren(t, stack :: accumulator)
+                    // background rectangle
+                    val bg = new Rectangle {
+                        val colorHex =
+                            if ((idx + (idx / 8)) % 2 == 0) palette._3
+                            else palette._2
+                        fill = Paint.valueOf(colorHex)
+                        width = varHeight * 0.1
+                        height = varHeight * 0.1
+                        arcWidth = varHeight * 0.02
+                        arcHeight = varHeight * 0.02
                     }
-                    case null => loopChildren(t, accumulator)
+
+                    // transparent click‐target
+                    val button1: Button = new Button() {
+                        style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
+                        onAction = _ => squareClicked(Success(63 - idx))
+                        focusWithin.apply()
+
+                    }
+                    button1.setPrefSize(varHeight * 0.1, varHeight * 0.1)
+
+                    // assemble
+                    val cellChildren =
+                        if (piece == ".") Seq(bg, button1)
+                        else {
+                            val img = new ImageView(new Image(s"/pieces/${pieceMap(piece)}.png")) {
+                                fitWidth = varHeight * 0.07
+                                preserveRatio = true
+                                effect = new DropShadow {
+                                    color = Color.Black
+                                    radius = 10
+                                    spread = 0.2
+                                }
+                                style = s"-fx-effect: dropshadow(gaussian, ${palette._1}, 10, 0.8, 0, 0);"
+                            }
+                            Seq(bg, img, button1)
+                        }
+
+                    val stack = new StackPane {
+                        children = cellChildren
+                    }
+                    (stack, row, col)
                 }
             }
-        }
 
-        val new_children = loopChildren(fenToList(currentFen).reverse.zipWithIndex, List())
-
-
-        @tailrec
-        def addAllToGrid(nodeList: List[(Node, Int)]): Unit = {
-            nodeList match {
-                case Nil => ()
-                case h :: t => h match {
-                    case (node: Node, i: Int) =>
-                        val row: Int = i / 8
-                        val colum: Int = i % 8
-                        this.add(node, colum, row)
-                        addAllToGrid(t)
-                    case null => addAllToGrid(t)
+            // 2) Now actually mutate the GridPane on the FX thread:
+            Platform.runLater {
+                this.children.clear()
+                squares.foreach { case (node, r, c) =>
+                    this.add(node, c, r)
                 }
+                // set overall background
+                this.style = s"-fx-background-color:${color_pallets(themeIdx)._1}"
             }
         }
-
-        children = Seq()
-        addAllToGrid(new_children.zipWithIndex)
-        val backgroundColor = color_pallets(currentTheme)._1
-        this.style = s"-fx-background-color:$backgroundColor"
     }
+
     
     def fenToList(fen : String) : List[String] = {
         

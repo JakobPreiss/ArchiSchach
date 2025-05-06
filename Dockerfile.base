@@ -51,5 +51,8 @@ COPY --from=builder \
      /app/${SERVICE_NAME}/target/scala-3.6.1/JP_Morgan_Chess.jar \
      app.jar
 
+RUN mkdir -p /app/src/main/resources
+COPY src/main/resources/GameState.xml /app/src/main/resources/GameState.xml
+
 EXPOSE ${SERVICE_PORT}
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Dprism.order=sw", "-jar", "app.jar"]

@@ -1,8 +1,8 @@
 import SharedResources.{GenericHttpClient, JsonResult}
-
 import SharedResources.GenericHttpClient.ec
-
 import SharedResources.ChessJsonProtocol.StringJsonFormat
+import SharedResources.Requests.{InitDuoRequest, InitEngineRequest}
+
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
@@ -15,22 +15,25 @@ object ChessModule {
         )
         loadedData.onComplete {
             case Success(arg1) =>
-                val setController: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                val payload = InitDuoRequest(
+                    gameMode = "http://real-chess:8080",
+                    api = "http://xml:8080",
+                    fen = arg1.result
+                )
+
+                val setController: Future[JsonResult[String]] = GenericHttpClient.post[InitDuoRequest, JsonResult[String]](
                     baseUrl = "http://controller:8080",
                     route = "/controller/init/duo",
-                    queryParams = Map(
-                        "gameMode" -> "http://real-chess:8080",
-                        "api" -> "http://xml:8080",
-                        "fen" -> arg1.result,
-                    )
+                    payload=payload
                 )
                 setController.onComplete {
                     case Success(value) =>
+                        println(s"${value.result}")
                     case Failure(err) =>
-                        println(s"Error: ${err.getMessage}")
+                        println(s"Error in provideDuoChessXML (http://controller:8080/controller/init/duo): ${err.getMessage}")
                 }
             case Failure(err) =>
-                println(s"Error: ${err.getMessage}")
+                println(s"Error in provideDuoChessXML (http://xml:8080/apifile/from): ${err.getMessage}")
         }
     }
 
@@ -42,22 +45,25 @@ object ChessModule {
         )
         loadedData.onComplete {
             case Success(arg1) =>
-                val setController: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                val payload = InitDuoRequest(
+                    gameMode = "http://real-chess:8080",
+                    api = "http://json:8080",
+                    fen = arg1.result
+                )
+
+                val setController: Future[JsonResult[String]] = GenericHttpClient.post[InitDuoRequest, JsonResult[String]](
                     baseUrl = "http://controller:8080",
                     route = "/controller/init/duo",
-                    queryParams = Map(
-                        "gameMode" -> "http://real-chess:8080",
-                        "api" -> "http://json:8080",
-                        "fen" -> arg1.result,
-                    )
+                    payload = payload
                 )
                 setController.onComplete {
                     case Success(value) =>
+                        println(s"${value.result}")
                     case Failure(err) =>
-                        println(s"Error: ${err.getMessage}")
+                        println(s"Error in provideDuoChessJSON (http://controller:8080/controller/init/duo): ${err.getMessage}")
                 }
             case Failure(err) =>
-                println(s"Error: ${err.getMessage}")
+                println(s"Error in provideDuoChessJSON (http://json:8080/apifile/from): ${err.getMessage}")
         }
     }
 
@@ -69,23 +75,26 @@ object ChessModule {
         )
         loadedData.onComplete {
             case Success(arg1) =>
-                val setController: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                val payload = InitEngineRequest(
+                    gameMode = "http://devour-chess:8080",
+                    api = "http://xml:8080",
+                    fen = arg1.result,
+                    depth = 10
+                )
+
+                val setController: Future[JsonResult[String]] = GenericHttpClient.post[InitEngineRequest, JsonResult[String]](
                     baseUrl = "http://controller:8080",
-                    route = "/controller/init/duo",
-                    queryParams = Map(
-                        "gameMode" -> "http://devour-chess:8080",
-                        "api" -> "http://xml:8080",
-                        "fen" -> arg1.result,
-                        "depth" -> "10"
-                    )
+                    route = "/controller/init/engine",
+                    payload = payload
                 )
                 setController.onComplete {
                     case Success(value) =>
+                        println(s"${value.result}")
                     case Failure(err) =>
-                        println(s"Error: ${err.getMessage}")
+                        println(s"Error in provideEngineChessXML (http://controller:8080/controller/init/engine): ${err.getMessage}")
                 }
             case Failure(err) =>
-                println(s"Error: ${err.getMessage}")
+                println(s"Error in provideEngineChessXML (http://xml:8080/apifile/from): ${err.getMessage}")
         }
     }
 
@@ -97,23 +106,26 @@ object ChessModule {
         )
         loadedData.onComplete {
             case Success(arg1) =>
-                val setController: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                val payload = InitEngineRequest(
+                    gameMode = "http://devour-chess:8080",
+                    api = "http://json:8080",
+                    fen = arg1.result,
+                    depth = 15
+                )
+
+                val setController: Future[JsonResult[String]] = GenericHttpClient.post[InitEngineRequest, JsonResult[String]](
                     baseUrl = "http://controller:8080",
-                    route = "/controller/init/duo",
-                    queryParams = Map(
-                        "gameMode" -> "http://devour-chess:8080",
-                        "api" -> "http://json:8080",
-                        "fen" -> arg1.result,
-                        "depth" -> "15"
-                    )
+                    route = "/controller/init/engine",
+                    payload = payload
                 )
                 setController.onComplete {
                     case Success(value) =>
+                        println(s"${value.result}")
                     case Failure(err) =>
-                        println(s"Error: ${err.getMessage}")
+                        println(s"Error in provideEngineChessJSON (http://controller:8080/controller/init/engine): ${err.getMessage}")
                 }
             case Failure(err) =>
-                println(s"Error: ${err.getMessage}")
+                println(s"Error in provideEngineChessJSON (http://json:8080/apifile/from): ${err.getMessage}")
         }
     }
 }

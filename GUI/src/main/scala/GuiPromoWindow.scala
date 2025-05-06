@@ -22,6 +22,8 @@ import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 import scala.concurrent.Future
 
+import scalafx.application.Platform
+
 class GuiPromoWindow extends VBox, Observer {
     val screenBounds = Screen.getPrimary.getVisualBounds
     val varWidth = screenBounds.getWidth
@@ -56,131 +58,144 @@ class GuiPromoWindow extends VBox, Observer {
         showPieces()
     }
 
-    def currentTheme: Int = {
-        val boardFuture: Future[JsonResult[Int]] = GenericHttpClient.get[JsonResult[Int]](
-            baseUrl = "http://controller:8080",
-            route = "/controller/currentTheme",
-            queryParams = Map()
-        )
-        boardFuture.onComplete {
-            case Success(value) =>
-                return value.result
-            case Failure(err) =>
-                println("Error fetching current theme: ")
-                return 0
-        }
-
-        0
+    def currentTheme(): Future[Int] = {
+        GenericHttpClient
+          .get[JsonResult[Int]](
+              baseUrl = "http://controller:8080",
+              route = "/controller/currentTheme",
+              queryParams = Map()
+          )
+          .map(_.result) // extract the Int
+          .recover { case err =>
+              println(s"[currentTheme] error fetching theme: ${err.getMessage}")
+              0 // fallback
+          }
     }
 
-    def promotePawn(pieceKind: String): Unit = {
-        val payload = PromotePawnRequest(
-            pieceKind = pieceKind
-        )
-
-        val boardFuture: Future[JsonResult[Int]] = GenericHttpClient.post[Unit, JsonResult[Int]](
-            baseUrl = "http://controller:8080",
-            route = "/controller/promotePawn",
-            payload = payload
-        )
-        boardFuture.onComplete {
-            case Success(value) =>
-                println("Pawn promoted to: " + value.result)
-            case Failure(err) =>
-                println("Error promoting pawn: " + err.getMessage)
-        }
+    /** Send the “promote pawn” request and log the result.
+     * Returns a Future[Int] with the new promotion value (or 0 on error). */
+    def promotePawn(pieceKind: String): Future[Int] = {
+        val payload = PromotePawnRequest(pieceKind = pieceKind)
+        GenericHttpClient
+          .post[Unit, JsonResult[Int]](
+              baseUrl = "http://controller:8080",
+              route = "/controller/promotePawn",
+              payload = payload
+          )
+          .map { resp =>
+              println(s"[promotePawn] Pawn promoted to: ${resp.result}")
+              resp.result
+          }
+          .recover { case err =>
+              println(s"[promotePawn] error promoting pawn: ${err.getMessage}")
+              0
+          }
     }
 
     override def update: Unit = ()
     override def errorDisplay: Unit = {
-        val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-            baseUrl = "http://controller:8080",
-            route = "/controller/errorMessage",
-            queryParams = Map()
-        )
+        val boardFuture: Future[JsonResult[String]] =
+            GenericHttpClient.get[JsonResult[String]](
+                baseUrl    = "http://controller:8080",
+                route      = "/controller/errorMessage",
+                queryParams= Map()
+            )
+
         boardFuture.onComplete {
             case Success(value) =>
-                val errMsg = new Text(value.result)
-                children = Seq(errMsg)
-            case Failure(err) =>
-                val errMsg = new Text("Could not read error message")
-                children = Seq(errMsg)
+                // wrap the mutation in the FX thread
+                Platform.runLater {
+                    val errMsg = new Text(value.result)
+                    children = Seq(errMsg)
+                }
+
+            case Failure(_) =>
+                Platform.runLater {
+                    val errMsg = new Text("Could not read error message")
+                    children = Seq(errMsg)
+                }
         }
     }
 
     def showPieces(): Unit = {
-        val boardFuture: Future[JsonResult[ChessContext]] = GenericHttpClient.get[JsonResult[ChessContext]](
-            baseUrl = "http://controller:8080",
-            route = "/controller/context",
-            queryParams = Map()
-        )
-        val pathsFuture: Future[List[String]] = boardFuture.map { value =>
-            value.result.state match {
-                case State.BlackPlaying => List(
-                    "/pieces/black-rook.png",
-                    "/pieces/black-knight.png",
-                    "/pieces/black-bishop.png",
-                    "/pieces/black-queen.png"
-                )
-                case State.WhitePlaying => List(
-                    "/pieces/white-rook.png",
-                    "/pieces/white-knight.png",
-                    "/pieces/white-bishop.png",
-                    "/pieces/white-queen.png"
-                )
-                case _ => List()
-            }
-        }
+        // 1) fetch the context → list of piece‐image paths
+        val pathsFuture: Future[List[String]] =
+            GenericHttpClient
+              .get[JsonResult[ChessContext]](
+                  baseUrl     = "http://controller:8080",
+                  route       = "/controller/context",
+                  queryParams = Map()
+              )
+              .map(_.result.state match {
+                  case State.BlackPlaying => List(
+                      "/pieces/black-rook.png",
+                      "/pieces/black-knight.png",
+                      "/pieces/black-bishop.png",
+                      "/pieces/black-queen.png"
+                  )
+                  case State.WhitePlaying => List(
+                      "/pieces/white-rook.png",
+                      "/pieces/white-knight.png",
+                      "/pieces/white-bishop.png",
+                      "/pieces/white-queen.png"
+                  )
+                  case _ => List.empty
+              })
 
-        def getImage(path: String) : ImageView = {
-            new ImageView { //padding = Insets(vh * 0.2, 0, 0, 0)
-                image = new Image(path)
-                fitWidth = varHeight * 0.07
-                preserveRatio = true
-                //alignmentInParent = Center
-                val lcol3 = color_pallets(currentTheme)._1
-                style = s"-fx-effect: dropshadow(gaussian, $lcol3, 10, 0.8, 0, 0);"
-                effect = new DropShadow {
-                    color = Color.Black
-                    radius = 10
-                    spread = 0.2
+        // 2) fetch the current theme (you already have this as Future[Int])
+        val themeFuture: Future[Int] = currentTheme()
+
+        // 3) combine them: once we have both the paths and the theme index...
+        val panesFuture: Future[List[StackPane]] = for {
+            paths <- pathsFuture
+            theme <- themeFuture
+        } yield {
+            // now build the StackPanes using the *synchronous* theme value
+            val highlightColor = color_pallets(theme)._1
+
+            def getImage(path: String): ImageView =
+                new ImageView {
+                    image       = new Image(path)
+                    fitWidth    = varHeight * 0.07
+                    preserveRatio = true
+                    // use the captured highlightColor
+                    style = s"-fx-effect: dropshadow(gaussian, $highlightColor, 10, 0.8, 0, 0);"
+                    effect = new DropShadow {
+                        color  = Color.Black
+                        radius = 10
+                        spread = 0.2
+                    }
+                }
+
+            def getButton(kind: String): Button = {
+                val b = new Button {
+                    style    = "-fx-background-color: transparent;"
+                    onAction = _ => promotePawn(kind)
+                }
+                b.prefWidth  = varHeight * 0.1
+                b.prefHeight = varHeight * 0.1
+                b
+            }
+
+            // zip images & buttons into StackPanes
+            val kinds = List("r","n","b","q")
+            paths.zip(kinds).map { case (path, kind) =>
+                new StackPane {
+                    children = List( getImage(path), getButton(kind) )
                 }
             }
         }
 
-        def getButton(pieceKind: String) : Button = {
-             val button = new Button() {
-                style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
-                onAction = _ => promotePawn(pieceKind)
-                //focusWithin.apply()
-            }
-                button.setPrefSize(varHeight * 0.1, varHeight * 0.1)
-                return button
-        }
-
-        def getPieceList(pathList: List[String]) : List[StackPane] = {
-            val imageList = pathList.map(getImage: String => ImageView)
-            val buttonInputList = List("r", "n", "b", "q")
-            val buttonList = buttonInputList.map(getButton: String => Button)
-            
-            @tailrec
-            def buildStackPaneRecursive(imgList: List[ImageView], bList: List[Button], accumulator : List[StackPane]) : List[StackPane] = {
-                (imgList, bList) match {
-                    case (Nil, _) | (_, Nil) => accumulator
-                    case(hI :: tI, hB :: tB) =>
-                        val stackPane = new StackPane() {
-                            children = List(hI, hB) //richtige reihenfolge?
-                        }
-                        buildStackPaneRecursive(tI, tB, accumulator.appended(stackPane))
+        // 4) when it’s all ready, push it onto the FX thread
+        panesFuture.onComplete {
+            case Success(panes) =>
+                Platform.runLater {
+                    children = panes
                 }
-            }
-            buildStackPaneRecursive(imageList, buttonList, List())
-        }
-
-        pathsFuture.onComplete {
-            case Success(paths) =>
-                val pieceList = getPieceList(paths)
-                children = pieceList
+            case Failure(ex) =>
+                Platform.runLater {
+                    children = Seq(new Text(s"Couldn’t show pieces:\n${ex.getMessage}"))
+                }
         }
     }
 

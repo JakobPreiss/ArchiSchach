@@ -80,6 +80,13 @@ services:
       - "5006:8080"
     networks:
       - chess-net
+    environment:
+      - DISPLAY=host.docker.internal:0.0
+      - PRISM_ORDER=sw
+      - JAVAFX_USE_VSYNC=false
+      - GDK_BACKEND=x11
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
 
   xml:
     build:

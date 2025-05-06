@@ -24,13 +24,13 @@ enum PieceType:
 
 object PieceType:
     def fromString(str: String): PieceType = str match
-        case "P" | "p" => PAWN
-        case "R" | "r" => ROOK
-        case "N" | "n" => KNIGHT
-        case "B" | "b" => BISHOP
-        case "Q" | "q" => QUEEN
-        case "K" | "k" => KING
-        case "."       => EMPTY
+        case "P" | "p" | "PAWN" => PAWN
+        case "R" | "r" | "ROOK" => ROOK
+        case "N" | "n" | "KNIGHT" => KNIGHT
+        case "B" | "b" | "BISHOP" => BISHOP
+        case "Q" | "q" | "QUEEN" => QUEEN
+        case "K" | "k" | "KING" => KING
+        case "." | "EMPTY"      => EMPTY
         case other     => throw new IllegalArgumentException(s"'$other' is not a valid PieceType")
 
 implicit object PieceTypeJsonFormat extends RootJsonFormat[PieceType]:

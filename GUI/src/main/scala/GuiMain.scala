@@ -21,6 +21,9 @@ object GuiMain extends JFXApp3 {
     var promoWindow : Option[GuiPromoWindow] = None
     
     def start(): Unit = {
+        this.board = Some(new GuiBoard())
+        this.menu = Some(new GuiMenu())
+        this.promoWindow = Some(new GuiPromoWindow())
 
         stage = new JFXApp3.PrimaryStage {
             
@@ -40,6 +43,7 @@ object GuiMain extends JFXApp3 {
                                     menu match {
                                         case None =>
                                         case Some(m) =>
+                                            println("Board is not null: " + b)
                                             left = b
                                             center = w
                                             right = m
@@ -52,11 +56,5 @@ object GuiMain extends JFXApp3 {
             }
             fullScreen = true
         }
-    }
-
-    def setComponents(board: GuiBoard, menu: GuiMenu, promoWindow: GuiPromoWindow): Unit = {
-        this.board = Some(board)
-        this.menu = Some(menu)
-        this.promoWindow = Some(promoWindow)
     }
 }

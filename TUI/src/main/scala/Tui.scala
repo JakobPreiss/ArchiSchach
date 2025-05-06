@@ -159,7 +159,7 @@ class Tui extends Observer {
         )
         boardFuture.onComplete {
             case Success(value) =>
-                println("Error: " + value.result)
+                println("Error (http://controller:8080/controller/errorMessage): " + value.result)
             case Failure(err) =>
                 println("Error: Could not get error")
         }

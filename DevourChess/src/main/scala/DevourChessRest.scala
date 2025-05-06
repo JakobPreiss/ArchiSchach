@@ -32,10 +32,13 @@ class ChessRoutes(chessService: ChessTrait)(implicit system: ActorSystem) {
         path("getAllLegalMoves") {
           get {
             parameter("fen") { fen =>
-              onComplete(Future.fromTry(chessService.getAllLegalMoves(fen))) {
+              onComplete(chessService.getAllLegalMoves(fen)) {
                 case Success(moves) =>
-                  val jsMoves = moves.map { case (f, t) => Move(f, t) }
-                  complete(JsonResult(jsMoves))
+                  moves match {
+                    case Success(legalMoves) =>
+                      complete(JsonResult(legalMoves))
+                    case Failure(ex)         => complete(StatusCodes.BadRequest, ex.getMessage)
+                  }
                 case Failure(ex) => complete(StatusCodes.BadRequest, ex.getMessage)
               }
             }
@@ -48,9 +51,13 @@ class ChessRoutes(chessService: ChessTrait)(implicit system: ActorSystem) {
             entity(as[JsValue]) { json =>
               val obj   = json.asJsObject
               val fen   = obj.fields("fen").convertTo[String]
-              val moves = obj.fields("legalMoves").convertTo[List[Move]].map(m => (m.from, m.to))
-              onComplete(Future.fromTry(chessService.isRemis(fen, moves))) {
-                case Success(res)  => complete(JsonResult(res))
+              val moves = obj.fields("legalMoves").convertTo[List[(Int, Int)]]
+              onComplete(chessService.isRemis(fen, moves)) {
+                case Success(res)  =>
+                  res match {
+                    case Success(isRemis) => complete(JsonResult(isRemis))
+                    case Failure(ex)      => complete(StatusCodes.BadRequest, ex.getMessage)
+                  }
                 case Failure(ex)   => complete(StatusCodes.BadRequest, ex.getMessage)
               }
             }
@@ -61,8 +68,12 @@ class ChessRoutes(chessService: ChessTrait)(implicit system: ActorSystem) {
         path("getBestMove") {
           get {
             parameters("fen", "depth".as[Int]) { (fen, depth) =>
-              onComplete(Future.fromTry(chessService.getBestMove(fen, depth))) {
-                case Success(best) => complete(JsonResult(best))
+              onComplete(chessService.getBestMove(fen, depth)) {
+                case Success(best) =>
+                  best match {
+                    case Success(move) => complete(JsonResult(move))
+                    case Failure(ex)   => complete(StatusCodes.BadRequest, ex.getMessage)
+                  }
                 case Failure(ex)   => complete(StatusCodes.BadRequest, ex.getMessage)
               }
             }

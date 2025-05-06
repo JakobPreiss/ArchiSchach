@@ -48,7 +48,8 @@ lazy val sharedResources = (project in file("SharedResources"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -66,7 +67,8 @@ lazy val basicChess = (project in file("BasicChess"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -84,7 +86,8 @@ lazy val devourChess = (project in file("DevourChess"))
         "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
         "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
         "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-        "io.spray" %%  "spray-json" % "1.3.6"
+        "io.spray" %%  "spray-json" % "1.3.6",
+        "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -104,7 +107,8 @@ lazy val realChess = (project in file("RealChess"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -126,7 +130,8 @@ lazy val controller = (project in file("Controller"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -145,6 +150,7 @@ lazy val tui = (project in file("TUI"))
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
       "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -163,7 +169,8 @@ lazy val gui = (project in file("GUI"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -182,7 +189,8 @@ lazy val xml = (project in file("XML"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -201,7 +209,9 @@ lazy val json = (project in file("JSON"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
+
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -219,7 +229,8 @@ lazy val api = (project in file("API"))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-      "io.spray" %%  "spray-json" % "1.3.6"
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
   )
   .enablePlugins(AssemblyPlugin)
@@ -244,7 +255,8 @@ lazy val root = (project in file("."))
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
-        "io.spray" %%  "spray-json" % "1.3.6"
+        "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
     ),
     coverageExcludedPackages := "<empty>;.*aView.*",
   )

@@ -1,7 +1,7 @@
 package Controller.SoloChessController
 
 import SharedResources.{ApiFileTrait, ChessContext, ChessTrait, Event, GenericHttpClient, JsonResult, State}
-import Controller.ControllerTrait
+import Controller.{ControllerServer, ControllerTrait}
 import Controller.Extra.{SetCommand, UndoInvoker}
 import Controller.Requests.{PromoteRequest, RemisRequest, SaveRequest}
 import Requests.{Move, MoveRequest}
@@ -26,7 +26,8 @@ class EngineController (override var fen : String, var context : ChessContext, v
 
     def printTo(context: ChessContext, fen: String) = {
         val payload = SaveRequest(
-            fen  = fen
+            fen  = fen,
+            ctx = context.state.ordinal
         )
         val saveFuture: Future[JsonResult[String]] = GenericHttpClient.post[SaveRequest, JsonResult[String]](
             baseUrl = saveApi,
@@ -67,7 +68,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
             case Success(legalMoves) =>
                 checkGameState(legalMoves.result)
                 printTo(context, fen)
-                this.notifyObservers
+                ControllerServer.notifyObservers()
             case Failure(value) => failureHandle(value.getMessage)
         }
     }
@@ -97,7 +98,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
         if (!legalMoves.contains(move)) {
             output = "Das kannste nicht machen Bro (kein legaler Zug)"
             checkGameState(legalMoves)
-            notifyObservers
+            ControllerServer.notifyObservers()
         } else {
             val payload = MoveRequest(
                 fen  = fen,
@@ -129,7 +130,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
                 promoteValue.result match {
                     case Some(pos: Int) =>
                         output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
-                        ringObservers
+                        ControllerServer.ringObservers()
                     case None =>
                         boardToString()
 
@@ -142,7 +143,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
                             case Success(legalMoves) =>
                                 val state = checkGameState(legalMoves.result)
                                 printTo(context, fen)
-                                notifyObservers
+                                ControllerServer.notifyObservers()
                                 if (!thisIsEngineMove) engineMove()
                             case Failure(value) => failureHandle(value.getMessage)
                         }
@@ -249,8 +250,8 @@ class EngineController (override var fen : String, var context : ChessContext, v
                                     case Success(legalMoves) =>
                                         val state = checkGameState(legalMoves.result)
                                         printTo(context, fen)
-                                        deRingObservers
-                                        notifyObservers
+                                        ControllerServer.deRingObservers()
+                                        ControllerServer.notifyObservers()
                                         if (!state) engineMove()
                                     case Failure(value) => failureHandle(value.getMessage)
                                 }
@@ -277,7 +278,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
                 checkGameState(legalMoves.result)
                 printTo(context, fen)
                 boardToString()
-                notifyObservers
+                ControllerServer.notifyObservers()
             case Failure(value) => failureHandle(value.getMessage)
         }
     }
@@ -295,12 +296,13 @@ class EngineController (override var fen : String, var context : ChessContext, v
                 checkGameState(legalMoves.result)
                 printTo(context, fen)
                 boardToString()
-                notifyObservers
+                ControllerServer.notifyObservers()
             case Failure(value) => failureHandle(value.getMessage)
         }
     }
 
     def squareClicked(clickedSquare: Try[Int]) : Unit = {
+        println("Engine Controller called")
         clickedSquare match {
             case Success(square : Int) =>
                 val isColorPiece: Future[JsonResult[Boolean]] = GenericHttpClient.get[JsonResult[Boolean]](
@@ -325,7 +327,7 @@ class EngineController (override var fen : String, var context : ChessContext, v
                                             play(Success(value.result))
                                             activeSquare = None
                                         case Failure(err) =>
-                                            failureHandle(err.getMessage)
+                                            failureHandle("/chess/translateCastleFromFen " + err.getMessage)
                                             return
                                     }
                                 case None => None
@@ -333,22 +335,23 @@ class EngineController (override var fen : String, var context : ChessContext, v
 
                         }
                     case Failure(err) =>
-                        failureHandle(err.getMessage)
+                        failureHandle("/chess/isColorPiece " + err.getMessage)
                             return
                 }
             case Failure(err) =>
-                failureHandle(err.getMessage)
+                failureHandle("/chess/isColorPiece outside " + err.getMessage)
         }
     }
 
     def nextTheme(): Unit = {
         current_theme = (current_theme + 1) % 19
-        notifyObservers
+        ControllerServer.notifyObservers()
     }
 
     def failureHandle(errorMsg: String): Unit = {
+        println("Got new error message: " + errorMsg)
         errorMessage = errorMsg
-        tellErrorToObservers
+        ControllerServer.tellErrorToObservers()
     }
 
     def getErrorMessage: Try[String] = {

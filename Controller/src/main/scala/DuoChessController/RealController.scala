@@ -1,7 +1,7 @@
 package Controller.DuoChessController
 
 import SharedResources.{ApiFileTrait, ChessContext, ChessTrait, Event, GenericHttpClient, JsonResult, State}
-import Controller.ControllerTrait
+import Controller.{ControllerServer, ControllerTrait}
 import Controller.Extra.{SetCommand, UndoInvoker}
 import Controller.Requests.{PromoteRequest, RemisRequest, SaveRequest}
 import Requests.{Move, MoveRequest}
@@ -24,7 +24,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
 
     def printTo(context: ChessContext, fen: String) = {
         val payload = SaveRequest(
-            fen  = fen
+            fen  = fen,
+            ctx = context.state.ordinal
         )
         val saveFuture: Future[JsonResult[String]] = GenericHttpClient.post[SaveRequest, JsonResult[String]](
             baseUrl = saveApi,
@@ -34,7 +35,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
         saveFuture.onComplete {
             case Success(newFen: JsonResult[String]) =>
             case Failure(err) =>
-                failureHandle(err.getMessage)
+                failureHandle("printTo", err.getMessage)
         }
     }
 
@@ -48,7 +49,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
             case Success(value) =>
                 output = value.result
             case Failure(err) =>
-                failureHandle(err.getMessage)
+                failureHandle("boardToString", err.getMessage)
                 output = ""
         }
     }
@@ -68,22 +69,22 @@ class RealController(override var fen : String, var context : ChessContext, var 
                 checkGameState(legalMoves.result)
                 printTo(context, fen)
                 boardToString()
-                deRingObservers
-            case Failure(value) => failureHandle(value.getMessage)
+                ControllerServer.deRingObservers()
+            case Failure(value) => failureHandle("resetBoard", value.getMessage)
         }
     }
 
     def play(moveRaw : Try[(Int, Int)]) : Unit = {
         val move = moveRaw match {
             case Success(value : (Int, Int)) => value
-            case Failure(err) => failureHandle(err.getMessage)
+            case Failure(err) => failureHandle("play", err.getMessage)
                 return
         }
         def tryMove(move: (Int, Int), legalMoves: List[(Int, Int)]): Unit = {
             if (!legalMoves.contains(move)) {
                 output = "Das kannste nicht machen Bro (kein legaler Zug)"
                 checkGameState(legalMoves)
-                notifyObservers
+                ControllerServer.notifyObservers()
             } else {
                 val payload = MoveRequest(
                     fen  = fen,
@@ -99,7 +100,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
                         UndoInvoker.doStep(new SetCommand(newFen.result, fen, this))
                         checkPromotion()
                     case Failure(err) =>
-                        failureHandle(err.getMessage)
+                        failureHandle("play /chess/makeMove", err.getMessage)
                 }
             }
         }
@@ -115,7 +116,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
                     promoteValue.result match {
                         case Some(pos: Int) =>
                             output = "Welche Beförderung soll der Bauer erhalten? (Eingabemöglichkeiten: Q,q,N,n,B,b,R,r)"
-                            ringObservers
+                            ControllerServer.ringObservers()
                         case None =>
                             boardToString()
 
@@ -128,11 +129,11 @@ class RealController(override var fen : String, var context : ChessContext, var 
                                 case Success(legalMoves) =>
                                     val state = checkGameState(legalMoves.result)
                                     printTo(context, fen)
-                                    notifyObservers
-                                case Failure(value) => failureHandle(value.getMessage)
+                                    ControllerServer.notifyObservers()
+                                case Failure(value) => failureHandle("checkPromotion /chess/getAllLegalMoves", value.getMessage)
                             }
                     }
-                case Failure(err) => failureHandle(err.getMessage)
+                case Failure(err) => failureHandle("checkPromotion /chess/canPromote", err.getMessage)
             }
         }
 
@@ -143,7 +144,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
         )
         legalMoves.onComplete {
             case Success(legalMoves) => tryMove(move, legalMoves.result)
-            case Failure(value) => failureHandle(value.getMessage)
+            case Failure(value) => failureHandle("checkPromotion /chess/getAllLegalMoves", value.getMessage)
         }
     }
 
@@ -154,7 +155,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
         )
         val remisFuture: Future[JsonResult[Boolean]] = GenericHttpClient.post[RemisRequest, JsonResult[Boolean]](
             baseUrl = gameMode,
-            route = "/chess/promote",
+            route = "/chess/isRemis",
             payload = payload
         )
         remisFuture.onComplete {
@@ -170,7 +171,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
                     case _ => return true
                 }
             case Failure(err) =>
-                failureHandle(err.getMessage)
+                failureHandle("checkGameState /chess/promote", err.getMessage)
                 return false
         }
         false
@@ -211,17 +212,17 @@ class RealController(override var fen : String, var context : ChessContext, var 
                                     case Success(legalMoves) =>
                                         val state = checkGameState(legalMoves.result)
                                         printTo(context, fen)
-                                        deRingObservers
-                                        notifyObservers
-                                    case Failure(value) => failureHandle(value.getMessage)
+                                        ControllerServer.deRingObservers()
+                                        ControllerServer.notifyObservers()
+                                    case Failure(value) => failureHandle("promotePawn /chess/getAllLegalMoves", value.getMessage)
                                 }
                             case Failure(err) =>
-                                failureHandle(err.getMessage)
+                                failureHandle("promotePawn /chess/promote", err.getMessage)
                         }
                     case None => output = "Kein Bauer kann befördert werden"
                 }
             case Failure(err) =>
-                failureHandle(err.getMessage)
+                failureHandle("promotePawn /chess/canPromote", err.getMessage)
         }
     }
 
@@ -238,8 +239,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
                 checkGameState(legalMoves.result)
                 printTo(context, fen)
                 boardToString()
-                notifyObservers
-            case Failure(value) => failureHandle(value.getMessage)
+                ControllerServer.notifyObservers()
+            case Failure(value) => failureHandle("undo /chess/getAllLegalMoves", value.getMessage)
         }
     }
 
@@ -255,8 +256,8 @@ class RealController(override var fen : String, var context : ChessContext, var 
                 checkGameState(legalMoves.result)
                 printTo(context, fen)
                 boardToString()
-                notifyObservers
-            case Failure(value) => failureHandle(value.getMessage)
+                ControllerServer.notifyObservers()
+            case Failure(value) => failureHandle("redo /chess/getAllLegalMoves", value.getMessage)
         }
     }
 
@@ -285,7 +286,7 @@ class RealController(override var fen : String, var context : ChessContext, var 
                                             play(Success(value.result))
                                             activeSquare = None
                                         case Failure(err) =>
-                                            failureHandle(err.getMessage)
+                                            failureHandle("squareClicked /chess/translateCastleFromFen ", err.getMessage)
                                             return
                                     }
                                 case None => None
@@ -293,25 +294,27 @@ class RealController(override var fen : String, var context : ChessContext, var 
 
                         }
                     case Failure(err) =>
-                        failureHandle(err.getMessage)
+                        failureHandle("squareClicked /chess/isColorPiece ", err.getMessage)
                         return
                 }
             case Failure(err) =>
-                failureHandle(err.getMessage)
+                failureHandle("squareClicked /chess/isColorPiece outside ", err.getMessage)
         }
     }
 
     def nextTheme(): Unit = {
         current_theme = (current_theme + 1) % 19
-        notifyObservers
+        ControllerServer.notifyObservers()
     }
 
-    def failureHandle(errorMsg : String): Unit = {
-        errorMessage = errorMsg
-        tellErrorToObservers
+    def failureHandle(place: String, errorMsg : String): Unit = {
+        println("Got new error message: " + place + " " + errorMsg)
+        errorMessage = place + " " + errorMsg
+        ControllerServer.tellErrorToObservers()
     }
 
     def getErrorMessage : Try[String] = {
+        println("Error: " + errorMessage)
         Success(errorMessage)
     }
 

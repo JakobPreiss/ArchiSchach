@@ -15,6 +15,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
 import akka.http.scaladsl.server.Directives.*
 import SharedResources.*
 import SharedResources.ChessJsonProtocol.*
+import SharedResources.Requests.{InitDuoRequest, InitEngineRequest}
 import spray.json.DefaultJsonProtocol.*
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
 import akka.http.scaladsl.model.HttpMethods.POST
@@ -38,54 +39,51 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
     pathPrefix("controller") {
       concat(
         // POST /controller/init
-        path("init") {
-          path("engine") {
-            post {
-              parameters("gameMode", "api", "fen", "depth") { (gameMode, api, fen, depth) =>
-                val newContext = new ChessContext()
+        path("init" / "engine") {
+          post {
+            entity(as[InitEngineRequest]) { req =>
+              val newContext = new ChessContext()
 
-                val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-                  baseUrl = "http://basic-chess:8080",
-                  route = "/chess/boardString",
-                  queryParams = Map("fen" -> fen)
-                )
-                boardFuture.onComplete {
-                  case Success(value) =>
-                    val arg3 = value.result
+              val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                baseUrl = "http://basic-chess:8080",
+                route = "/chess/boardString",
+                queryParams = Map("fen" -> req.fen)
+              )
+              boardFuture.onComplete {
+                case Success(value) =>
+                  val arg3 = value.result
 
-                    this.controller = new EngineController(fen, newContext, arg3, depth.toInt, gameMode, api)
-                  case Failure(err) =>
-                    println(s"Error: ${err.getMessage}")
-                    val arg3 = ""
-                    this.controller = new EngineController(fen, newContext, arg3, depth.toInt, gameMode, api)
-                }
-
-                complete(s"Initialized new controller with FEN: $fen")
+                  this.controller = new EngineController(req.fen, newContext, arg3, req.depth, req.gameMode, req.api)
+                case Failure(err) =>
+                  println(s"Error: ${err.getMessage}")
+                  val arg3 = ""
+                  this.controller = new EngineController(req.fen, newContext, arg3, req.depth, req.gameMode, req.api)
               }
+
+              complete(StatusCodes.OK, JsonResult(s"Initialized duo with FEN: ${req.fen}"))
             }
           }
-          path("duo") {
-            post {
-              parameters("gameMode", "api", "fen") { (gameMode, api, fen) =>
-                val newContext = new ChessContext()
+        },
+        path("init" / "duo") {
+          post {
+            entity(as[InitDuoRequest]) { req =>
+              val newContext = new ChessContext()
 
-                val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
-                  baseUrl = "http://basic-chess:8080",
-                  route = "/chess/boardString",
-                  queryParams = Map("fen" -> fen)
-                )
-                boardFuture.onComplete {
-                  case Success(value) =>
-                    val arg3 = value.result
-                    this.controller = new RealController(fen, newContext, arg3, gameMode, api)
-                  case Failure(err) =>
-                    println(s"Error: ${err.getMessage}")
-                    val arg3 = ""
-                    this.controller = new RealController(fen, newContext, arg3, gameMode, api)
-                }
-
-                complete(s"Initialized new controller with FEN: $fen")
+              val boardFuture: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                baseUrl = "http://basic-chess:8080",
+                route = "/chess/boardString",
+                queryParams = Map("fen" -> req.fen)
+              )
+              boardFuture.onComplete {
+                case Success(value) =>
+                  val arg3 = value.result
+                  this.controller = new RealController(req.fen, newContext, arg3, req.gameMode, req.api)
+                case Failure(err) =>
+                  println(s"Error: ${err.getMessage}")
+                  val arg3 = ""
+                  this.controller = new RealController(req.fen, newContext, arg3, req.gameMode, req.api)
               }
+              complete(StatusCodes.OK, JsonResult(s"Initialized duo with FEN: ${req.fen}"))
             }
           }
         },
@@ -98,7 +96,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
             post {
               parameter("value") { value =>
                 controller.fen = value
-                complete(StatusCodes.OK)
+                complete(StatusCodes.OK, JsonResult("Ok"))
               }
             }
         },
@@ -107,7 +105,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
         path("resetBoard") {
           post {
             controller.resetBoard()
-            complete(StatusCodes.OK)
+            complete(StatusCodes.OK, JsonResult("Ok"))
           }
         },
 
@@ -120,7 +118,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
               entity(as[JsValue]) { js =>
                 val ctx = js.convertTo[ChessContext]
                 controller.context = ctx
-                complete(StatusCodes.OK)
+                complete(StatusCodes.OK, JsonResult("Ok"))
               }
             }
         },
@@ -133,7 +131,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
             post {
               parameter("value".as[Int]) { v =>
                 controller.current_theme = v
-                complete(StatusCodes.OK)
+                complete(StatusCodes.OK, JsonResult("Ok"))
               }
             }
         },
@@ -143,7 +141,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
           post {
             entity(as[Move]) { moveJson =>
               controller.play(Try((moveJson.from, moveJson.to)))
-              complete(StatusCodes.OK)
+              complete(StatusCodes.OK, JsonResult("Ok"))
             }
           }
         },
@@ -152,7 +150,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
         path("undo") {
           post {
             controller.undo()
-            complete(StatusCodes.OK)
+            complete(StatusCodes.OK, JsonResult("Ok"))
           }
         },
 
@@ -160,7 +158,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
         path("redo") {
           post {
             controller.redo()
-            complete(StatusCodes.OK)
+            complete(StatusCodes.OK, JsonResult("Ok"))
           }
         },
 
@@ -180,7 +178,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
             entity(as[JsValue]) { js =>
               val piece = js.asJsObject.fields("pieceKind").convertTo[String]
               controller.promotePawn(piece)
-              complete(StatusCodes.OK)
+              complete(StatusCodes.OK, JsonResult("Ok"))
             }
           }
         },
@@ -191,7 +189,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
             entity(as[JsValue]) { js =>
               val pos = js.asJsObject.fields("square").convertTo[Int]
               controller.squareClicked(Try(pos))
-              complete(StatusCodes.OK)
+              complete(StatusCodes.OK, JsonResult("Ok"))
             }
           }
         },
@@ -200,7 +198,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
         path("nextTheme") {
           post {
             controller.nextTheme()
-            complete(StatusCodes.OK)
+            complete(StatusCodes.OK, JsonResult("Ok"))
           }
         },
 
@@ -208,8 +206,12 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
         path("errorMessage") {
           get {
             onComplete(Future.fromTry(controller.getErrorMessage)) {
-              case Success(msg) => complete(JsonResult(msg))
-              case Failure(ex)  => complete(StatusCodes.BadRequest, ex.getMessage)
+              case Success(msg) =>
+                println("errorMessage SUCCESS: " + msg)
+                complete(JsonResult(msg))
+              case Failure(ex)  =>
+                println("errorMessage FAILURE: " + ex.getMessage)
+                complete(StatusCodes.BadRequest, ex.getMessage)
             }
           }
         },
@@ -278,18 +280,22 @@ object ControllerServer extends App {
   var observers: ListBuffer[String] = ListBuffer() // stores base URLs like "http://localhost:8081"
 
   def notifyObservers(): Unit = observers.foreach { url =>
+    println(s"Notifying observer at $url")
     Http().singleRequest(HttpRequest(POST, uri = s"$url/update"))
   }
 
   def ringObservers(): Unit = observers.foreach { url =>
+    println(s"Ringing observer at $url")
     Http().singleRequest(HttpRequest(POST, uri = s"$url/special"))
   }
 
   def deRingObservers(): Unit = observers.foreach { url =>
+    println(s"DeRinging observer at $url")
     Http().singleRequest(HttpRequest(POST, uri = s"$url/reverse"))
   }
 
   def tellErrorToObservers(): Unit = observers.foreach { url =>
+    println(s"Telling error to observer at $url")
     Http().singleRequest(HttpRequest(POST, uri = s"$url/error"))
   }
 
