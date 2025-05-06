@@ -235,9 +235,33 @@ lazy val api = (project in file("API"))
   )
   .enablePlugins(AssemblyPlugin)
 
+lazy val database = (project in file("Database"))
+  .dependsOn(sharedResources)
+  .settings(
+    name := "Database",
+    assembly / mainClass := Some("DatabaseService.DatabaseServer"),
+    resolvers += "Akka library repository".at("https://repo.akka.io/maven"),
+    libraryDependencies ++= Seq(
+      "org.scalactic" %% "scalactic" % "3.2.14",
+      "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+      "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
+      "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
+      "io.spray" %%  "spray-json" % "1.3.6",
+      "ch.qos.logback"    %  "logback-classic" % "1.5.11",
+      "com.typesafe.slick" %% "slick" % "3.5.2",
+      "com.typesafe.slick" %% "slick-hikaricp" % "3.5.1",
+      "org.postgresql" % "postgresql" % "42.7.4",
+      "com.github.tminglei" %% "slick-pg" % "0.22.2",
+      "com.github.tminglei" %% "slick-pg_play-json" % "0.22.2"
+    ),
+  )
+  .enablePlugins(AssemblyPlugin)
+
 lazy val root = (project in file("."))
-  .aggregate(tui, gui, controller, devourChess, basicChess, realChess, sharedResources, xml, json, api)
-  .dependsOn(tui, gui, controller, devourChess, basicChess, realChess, sharedResources, xml, json, api)
+  .aggregate(tui, gui, controller, devourChess, basicChess, realChess, sharedResources, xml, json, api, database)
+  .dependsOn(tui, gui, controller, devourChess, basicChess, realChess, sharedResources, xml, json, api, database)
   .settings(
     name := "JP_Morgan_Chess",
     resolvers += "Akka library repository".at("https://repo.akka.io/maven"),

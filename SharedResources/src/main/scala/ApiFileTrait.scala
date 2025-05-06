@@ -1,5 +1,7 @@
 package SharedResources
 
+import scala.concurrent.Future
+
 trait ApiFileTrait {
     /**
      * converts the given paramters to the predefined language (xml or json) and saves it in a DataWrapper for flexibility
@@ -14,7 +16,7 @@ trait ApiFileTrait {
      * @param data DataWrapper with json or xml inside
      * @return fen-String and the current Game State
      */
-    def from : String
+    def from: Future[String]
 
     /**
      * writes the given context.state and the given fen to the xml or json file

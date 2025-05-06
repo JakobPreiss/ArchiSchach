@@ -11,7 +11,7 @@ object Chess {
     val tui = new Tui()
 
     def main(args: Array[String]): Unit = {
-        ChessModule.provideDuoChessXML()
+        ChessModule.provideDuoChessDatabase()
 
         Future {
             GuiMain.main(args)

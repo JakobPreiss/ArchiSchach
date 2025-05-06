@@ -127,6 +127,19 @@ services:
     networks:
       - chess-net
 
+  database:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: Database
+        SERVICE_PORT: 8080
+    container_name: database
+    ports:
+      - "5009:8080"
+    networks:
+      - chess-net
+
   root:
     build:
       context: .
@@ -136,11 +149,28 @@ services:
         SERVICE_PORT: 8080
     container_name: jp-morgan-chess-root
     ports:
-      - "5009:8080"
+      - "5010:8080"
     networks:
       - chess-net
     stdin_open: true
     tty: true
+
+  postgres:
+    image: postgres:15
+    container_name: archischach-postgres
+    environment:
+      POSTGRES_DB: archischach
+      POSTGRES_USER: archiuser
+      POSTGRES_PASSWORD: archipass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - chess-net
+
+volumes:
+  postgres-data:
 
 networks:
   chess-net:

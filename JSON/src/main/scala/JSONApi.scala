@@ -18,7 +18,7 @@ class JSONApi extends ApiFileTrait {
         DataWrapper(None, Some(jsonData))
     }
 
-    def from: String = {
+    def from: Future[String] = {
         val filePath = "src/main/resources/GameState.json"
         val fileContents = Try(Source.fromFile(filePath).getLines().mkString) match {
             case Success(content) => content
@@ -37,25 +37,19 @@ class JSONApi extends ApiFileTrait {
         unpackToFen(wrapper, (correctFen, State.fromOrdinal(Json.stringify((value \ "Box" \ "state").get).toInt)))
     }
 
-    def unpackToFen(dataWrapped: DataWrapper, data: (String, State)): String = {
+    def unpackToFen(dataWrapped: DataWrapper, data: (String, State)): Future[String] = {
         data._2 match {
-            case State.Remis => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            case State.WhiteWon => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            case State.BlackWon => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            case State.Remis | State.WhiteWon | State.BlackWon =>
+                Future.successful("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+
             case _ =>
-                val translation: Future[JsonResult[String]] = GenericHttpClient.get[JsonResult[String]](
+                GenericHttpClient.get[JsonResult[String]](
                     baseUrl = "http://basic-chess:8080",
                     route = "/chess/isValidFen",
                     queryParams = Map("fen" -> data._1)
-                )
-                translation.onComplete {
-                    case Success(validFen) =>
-                        return validFen.result
-                    case Failure(err) =>
-                        return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+                ).map(_.result).recover {
+                    case _ => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
                 }
-
-                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         }
     }
 

@@ -26,7 +26,7 @@ class ApiFileRoutes(apiFileService: ApiFileTrait)(implicit system: ActorSystem) 
       concat(
         path("from") {
           get {
-            onComplete(Future.fromTry(Try(apiFileService.from))) {
+            onComplete(apiFileService.from) {
               case Success(data) => complete(StatusCodes.OK, JsonResult(data))
               case Failure(ex)   => complete(StatusCodes.BadRequest, ex.getMessage)
             }

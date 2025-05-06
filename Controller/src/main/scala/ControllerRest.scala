@@ -52,12 +52,15 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
               boardFuture.onComplete {
                 case Success(value) =>
                   val arg3 = value.result
-
                   this.controller = new EngineController(req.fen, newContext, arg3, req.depth, req.gameMode, req.api)
+                  println("Controller initialized with FEN: " + req.fen)
+                  ControllerServer.notifyObservers()
                 case Failure(err) =>
                   println(s"Error: ${err.getMessage}")
                   val arg3 = ""
                   this.controller = new EngineController(req.fen, newContext, arg3, req.depth, req.gameMode, req.api)
+                  println
+                  ControllerServer.notifyObservers()
               }
 
               complete(StatusCodes.OK, JsonResult(s"Initialized duo with FEN: ${req.fen}"))
@@ -78,10 +81,13 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
                 case Success(value) =>
                   val arg3 = value.result
                   this.controller = new RealController(req.fen, newContext, arg3, req.gameMode, req.api)
+                  println("Controller initialized with FEN: " + req.fen)
+                  ControllerServer.notifyObservers()
                 case Failure(err) =>
                   println(s"Error: ${err.getMessage}")
                   val arg3 = ""
                   this.controller = new RealController(req.fen, newContext, arg3, req.gameMode, req.api)
+                  ControllerServer.notifyObservers()
               }
               complete(StatusCodes.OK, JsonResult(s"Initialized duo with FEN: ${req.fen}"))
             }
@@ -236,6 +242,7 @@ class ControllerRoutes(var controller: ControllerTrait)(implicit system: ActorSy
         path("register") {
           parameter("url") { url =>
             observers += url
+            ControllerServer.notifyObservers()
             complete(JsonResult(s"Registered observer at $url"))
           }
         } ~
@@ -281,6 +288,7 @@ object ControllerServer extends App {
 
   def notifyObservers(): Unit = observers.foreach { url =>
     println(s"Notifying observer at $url")
+    println(s"Sending request to $url/update")
     Http().singleRequest(HttpRequest(POST, uri = s"$url/update"))
   }
 
