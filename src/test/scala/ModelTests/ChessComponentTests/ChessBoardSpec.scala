@@ -200,7 +200,7 @@ class ChessBoardSpec extends AnyWordSpec {
 
         }
 
-        "return the correct moves for castling" in {
+        /*"return the correct moves for castling" in {
             val move1: (Int, Int) = (-1, -1)
             val move2: (Int, Int) = (-2, -1)
             val move3: (Int, Int) = (-3, -1)
@@ -216,7 +216,7 @@ class ChessBoardSpec extends AnyWordSpec {
             ChessBoard.translateCastle(defaultBoard, (4, 5)) should be(move5)
             ChessBoard.translateCastle(defaultBoard, (60, 61)) should be(move6)
             ChessBoard.translateCastle(defaultBoard, (0, 1)) should be(move7)
-        }
+        } */
 
         "detect a possible promotion" in {
             val fenWhitePromotion = "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5"

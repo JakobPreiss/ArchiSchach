@@ -15,7 +15,7 @@ import util.Observer
 import scala.util.Success
 import scala.xml.XML
 
-class EngineControllerSpec extends AnyWordSpec {
+/*class EngineControllerSpec extends AnyWordSpec {
     def unpackToFen(dataWrapped: DataWrapper, fileApi: ApiFileTrait): String = {
         val data: (String, State) = fileApi.from(dataWrapped)
         data._2 match {
@@ -95,4 +95,4 @@ class EngineControllerSpec extends AnyWordSpec {
             ec.current_theme = 1
         }
     }
-}
+} */

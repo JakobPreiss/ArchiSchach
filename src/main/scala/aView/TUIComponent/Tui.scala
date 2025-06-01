@@ -18,7 +18,7 @@ class Tui(controller: ControllerTrait) extends Observer {
                 case "redo" => controller.redo()
                 case "reset" => controller.resetBoard()
                 case move /*if move.matches("(([a-h][1-8][a-h][1-8])|undo|redo)")*/ => controller.play((controller.translateMoveStringToInt(controller.fen, move)))
-                case _ => println("Denk nochmal nach Bro")
+                //case _ => println("Denk nochmal nach Bro")
             }
         } else {
             if(input.matches("^(Q|R|B|N|q|r|b|n)$")) {
