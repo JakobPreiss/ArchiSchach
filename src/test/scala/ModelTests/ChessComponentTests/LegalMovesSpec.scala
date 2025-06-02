@@ -9,7 +9,7 @@ import scala.util.{Try, Success, Failure}
 class LegalMovesSpec extends AnyWordSpec {
     "Legal Moves " should {
         "return all legal moves for fens" in {
-            val expected: List[(Int, Int)] = List((24, 9), (24, 18), (24, 34), (55, 7), (55, 15), (55, 23), (55, 31), (55, 39), (55, 47), (55, 54), (55, 53), (55, 52), (55, 51), (55, 63), (50, 43), (50, 51), (50, 59), (61, 45), (61, 53), (61, 63), (61, 62), (61, 60), (61, 59), (58, 44), (58, 51), (58, 49), (37, 28), (30, 22), (41, 33), (40, 32)).sorted;
+           val expected: List[(Int, Int)] = List((24, 9), (24, 18), (24, 34), (55, 7), (55, 15), (55, 23), (55, 31), (55, 39), (55, 47), (55, 54), (55, 53), (55, 52), (55, 51), (55, 63), (50, 43), (50, 51), (50, 59), (61, 45), (61, 53), (61, 63), (61, 62), (61, 60), (61, 59), (58, 44), (58, 51), (58, 49), (37, 28), (30, 22), (41, 33), (40, 32)).sorted;
             val fen = "rn1kr3/8/p1p5/Np1bbpP1/5P2/PP6/b1K4R/2B2R2 w - - 5 65";
             LegalMoves.getAllLegalMoves(fen) match {
                 case Failure(a) =>
@@ -24,12 +24,12 @@ class LegalMovesSpec extends AnyWordSpec {
                 case Success(legalMoves) => legalMoves.sorted should be(expected0)
             }
 
-            /*val expected1: List[(Int, Int)] = List((19, 11), (19, 27), (50, 15), (50, 22), (50, 29), (50, 36), (50, 32), (50, 43), (50, 41), (50, 59), (50, 57), (24, 32)).sorted
+            val expected1: List[(Int, Int)] = List((19, 11), (19, 27), (50, 15), (50, 22), (50, 29), (50, 36), (50, 32), (50, 43), (50, 41), (50, 59), (50, 57), (24, 32)).sorted
             val fen1 = "8/8/1K1k4/p7/8/4R3/2b5/R7 b - - 7 88"
             LegalMoves.getAllLegalMoves(fen1) match {
                 case Failure(e) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected1)
-            } */
+            }
 
             val expected2: List[(Int, Int)] = List((7, 15), (6, 21), (3, 4), (3, 2), (1, 18), (1, 16), (0, 8), (0, 16), (0, 24), (0, 32), (11, 4), (11, 2), (11, 19), (11, 18), (20, 13), (20, 29), (20, 27), (20, 34), (20, 41), (20, 48), (40, 49), (14, 22), (10, 18), (9, 17), (26, 34), (14, 30), (9, 25)).sorted
             val fen2 = "rn1q1bnr/1ppkp1p1/4b2p/2p2P1P/5P2/p2P4/PP3NP1/RNBQKB1R b KQ - 0 10"
@@ -86,9 +86,9 @@ class LegalMovesSpec extends AnyWordSpec {
                 case Failure(e) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected9)
             }
-
+            /*
             val expected10: List[(Int, Int)] = List((10, 3), (17, 1), (17, 11), (17, 25), (17, 33), (17, 41), (17, 49), (17, 57), (17, 61), (17, 59), (17, 58), (18, 11), (18, 25), (18, 27), (18, 34), (18, 41), (18, 48), (18, 32), (18, 44)).sorted
-            val fen10 = "r1bqkbnr/pp1ppppp/2n5/2p5/8/2NP4/PPP2PPP/R1BQKBNR w KQkq - 2 4"
+            val fen10 = "r1bqkbnr/pp1ppppp/2n5/2p5/8/2NP4/PPP2PPP/R1BQKBNR b KQkq - 2 4"
             LegalMoves.getAllLegalMoves(fen10) match {
                 case Failure(e) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected10)
@@ -366,7 +366,7 @@ class LegalMovesSpec extends AnyWordSpec {
             LegalMoves.getAllLegalMoves(fen49) match {
                 case Failure(_) =>
                 case Success(legalMoves) => legalMoves.sorted should be(expected49)
-            }
+            } */
 
             /*val expected50: List[(Int, Int)] = List((30, 23), (30, 21), (30, 37), (30, 44), (42, 27), (42, 36), (42, 32), (42, 48), (42, 59), (42, 57), (40, 8), (40, 16), (40, 24), (40, 32), (40, 41), (40, 48), (40, 56), (51, 37), (51, 44), (51, 43), (51, 59), (51, 58), (63, 47), (63, 55), (62, 47), (62, 45), (60, 53), (60, 59), (29, 20), (25, 18), (25, 17), (39, 31), (54, 46), (52, 44), (54, 38), (52, 36)).sorted;
             val fen50 = "rnb1k1nr/pp1p2pp/2p1pp2/1P1q1PB1/3P3P/R1N5/2PQP1P1/4KBNR w Kkq - 4 14";

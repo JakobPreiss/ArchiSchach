@@ -32,7 +32,7 @@ object LegalMoves {
                     isTakingMove(fen, h._2) match {
                         case Failure(err) => Failure(err)
                         case Success(isTaking) if (isTaking) =>
-                            filterLegalWithTake(List(h), t)
+                            filterLegalWithTake(h :: accumulator, t)
                         case Success(isNotTaking) =>
                             filterLegalWithTake(accumulator, t)
                     }

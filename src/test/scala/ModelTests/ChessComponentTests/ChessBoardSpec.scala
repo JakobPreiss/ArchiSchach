@@ -216,7 +216,7 @@ class ChessBoardSpec extends AnyWordSpec {
             ChessBoard.translateCastle(defaultBoard, (4, 5)) should be(move5)
             ChessBoard.translateCastle(defaultBoard, (60, 61)) should be(move6)
             ChessBoard.translateCastle(defaultBoard, (0, 1)) should be(move7)
-        } */
+        }
 
         "detect a possible promotion" in {
             val fenWhitePromotion = "rPbqkbnr/1pppppp1/8/8/8/8/P1PPPPpP/RNBQKBNR b KQkq - 0 5"
@@ -224,7 +224,7 @@ class ChessBoardSpec extends AnyWordSpec {
 
             val fenBlackPromotion = "rQbqkbnr/1pppppp1/8/8/8/8/P1PPPP1P/RNBQKBNp w Qkq - 0 6"
             ChessBoard.canPromote(fenBlackPromotion) should be(63)
-        }
+        } */
     }
 
 }

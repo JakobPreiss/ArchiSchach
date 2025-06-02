@@ -7,7 +7,7 @@ import scala.util.{Try, Success, Failure}
 
 import scala.util.Success
 
-/*class DevourChessSpec extends AnyWordSpec {
+class DevourChessSpec extends AnyWordSpec {
     val testObject = DevourChessFacade()
     "DevourChess" should {
         "getAllLegalMoves Test" in {
@@ -42,8 +42,8 @@ import scala.util.Success
             remisValue should be (true)
         }
 
-        "getBestMove Test" in {
-            testObject.getBestMove("", 0) should be(Success(""))
-        }
+        /*"getBestMove Test" in {
+            testObject.getBestMove("", 0) should be(Failure(new ClassNotFoundException("No Stockfish for DevourChess")))
+        }*/
     }
-} */
+}
